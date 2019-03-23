@@ -1,0 +1,5 @@
+package client;
+
+enum Color {
+    BLUE,GREEN,RED
+}
