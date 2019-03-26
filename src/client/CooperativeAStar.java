@@ -1,10 +1,14 @@
 package client;
 
+import client.definitions.AHeuristic;
+import client.definitions.AStrategy;
+
 import java.util.ArrayList;
 
-public class CooperativeAStar implements IStrategy {
+public class CooperativeAStar extends AStrategy {
 
-    public CooperativeAStar() {
+    public CooperativeAStar(AHeuristic heuristic) {
+        super(heuristic);
         //for multiple agents instantiation
         //this.agent...
         //setup position?
@@ -13,7 +17,7 @@ public class CooperativeAStar implements IStrategy {
     }
 
     //To have the general search method such that each agent can search on their own.
-    public ArrayList<State> Search(IStrategy strategy) {
+    public ArrayList<State> Search(AStrategy strategy) {
         System.err.format("Search starting with strategy %s.\n", strategy.toString()); //for this agent
         State state = new State(null, 0, 0); //initial state
         strategy.addToFrontier(state);

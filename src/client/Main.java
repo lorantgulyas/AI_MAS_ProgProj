@@ -2,10 +2,13 @@ package client;
 
 import client.config.Config;
 import client.config.ConfigParser;
+import client.definitions.AHeuristic;
+import client.definitions.AServerIO;
+import client.definitions.AStrategy;
 import client.heuristics.Manhattan;
 
 public class Main {
-    public static final IServerIO serverIO;
+    public static final AServerIO serverIO;
 
     public static void main(String[] args) throws Exception{
         // read config
@@ -14,9 +17,8 @@ public class Main {
 
         // read state and setup strategy/heuristic
         State initialState = Main.serverIO.readState();
-        IHeuristic heuristic = Main.getHeuristic(config);
-        heuristic.preprocess(initialState);
-        IStrategy strategy = Main.getStrategy(config);
+        AHeuristic heuristic = Main.getHeuristic(config, initialState);
+        AStrategy strategy = Main.getStrategy(config, heuristic);
 
         Main.serverIO.sendComment("Using strategy: " + strategy.toString());
         Main.serverIO.sendComment("Using heuristic: " + heuristic.toString());
@@ -24,7 +26,7 @@ public class Main {
         // find plan
         Command[][] jointActions;
         try {
-            jointActions = strategy.plan(initialState, heuristic);
+            jointActions = strategy.plan(initialState);
         } catch (OutOfMemoryError exc) {
             System.err.println("Maximum memory usage exceeded.");
             return;
@@ -42,16 +44,16 @@ public class Main {
         }
     }
 
-    static IHeuristic getHeuristic(Config config) throws Exception {
+    static AHeuristic getHeuristic(Config config, State initialState) throws Exception {
         switch (config.getHeuristic()) {
-            case MANHATTAN: return new Manhattan();
+            case MANHATTAN: return new Manhattan(initialState);
             default: throw new Exception();
         }
-}
+    }
 
-    static IStrategy getStrategy(Config config) throws Exception {
+    static AStrategy getStrategy(Config config, AHeuristic heuristic) throws Exception {
         switch (config.getStrategy()) {
-            case COOPERATIVE_ASTAR: return new CooperativeAStar();
+            case COOPERATIVE_ASTAR: return new CooperativeAStar(heuristic);
             default: throw new Exception();
         }
     }
