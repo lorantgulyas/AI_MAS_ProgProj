@@ -5,28 +5,29 @@ import client.definitions.AServerIO;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
 public class ServerIO extends AServerIO {
-    BufferedReader reader;
-    String line;
+    private BufferedReader reader;
 
-    public ServerIO(String clientName) throws Exception {
+    public ServerIO(String clientName) {
         super(clientName);
+    }
+
+    public State readState() throws Exception {
         reader = new BufferedReader(new InputStreamReader(System.in));
 
         // send client name
-        System.out.println(clientName);
+        System.out.println(name);
 
         // read dummy lines
         for (int i = 0; i < 5; i++)
             reader.readLine();
 
         // fetch colors
-        line = reader.readLine();
+        String line = reader.readLine();
         HashMap<Integer, Color> agentColors = new HashMap<>();
         HashMap<Character, Color> boxColors = new HashMap<>();
         while (!line.equals("#initial")) {
@@ -100,18 +101,12 @@ public class ServerIO extends AServerIO {
             }
         }
 
-        // debug
-        for (Agent agent : agents) {
-            System.err.println(agent);
-        }
-
-        for (Box box : boxes) {
-            System.err.println(box);
-        }
-
-        for (Goal goal : goals) {
-            System.err.println(goal);
-        }
+        State.setWalls(walls);
+        return new State(
+                agents,
+                boxes.toArray(new Box[0]),
+                goals.toArray(new Goal[0])
+        );
     }
 
     public boolean[] sendJointAction(Command[] jointAction) throws Exception {

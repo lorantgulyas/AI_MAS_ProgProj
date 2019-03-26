@@ -1,7 +1,6 @@
 package client.definitions;
 
 import client.Command;
-import client.State;
 
 public abstract class AServerIO {
 
@@ -11,9 +10,10 @@ public abstract class AServerIO {
         this.name = name;
     }
 
-    public abstract AState readState();
+    public abstract AState readState() throws Exception;
 
-    public abstract boolean[] sendJointAction(Command[] jointAction);
+    public abstract boolean[] sendJointAction(Command[] jointAction)
+            throws Exception;
 
     public abstract void sendComment(String comment);
 }

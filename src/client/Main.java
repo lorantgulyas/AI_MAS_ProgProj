@@ -3,7 +3,6 @@ package client;
 import client.config.Config;
 import client.config.ConfigParser;
 import client.definitions.AHeuristic;
-import client.definitions.AServerIO;
 import client.definitions.AState;
 import client.definitions.AStrategy;
 import client.heuristics.Manhattan;
@@ -16,7 +15,7 @@ public class Main {
 
         // read state and setup strategy/heuristic
         ServerIO serverIO = new ServerIO("soulman");
-        AState initialState = serverIO.readState();
+        State initialState = serverIO.readState();
         AHeuristic heuristic = Main.getHeuristic(config, initialState);
         AStrategy strategy = Main.getStrategy(config, heuristic);
 
