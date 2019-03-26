@@ -116,11 +116,11 @@ public class ServerIO {
                 .map(Command::toString)
                 .collect(Collectors.joining(";"));
         System.out.println(actions);
-        ArrayList<Boolean> kek =  Arrays.stream(reader.readLine().split(";"))
-                .map(Boolean::parseBoolean)
-                .collect(Collectors.toCollection(ArrayList::new));
         boolean[] res = new boolean[jointAction.length];
-        return kek.toArray(res);
+        String[] split =  reader.readLine().split(";");
+        for (int i = 0; i < jointAction.length; i++)
+            res[i] = Boolean.parseBoolean(split[i]);
+        return res;
     }
 
     public void sendComment(String comment) {

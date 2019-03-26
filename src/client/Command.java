@@ -83,8 +83,8 @@ public class Command {
     @Override
     public String toString() {
         if (this.actionType == Type.Move)
-            return String.format("[%s(%s)]", this.actionType.toString(), this.dir1.toString());
+            return String.format("%s(%s)", this.actionType.toString(), this.dir1.toString());
         else
-            return String.format("[%s(%s,%s)]", this.actionType.toString(), this.dir1.toString(), this.dir2.toString());
+            return String.format("%s(%s,%s)", this.actionType.toString(), this.dir1.toString(), this.dir2.toString());
     }
 }
