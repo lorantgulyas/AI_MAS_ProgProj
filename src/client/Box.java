@@ -1,11 +1,5 @@
 package client;
 
-//enum Color {
-//    blue,
-//    red,
-//    green
-//}
-
 public class Box {
     private char letter;
     private Color color;
@@ -15,6 +9,12 @@ public class Box {
         this.letter = letter;
         this.color = color;
         this.position = position;
+    }
+
+    public Box (char letter, Color color) {
+        this.letter = letter;
+        this.color = color;
+        this.position = null;
     }
 
     public char getLetter() {
@@ -31,5 +31,10 @@ public class Box {
 
     public void setPosition(Position position) {
         this.position = position;
+    }
+
+    @Override
+    public String toString() {
+        return "char: " + letter + ", color: " + color + ", position: " + position;
     }
 }

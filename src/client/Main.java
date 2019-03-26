@@ -9,20 +9,19 @@ import client.definitions.AStrategy;
 import client.heuristics.Manhattan;
 
 public class Main {
-    public static final AServerIO serverIO;
-
     public static void main(String[] args) throws Exception{
         // read config
         String configPath = args.length < 1 ? "src/configs/default.config" : args[0];
         Config config = ConfigParser.readConfigFromFile(configPath);
 
         // read state and setup strategy/heuristic
-        AState initialState = Main.serverIO.readState();
+        ServerIO serverIO = new ServerIO("soulman");
+        AState initialState = serverIO.readState();
         AHeuristic heuristic = Main.getHeuristic(config, initialState);
         AStrategy strategy = Main.getStrategy(config, heuristic);
 
-        Main.serverIO.sendComment("Using strategy: " + strategy.toString());
-        Main.serverIO.sendComment("Using heuristic: " + heuristic.toString());
+        serverIO.sendComment("Using strategy: " + strategy.toString());
+        serverIO.sendComment("Using heuristic: " + heuristic.toString());
 
         // find plan
         Command[][] jointActions;
@@ -35,7 +34,7 @@ public class Main {
 
         // send joint actions to server
         for (Command[] jointAction : jointActions) {
-            boolean[] joinActionResponse = Main.serverIO.sendJointAction(jointAction);
+            boolean[] joinActionResponse = serverIO.sendJointAction(jointAction);
             for (boolean actionResponse : joinActionResponse) {
                 if (!actionResponse) {
                     // TODO: figure out how to fix plan that went wrong...

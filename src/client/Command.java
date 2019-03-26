@@ -70,13 +70,13 @@ public class Command {
     public final Dir dir1;
     public final Dir dir2;
 
-    private Command(Dir d) {
+    public Command(Dir d) {
         this.actionType = Type.Move;
         this.dir1 = d;
         this.dir2 = null;
     }
 
-    private Command(Type t, Dir d1, Dir d2) {
+    public Command(Type t, Dir d1, Dir d2) {
         this.actionType = t;
         this.dir1 = d1;
         this.dir2 = d2;
@@ -91,10 +91,10 @@ public class Command {
     @Override
     public String toString() {
         if (this.actionType == Type.Move)
-            return String.format("[%s(%s)]", this.actionType.toString(), this.dir1.toString());
+            return String.format("%s(%s)", this.actionType.toString(), this.dir1.toString());
         else if (this.actionType == Type.NoOp)
-            return "[NoOp]";
+            return "NoOp";
         else
-            return String.format("[%s(%s,%s)]", this.actionType.toString(), this.dir1.toString(), this.dir2.toString());
+            return String.format("%s(%s,%s)", this.actionType.toString(), this.dir1.toString(), this.dir2.toString());
     }
 }

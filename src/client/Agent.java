@@ -1,18 +1,24 @@
 package client;
 
 public class Agent {
-    private int number;
+    private int id;
     private Color color;
     private Position position;
 
-    public Agent(int number, Color color, Position position) {
-        this.number = number;
+    public Agent(int id, Color color, Position position) {
+        this.id = id;
         this.color = color;
         this.position = position;
     }
 
-    public int getNumber() {
-        return number;
+    public Agent (int id, Color color) {
+        this.id = id;
+        this.color = color;
+        this.position = null;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public Color getColor() {
@@ -25,5 +31,10 @@ public class Agent {
 
     public void setPosition(Position position) {
         this.position = position;
+    }
+
+    @Override
+    public String toString() {
+        return "id: " + id + ", color: " + color + ", position: " + position;
     }
 }

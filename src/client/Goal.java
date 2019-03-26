@@ -2,18 +2,23 @@ package client;
 
 public class Goal {
     private char letter;
-    private Position location;
+    private Position position;
 
-    public Goal(char letter, Position location) {
+    public Goal(char letter, Position position) {
         this.letter = letter;
-        this.location = location;
+        this.position = position;
     }
 
     public char getLetter() {
         return letter;
     }
 
-    public Position getLocation() {
-        return location;
+    public Position getPosition() {
+        return position;
+    }
+
+    @Override
+    public String toString() {
+        return "char: " + letter + ", position: " + position;
     }
 }
