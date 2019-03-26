@@ -21,8 +21,16 @@ public class Main {
         Main.serverIO.sendComment("Using strategy: " + strategy.toString());
         Main.serverIO.sendComment("Using heuristic: " + heuristic.toString());
 
-        // find plan and send joint actions to server
-        Command[][] jointActions = strategy.plan(initialState, heuristic);
+        // find plan
+        Command[][] jointActions;
+        try {
+            jointActions = strategy.plan(initialState, heuristic);
+        } catch (OutOfMemoryError exc) {
+            System.err.println("Maximum memory usage exceeded.");
+            return;
+        }
+
+        // send joint actions to server
         for (Command[] jointAction : jointActions) {
             boolean[] joinActionResponse = Main.serverIO.sendJointAction(jointAction);
             for (boolean actionResponse : joinActionResponse) {
