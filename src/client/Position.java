@@ -29,4 +29,21 @@ public class Position {
     public String toString() {
         return "x: " + col + ", y: " + row;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof Position)) {
+            return false;
+        }
+        Position position = (Position) obj;
+        return this.row == position.getRow() && this.col == position.getCol();
+    }
+
+    @Override
+    public int hashCode() {
+        return this.row + this.col;
+    }
 }

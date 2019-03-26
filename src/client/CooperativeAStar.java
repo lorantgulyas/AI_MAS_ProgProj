@@ -4,28 +4,31 @@ import client.definitions.AHeuristic;
 import client.definitions.AState;
 import client.definitions.AStrategy;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.PriorityQueue;
 
 public class CooperativeAStar extends AStrategy {
 
-    // CHECK A*
-    // ordering of agents (random?)
-    // timestamps hashmap (reserved cells)
+    private HashSet<Timestamp> reservedCells;
 
     public CooperativeAStar(AHeuristic heuristic) {
         super(heuristic);
+        this.reservedCells = new HashSet<>();
     }
 
     public Command[][] plan(AState initialState) {
         ArrayList<Command[]> plans = new ArrayList<>();
         Agent[] agents = initialState.getAgents();
         for (Agent agent : agents) {
-            AStar astar = new AStar(this.heuristic, initialState, reservedCells);
-            Command[] plan = astar.plan();
-            plans.add(plan);
+            AStar astar = new AStar(this.heuristic, initialState, this.reservedCells);
+            Action[] plan = astar.plan();
+            ArrayList<Command> commands = new ArrayList<>() ;
+            for (Action action : plan) {
+                commands.add(action.getCommand());
+                this.reservedCells.add(action.getTimestamp());
+            }
+            plans.add((Command[]) commands.toArray());
         }
 
         // find longest plan
@@ -62,13 +65,15 @@ public class CooperativeAStar extends AStrategy {
         private HashSet<AState> explored;
         private PriorityQueue<AState> frontier;
         private HashSet<AState> frontierSet;
+        private HashSet<Timestamp> reservedCells;
 
-        public AStar(AHeuristic heuristic, AState state, reservedCells) {
+        public AStar(AHeuristic heuristic, AState state, HashSet<Timestamp> reservedCells) {
             super();
             this.explored = new HashSet<>();
             this.heuristic = heuristic;
             this.frontier = new PriorityQueue<AState>();
             this.frontierSet = new HashSet<>();
+            this.reservedCells = reservedCells;
             this.addToFrontier(state);
         }
 
@@ -99,7 +104,7 @@ public class CooperativeAStar extends AStrategy {
             return frontierSet.contains(n);
         }
 
-        public Command[] plan() {
+        public Action[] plan() {
             while (true) {
                 if (this.frontierIsEmpty()) {
                     return null;
@@ -112,7 +117,7 @@ public class CooperativeAStar extends AStrategy {
                 }
 
                 this.addToExplored(leafState);
-                for (AState n : leafState.getExpandedStates()) { // The list of expanded states is shuffled randomly; see State.java.
+                for (AState n : leafState.getExpandedStates()) {
                     if (!this.isExplored(n) && !this.inFrontier(n)) {
                         this.addToFrontier(n);
                     }

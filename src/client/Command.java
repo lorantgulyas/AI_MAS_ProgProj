@@ -35,6 +35,8 @@ public class Command {
             cmds.add(new Command(d));
         }
 
+        cmds.add(Command.NoOp);
+
         EVERY = cmds.toArray(new Command[0]);
     }
 
