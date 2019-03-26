@@ -1,2 +1,21 @@
 # AI_MAS_ProgProj
 Artificitial Intelligence and Multi Agent System Programming Project, 2019 DTU
+
+## Configurations
+The client has a single optional command line argument which specifies the path to a config file. It defaults to `configs/default.config` if arguments are empty.
+
+### Format of a configuration file
+Each line specifies a single pair of a key and a value separated by a colon. Note that all whitespace are ignored and so you are not allowed to use whitespace in keys and values.
+
+The following keys are accepted together with their accepted values:
+
+* algorithm
+    - cooperative_astar
+* heuristic
+    - manhattan
+
+### Example configuration file
+```
+algorithm: cooperative_astar
+heuristic: manhattan
+``` 
