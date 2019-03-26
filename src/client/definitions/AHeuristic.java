@@ -4,9 +4,9 @@ import client.State;
 
 public abstract class AHeuristic {
 
-    public AHeuristic(State initialState) {
+    public AHeuristic(AState initialState) {
       // subclasses should do preprocessing here
     }
 
-    public abstract int h(State state);
+    public abstract int h(AState state);
 }

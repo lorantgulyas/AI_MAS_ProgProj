@@ -11,7 +11,7 @@ public abstract class AServerIO {
         this.name = name;
     }
 
-    public abstract State readState();
+    public abstract AState readState();
 
     public abstract boolean[] sendJointAction(Command[] jointAction);
 

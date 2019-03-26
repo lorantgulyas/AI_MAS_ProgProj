@@ -4,6 +4,7 @@ import client.config.Config;
 import client.config.ConfigParser;
 import client.definitions.AHeuristic;
 import client.definitions.AServerIO;
+import client.definitions.AState;
 import client.definitions.AStrategy;
 import client.heuristics.Manhattan;
 
@@ -16,7 +17,7 @@ public class Main {
         Config config = ConfigParser.readConfigFromFile(configPath);
 
         // read state and setup strategy/heuristic
-        State initialState = Main.serverIO.readState();
+        AState initialState = Main.serverIO.readState();
         AHeuristic heuristic = Main.getHeuristic(config, initialState);
         AStrategy strategy = Main.getStrategy(config, heuristic);
 
@@ -44,7 +45,7 @@ public class Main {
         }
     }
 
-    static AHeuristic getHeuristic(Config config, State initialState) throws Exception {
+    static AHeuristic getHeuristic(Config config, AState initialState) throws Exception {
         switch (config.getHeuristic()) {
             case MANHATTAN: return new Manhattan(initialState);
             default: throw new Exception();
