@@ -1,24 +1,24 @@
 package client;
 
-public class Box {
-    private char letter;
-    private Color color;
+public class Agent {
+    private final int id;
+    private final Color color;
     private Position position;
 
-    public Box (char letter, Color color, Position position) {
-        this.letter = letter;
+    public Agent (int id, Color color, Position position) {
+        this.id = id;
         this.color = color;
         this.position = position;
     }
 
-    public Box (char letter, Color color) {
-        this.letter = letter;
+    public Agent (int id, Color color) {
+        this.id = id;
         this.color = color;
         this.position = null;
     }
 
-    public char getLetter() {
-        return letter;
+    public int getId() {
+        return id;
     }
 
     public Color getColor() {
@@ -35,6 +35,6 @@ public class Box {
 
     @Override
     public String toString() {
-        return "char: " + letter + ", color: " + color + ", position: " + position;
+        return "id: " + id + ", color: " + color + ", position: " + position;
     }
 }

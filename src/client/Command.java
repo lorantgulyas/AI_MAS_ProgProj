@@ -68,13 +68,13 @@ public class Command {
     public final Dir dir1;
     public final Dir dir2;
 
-    private Command(Dir d) {
+    public Command(Dir d) {
         this.actionType = Type.Move;
         this.dir1 = d;
         this.dir2 = null;
     }
 
-    private Command(Type t, Dir d1, Dir d2) {
+    public Command(Type t, Dir d1, Dir d2) {
         this.actionType = t;
         this.dir1 = d1;
         this.dir2 = d2;
