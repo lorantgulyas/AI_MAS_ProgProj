@@ -1,5 +1,5 @@
 package client;
 
-enum Color {
+public enum Color {
     BLUE,GREEN,RED
 }
