@@ -4,6 +4,8 @@ import client.definitions.AState;
 
 public class State extends AState {
     private static boolean[][] walls;
+    private static int ROW_COUNT;
+    private static int COL_COUNT;
     private Agent[] agents;
     private Box[] boxes;
     private Goal[] goals;
@@ -14,8 +16,11 @@ public class State extends AState {
         this.goals = goals;
     }
 
-    public static void setWalls(boolean[][] initialWalls) {
+    public static void setLevel(boolean[][] initialWalls,
+                                int rowCount, int colCount) {
         walls = initialWalls;
+        ROW_COUNT = rowCount;
+        COL_COUNT = colCount;
     }
 
     public boolean[][] getWalls() {
@@ -48,5 +53,42 @@ public class State extends AState {
 
     public AState[] getExpandedStates() {
         throw new NotImplementedException();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder s = new StringBuilder();
+        char[][] level = new char[COL_COUNT][ROW_COUNT];
+        for (int y = 0; y < ROW_COUNT; y++) {
+            for (int x = 0; x < COL_COUNT; x++) {
+                if (walls[x][y]) {
+                    level[x][y] = '+';
+                } else {
+                    level[x][y] = ' ';
+                }
+            }
+        }
+        for (Goal goal : goals) {
+            Position pos = goal.getPosition();
+            level[pos.getCol()][pos.getRow()] = Character.toLowerCase(goal.getLetter());
+            s.append("goal at: ");
+            s.append(goal.toString());
+            s.append("\n");
+        }
+        for (Box box : boxes) {
+            Position pos = box.getPosition();
+            level[pos.getCol()][pos.getRow()] = box.getLetter();
+        }
+        for (Agent agent : agents) {
+            Position pos = agent.getPosition();
+            level[pos.getCol()][pos.getRow()] = Character.forDigit(agent.getId(), 10);
+        }
+        for (int y = 0; y < ROW_COUNT; y++) {
+            for (int x = 0; x < COL_COUNT; x++) {
+                s.append(level[x][y]);
+            }
+            s.append("\n");
+        }
+        return s.toString();
     }
 }

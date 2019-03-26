@@ -17,5 +17,4 @@ public abstract class AState {
     public abstract boolean isGoalState();
 
     public abstract AState[] getExpandedStates();
-
 }

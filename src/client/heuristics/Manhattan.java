@@ -20,7 +20,7 @@ public class Manhattan extends AHeuristic {
         Goal[] goals = state.getGoals();
         for (Goal goal : goals) {
             for (Agent agent : agents) {
-                h += this.distance(goal.getLocation(), agent.getPosition());
+                h += this.distance(goal.getPosition(), agent.getPosition());
             }
         }
         for (Box box : boxes) {

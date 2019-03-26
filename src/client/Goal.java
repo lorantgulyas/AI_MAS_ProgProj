@@ -19,6 +19,6 @@ public class Goal {
 
     @Override
     public String toString() {
-        return "char: " + letter + ", position: " + position;
+        return "char: " + Character.toLowerCase(letter) + ", position: " + position;
     }
 }

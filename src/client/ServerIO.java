@@ -101,7 +101,7 @@ public class ServerIO extends AServerIO {
             }
         }
 
-        State.setWalls(walls);
+        State.setLevel(walls, rowCount, colCount);
         return new State(
                 agents,
                 boxes.toArray(new Box[0]),
