@@ -2,6 +2,6 @@ package client;
 
 public interface IStrategy {
 
-    public Command[][] plan(State initialState);
+    public Command[][] plan(State initialState, IHeuristic heuristic);
 
 }

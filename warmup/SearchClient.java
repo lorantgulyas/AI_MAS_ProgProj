@@ -40,7 +40,7 @@ public class SearchClient {
 
                 if (chr == '+') { // Wall.
                     State.walls[row][col] = true;
-                } else if ('0' <= chr && chr <= '9') { // Agent.
+                } else if ('0' <= chr && chr <= '9') { // CooperativeAStar
                     if (agentFound) {
                         System.err.println("Error, not a single agent level");
                         System.exit(1);

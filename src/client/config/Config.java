@@ -2,22 +2,22 @@ package client.config;
 
 public class Config {
 
-    private Algorithm algorithm;
     private Heuristic heuristic;
+    private Strategy strategy;
 
     public Config(
-            Algorithm algorithm,
+            Strategy strategy,
             Heuristic heuristic
     ) {
-        this.algorithm = algorithm;
         this.heuristic = heuristic;
-    }
-
-    public Algorithm getAlgorithm() {
-        return algorithm;
+        this.strategy = strategy;
     }
 
     public Heuristic getHeuristic() {
         return heuristic;
+    }
+
+    public Strategy getStrategy() {
+        return strategy;
     }
 }

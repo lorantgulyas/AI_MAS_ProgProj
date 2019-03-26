@@ -9,13 +9,13 @@ Each line specifies a single pair of a key and a value separated by a colon. Not
 
 The following keys are accepted together with their accepted values:
 
-* algorithm
+* strategy
     - cooperative_astar
 * heuristic
     - manhattan
 
 ### Example configuration file
 ```
-algorithm: cooperative_astar
+strategy: cooperative_astar
 heuristic: manhattan
 ``` 

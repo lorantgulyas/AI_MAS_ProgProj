@@ -2,9 +2,9 @@ package client;
 
 import java.util.ArrayList;
 
-public class Agent {
+public class CooperativeAStar implements IStrategy {
 
-    public Agent(/* get color, pos, number... */) {
+    public CooperativeAStar() {
         //for multiple agents instantiation
         //this.agent...
         //setup position?
@@ -13,7 +13,7 @@ public class Agent {
     }
 
     //To have the general search method such that each agent can search on their own.
-    public ArrayList<State> Search(Strategy strategy) {
+    public ArrayList<State> Search(IStrategy strategy) {
         System.err.format("Search starting with strategy %s.\n", strategy.toString()); //for this agent
         State state = new State(null, 0, 0); //initial state
         strategy.addToFrontier(state);
