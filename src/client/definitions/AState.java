@@ -1,9 +1,6 @@
 package client.definitions;
 
-import client.Agent;
-import client.Box;
-import client.Goal;
-import client.Position;
+import client.*;
 
 public abstract class AState {
 
@@ -14,5 +11,11 @@ public abstract class AState {
     public abstract Box[] getBoxes();
 
     public abstract Goal[] getGoals();
+
+    public abstract Command[] extractPlan();
+
+    public abstract boolean isGoalState();
+
+    public abstract AState[] getExpandedStates();
 
 }

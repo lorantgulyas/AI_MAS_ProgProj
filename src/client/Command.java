@@ -9,8 +9,10 @@ public class Command {
     }
 
     public enum Type {
-        Move, Push, Pull
+        Move, Push, Pull, NoOp
     }
+
+    public static final Command NoOp = new Command();
 
     public static final Command[] EVERY;
     static {
@@ -80,10 +82,18 @@ public class Command {
         this.dir2 = d2;
     }
 
+    private Command() {
+        this.actionType = Type.NoOp;
+        this.dir1 = null;
+        this.dir2 = null;
+    }
+
     @Override
     public String toString() {
         if (this.actionType == Type.Move)
             return String.format("[%s(%s)]", this.actionType.toString(), this.dir1.toString());
+        else if (this.actionType == Type.NoOp)
+            return "[NoOp]";
         else
             return String.format("[%s(%s,%s)]", this.actionType.toString(), this.dir1.toString(), this.dir2.toString());
     }
