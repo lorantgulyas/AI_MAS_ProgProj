@@ -27,6 +27,14 @@ public class State extends AState {
         return walls;
     }
 
+    public static int getColCount() {
+        return COL_COUNT;
+    }
+
+    public static int getRowCount() {
+        return ROW_COUNT;
+    }
+
     public boolean isFree(Position position) {
         throw new NotImplementedException();
     }
