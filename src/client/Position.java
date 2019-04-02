@@ -35,7 +35,7 @@ public class Position {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof Position)) {
+        if (this.getClass() != obj.getClass()) {
             return false;
         }
         Position position = (Position) obj;

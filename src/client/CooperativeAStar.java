@@ -32,7 +32,7 @@ public class CooperativeAStar extends AStrategy {
                     this.reservedCells.add(t);
                 }
             }
-            plans.add((Command[]) commands.toArray());
+            plans.add(commands.toArray(new Command[0]));
         }
 
         // find longest plan
@@ -54,9 +54,9 @@ public class CooperativeAStar extends AStrategy {
                     jointAction.add(Command.NoOp);
                 }
             }
-            jointActions.add((Command[]) jointAction.toArray());
+            jointActions.add(jointAction.toArray(new Command[0]));
         }
-        return (Command[][]) jointActions.toArray();
+        return jointActions.toArray(new Command[0][0]);
     }
 
     @Override
@@ -76,7 +76,7 @@ public class CooperativeAStar extends AStrategy {
             this.agentId = agentId;
             this.explored = new HashSet<>();
             this.heuristic = heuristic;
-            this.frontier = new PriorityQueue<Plan>();
+            this.frontier = new PriorityQueue<Plan>(heuristic);
             this.frontierSet = new HashSet<>();
             this.reservedCells = reservedCells;
             this.addToFrontier(plan);
@@ -110,14 +110,18 @@ public class CooperativeAStar extends AStrategy {
         }
 
         public Action[] plan() {
+            int i = 0;
             while (true) {
+                if (i++ % 10000 == 0) {
+                    System.err.println(i);
+                }
                 if (this.frontierIsEmpty()) {
                     return null;
                 }
 
                 Plan leaf = this.getAndRemoveLeaf();
 
-                if (leaf.getState().isGoalState()) {
+                if (leaf.getState().agentIsDone(this.agentId)) {
                     return leaf.extract();
                 }
 
@@ -125,6 +129,7 @@ public class CooperativeAStar extends AStrategy {
                 for (Plan n : leaf.getChildren(this.agentId, this.reservedCells)) {
                     if (!this.isExplored(n) && !this.inFrontier(n)) {
                         this.addToFrontier(n);
+                        //System.err.println(n.getAction().getCommand());
                     }
                 }
             }

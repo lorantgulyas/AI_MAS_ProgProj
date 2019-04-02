@@ -1,0 +1,15 @@
+#domain
+hospital
+#levelname
+SASimple
+#colors
+red: 0, A
+#initial
++++++
++ A0+
++++++
+#goal
++++++
++A  +
++++++
+#end

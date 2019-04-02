@@ -2,6 +2,7 @@ package client;
 
 import client.definitions.AState;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class State extends AState {
@@ -65,9 +66,28 @@ public class State extends AState {
         return goals;
     }
 
+    public boolean agentIsDone(int agentID) {
+        Agent agent = this.agents[agentID];
+        ArrayList<Goal> agentGoals = new ArrayList<>();
+        for (Goal goal : this.goals) {
+            for (Box box : this.boxes) {
+                if (box.getLetter() == goal.getLetter() && box.getColor() == agent.getColor()) {
+                    agentGoals.add(goal);
+                }
+            }
+        }
+        for (Goal goal : agentGoals) {
+            Box box = boxMap.getOrDefault(goal.getPosition(), null);
+            if (box == null || box.getLetter() != goal.getLetter()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public boolean isGoalState() {
-        for (Goal goal: goals) {
-            Box box = boxMap.getOrDefault(goal.getPosition(),null);
+        for (Goal goal : goals) {
+            Box box = boxMap.getOrDefault(goal.getPosition(), null);
             if (box == null || box.getLetter() != goal.getLetter()) {
                 return false;
             }

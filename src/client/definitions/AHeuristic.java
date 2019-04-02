@@ -1,11 +1,22 @@
 package client.definitions;
 
-import client.State;
+import client.Plan;
 
-public abstract class AHeuristic {
+import java.util.Comparator;
+
+public abstract class AHeuristic implements Comparator<Plan> {
 
     public AHeuristic(AState initialState) {
       // subclasses should do preprocessing here
+    }
+
+    @Override
+    public int compare(Plan p1, Plan p2) {
+        return this.f(p1) - this.f(p2);
+    }
+
+    public int f(Plan p) {
+        return p.g() + this.h(p.getState());
     }
 
     public abstract int h(AState state);

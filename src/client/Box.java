@@ -5,13 +5,13 @@ public class Box {
     private Color color;
     private Position position;
 
-    public Box (char letter, Color color, Position position) {
+    public Box(char letter, Color color, Position position) {
         this.letter = letter;
         this.color = color;
         this.position = position;
     }
 
-    public Box (char letter, Color color) {
+    public Box(char letter, Color color) {
         this.letter = letter;
         this.color = color;
         this.position = null;

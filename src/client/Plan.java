@@ -33,7 +33,6 @@ public class Plan {
 
     private int findBoxIndex(Position position) {
         Box[] boxes = this.state.getBoxes();
-
         for (int i = 0; i < boxes.length; i++) {
             if (boxes[i].getPosition().equals(position)) {
                 return i;
@@ -56,10 +55,10 @@ public class Plan {
 
         int boxIndex = this.findBoxIndex(boxPos);
         Box box = boxes[boxIndex];
-        Box[] pullBoxes = boxes.clone();
-        boxes[boxIndex] = new Box(box.getLetter(), box.getColor(), newBoxPos);
+        Box[] actionBoxes = boxes.clone();
+        actionBoxes[boxIndex] = new Box(box.getLetter(), box.getColor(), newBoxPos);
 
-        State boxState = new State(boxAgents, pullBoxes, this.state.getGoals());
+        State boxState = new State(boxAgents, actionBoxes , this.state.getGoals());
         Timestamp[] timestamps = new Timestamp[] { agentTimestamp, boxTimestamp, newBoxTimestamp, newAgentTimestamp };
         Action boxAction = new Action(command, timestamps);
         Plan boxPlan = new Plan(boxState, this, this.time + 1, boxAction);
@@ -68,6 +67,10 @@ public class Plan {
 
     public Action getAction() {
         return action;
+    }
+
+    public int g() {
+        return this.time;
     }
 
     public State getState() {
@@ -80,13 +83,13 @@ public class Plan {
 
     public Action[] extract() {
         Plan plan = this;
-        ArrayList<Action> commands = new ArrayList<>();
+        ArrayList<Action> actions = new ArrayList<>();
         while (!plan.isInitialState()) {
-            commands.add(plan.getAction());
+            actions.add(plan.getAction());
             plan = plan.parent;
         }
-        Collections.reverse(commands);
-        return (Action[]) commands.toArray();
+        Collections.reverse(actions);
+        return actions.toArray(new Action[0]);
     }
 
     public ArrayList<Plan> getChildren(int agentID, HashSet<Timestamp> constraints) {
@@ -148,27 +151,31 @@ public class Plan {
                     int boxY = agentY + Command.dirToRowChange(c.dir2);
                     Position boxPos = new Position(boxX, boxY);
                     Timestamp boxTimestamp = new Timestamp(this.time + 1, boxPos);
-                    Box pullBox = this.findBox(boxPos);
 
-                    if (!constraints.contains(boxTimestamp) && this.state.boxAt(boxPos) && pullBox.getColor() == agent.getColor()) {
-                        Plan pullPlan = this.getBoxPlan(agentID, agentIndex, c, agentTimestamp, newAgentTimestamp, boxTimestamp, agentTimestamp);
-                        children.add(pullPlan);
+                    if (!constraints.contains(boxTimestamp) && this.state.boxAt(boxPos) && this.state.isFree(newAgentPos)) {
+                        Box pullBox = this.findBox(boxPos);
+                        if (pullBox.getColor() == agent.getColor()) {
+                            Plan pullPlan = this.getBoxPlan(agentID, agentIndex, c, agentTimestamp, newAgentTimestamp, boxTimestamp, agentTimestamp);
+                            children.add(pullPlan);
+                        }
                     }
                     break;
                 case Push:
                     int newBoxX = newAgentX + Command.dirToColChange(c.dir2);
                     int newBoxY = newAgentY + Command.dirToRowChange(c.dir2);
-                    Box pushBox = this.findBox(newAgentPos);
                     Position newBoxPos = new Position(newBoxX, newBoxY);
                     Timestamp newBoxTimestamp = new Timestamp(this.time + 1, newBoxPos);
 
                     if (newBoxX < 0 || newBoxY < 0 || newBoxX > State.getColCount() - 1 || newBoxY > State.getRowCount() - 1) {
-                        continue;
+                        break;
                     }
 
-                    if (this.state.isFree((newBoxPos)) && !constraints.contains(newBoxTimestamp) && this.state.boxAt(newAgentPos) && pushBox.getColor() == agent.getColor()) {
-                        Plan pushPlan = this.getBoxPlan(agentID, agentIndex, c, agentTimestamp, newAgentTimestamp, newAgentTimestamp, newBoxTimestamp);
-                        children.add(pushPlan);
+                    if (this.state.isFree((newBoxPos)) && !constraints.contains(newBoxTimestamp) && this.state.boxAt(newAgentPos)) {
+                        Box pushBox = this.findBox(newAgentPos);
+                        if (pushBox.getColor() == agent.getColor()) {
+                            Plan pushPlan = this.getBoxPlan(agentID, agentIndex, c, agentTimestamp, newAgentTimestamp, newAgentTimestamp, newBoxTimestamp);
+                            children.add(pushPlan);
+                        }
                     }
                     break;
             }
