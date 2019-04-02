@@ -22,19 +22,19 @@ public class Timestamp {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
+        if (this == obj)
+            return true;
+        if (obj == null)
             return false;
-        }
-        if (!(obj instanceof Timestamp)) {
+        if (obj.getClass() != this.getClass())
             return false;
-        }
-        Timestamp timestamp = (Timestamp) obj;
-        return this.time == timestamp.time && this.position.equals(timestamp.position);
+        Timestamp other = (Timestamp) obj;
+        return this.time == other.time && this.position.equals(other.position);
     }
 
     @Override
     public int hashCode() {
-        return this.position.hashCode() + this.time;
+        return this.position.hashCode() * this.time;
     }
 }
 

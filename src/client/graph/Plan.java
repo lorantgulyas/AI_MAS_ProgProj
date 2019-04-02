@@ -93,7 +93,6 @@ public class Plan {
     }
 
     public ArrayList<Plan> getChildren(int agentID, HashSet<Timestamp> constraints) {
-
         ArrayList<Plan> children = new ArrayList<>();
         Agent agent = null;
         int agentIndex = -1;
@@ -120,9 +119,11 @@ public class Plan {
 
         for (Command c : Command.EVERY) {
             if (c.actionType == Command.Type.NoOp) {
-                Action noOpAction = new Action(Command.NoOp, new Timestamp[] { agentTimestamp });
-                Plan noOpPlan = new Plan(this.state, this, this.time + 1, noOpAction);
-                children.add(noOpPlan);
+                if (!constraints.contains(agentTimestamp)) {
+                    Action noOpAction = new Action(Command.NoOp, new Timestamp[] { agentTimestamp });
+                    Plan noOpPlan = new Plan(this.state, this, this.time + 1, noOpAction);
+                    children.add(noOpPlan);
+                }
                 continue;
             }
 
@@ -135,7 +136,7 @@ public class Plan {
             //    continue;
             //}
 
-            if (constraints.contains(agentTimestamp) && constraints.contains(newAgentTimestamp)) {
+            if (constraints.contains(agentTimestamp) || constraints.contains(newAgentTimestamp)) {
                 continue;
             }
 
@@ -194,18 +195,19 @@ public class Plan {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
+        if (this == obj)
+            return true;
+        if (obj == null)
             return false;
-        }
-        if (obj.getClass() != this.getClass()) {
+        if (obj.getClass() != this.getClass())
             return false;
-        }
-        Plan plan = (Plan) obj;
-        return plan.getState().equals(this.state);
+        Plan other = (Plan) obj;
+        return other.time == this.time
+                && other.getState().equals(this.state);
     }
 
     @Override
     public int hashCode() {
-        return this.state.hashCode();
+        return this.time * this.state.hashCode();
     }
 }

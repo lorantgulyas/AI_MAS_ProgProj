@@ -22,33 +22,42 @@ public class CooperativeAStar extends AStrategy {
         this.reservedCells = new HashSet<>();
     }
 
-    public Command[][] plan(State initialState) {
+    private ArrayList<Command[]> makePlans(State initialState) {
         ArrayList<Command[]> plans = new ArrayList<>();
         Agent[] agents = initialState.getAgents();
         for (Agent agent : agents) {
             Plan root = new Plan(initialState);
             AStar astar = new AStar(agent.getId(), this.heuristic, root, this.reservedCells);
             Action[] plan = astar.plan();
-            ArrayList<Command> commands = new ArrayList<>() ;
-            for (Action action : plan) {
-                commands.add(action.getCommand());
-                Timestamp[] timestamps = action.getTimestamps();
-                for (Timestamp t : timestamps) {
-                    this.reservedCells.add(t);
-                }
+            ArrayList<Command> commands = new ArrayList<>();
+            // a plan may be null if no solution could be found for this agent
+            if (plan != null) {
+                for (Action action : plan) {
+                    commands.add(action.getCommand());
+                    Timestamp[] timestamps = action.getTimestamps();
+                    for (Timestamp t : timestamps) {
+                        this.reservedCells.add(t);
+                    }
+                };
             }
             plans.add(commands.toArray(new Command[0]));
         }
+        return plans;
+    }
 
-        // find longest plan
+    private int findMaxPlanLength(ArrayList<Command[]> plans) {
         int maxLength = Integer.MIN_VALUE;
         for (Command[] plan : plans) {
             if (maxLength < plan.length) {
                 maxLength = plan.length;
             }
         }
+        return maxLength;
+    }
 
+    private Command[][] extendPlans(ArrayList<Command[]> plans) {
         // extend plans with NoOps
+        int maxLength = findMaxPlanLength(plans);
         ArrayList<Command[]> jointActions = new ArrayList<>();
         for (int i = 0; i < maxLength; i++) {
             ArrayList<Command> jointAction = new ArrayList<>();
@@ -64,14 +73,18 @@ public class CooperativeAStar extends AStrategy {
         return jointActions.toArray(new Command[0][0]);
     }
 
+    public Command[][] plan(State initialState) {
+        ArrayList<Command[]> plans = this.makePlans(initialState);
+        return this.extendPlans(plans);
+    }
+
     @Override
     public String toString() {
         return "Cooperative A*";
     }
 
-    static class AStar {
+    class AStar {
         private int agentId;
-        private AHeuristic heuristic;
         private HashSet<Plan> explored;
         private PriorityQueue<Plan> frontier;
         private HashSet<Plan> frontierSet;
@@ -80,37 +93,36 @@ public class CooperativeAStar extends AStrategy {
         public AStar(int agentId, AHeuristic heuristic, Plan plan, HashSet<Timestamp> reservedCells) {
             this.agentId = agentId;
             this.explored = new HashSet<>();
-            this.heuristic = heuristic;
             this.frontier = new PriorityQueue<Plan>(heuristic);
             this.frontierSet = new HashSet<>();
             this.reservedCells = reservedCells;
             this.addToFrontier(plan);
         }
 
-        public Plan getAndRemoveLeaf() {
+        private Plan getAndRemoveLeaf() {
             Plan plan = frontier.poll();
             frontierSet.remove(plan);
             return plan;
         }
 
-        public void addToExplored(Plan n) {
+        private void addToExplored(Plan n) {
             this.explored.add(n);
         }
 
-        public void addToFrontier(Plan n) {
+        private void addToFrontier(Plan n) {
             frontier.add(n);
             frontierSet.add(n);
         }
 
-        public boolean isExplored(Plan n) {
+        private boolean isExplored(Plan n) {
             return this.explored.contains(n);
         }
 
-        public boolean frontierIsEmpty() {
+        private boolean frontierIsEmpty() {
             return frontier.isEmpty();
         }
 
-        public boolean inFrontier(Plan n) {
+        private boolean inFrontier(Plan n) {
             return frontierSet.contains(n);
         }
 
@@ -131,10 +143,10 @@ public class CooperativeAStar extends AStrategy {
                 }
 
                 this.addToExplored(leaf);
-                for (Plan n : leaf.getChildren(this.agentId, this.reservedCells)) {
-                    if (!this.isExplored(n) && !this.inFrontier(n)) {
-                        this.addToFrontier(n);
-                        //System.err.println(n.getAction().getCommand());
+                for (Plan node : leaf.getChildren(this.agentId, this.reservedCells)) {
+                    if (!this.isExplored(node) && !this.inFrontier(node)) {
+                        this.addToFrontier(node);
+                        //System.err.println(node.getAction().getCommand());
                     }
                 }
             }

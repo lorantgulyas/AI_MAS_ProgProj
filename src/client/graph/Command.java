@@ -102,14 +102,22 @@ public class Command {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
+        if (this == obj)
+            return true;
+        if (obj == null)
             return false;
-        }
-        if (obj.getClass() != this.getClass()) {
+        if (obj.getClass() != this.getClass())
             return false;
+        Command other = (Command) obj;
+        if (this.actionType != other.actionType)
+            return false;
+        switch (this.actionType) {
+            case Move: return this.dir1 == other.dir1;
+            case Push:
+            case Pull: return this.dir1 == other.dir2 && this.dir2 == other.dir2;
+            case NoOp: return true;
+            default: return false;
         }
-        Command command = (Command) obj;
-        return this.actionType == command.actionType && this.dir1 == command.dir1 && this.dir2 == command.dir2;
     }
 
     @Override

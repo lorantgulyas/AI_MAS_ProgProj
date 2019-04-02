@@ -20,14 +20,14 @@ public class Action {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
+        if (this == obj)
+            return true;
+        if (obj == null)
             return false;
-        }
-        if (obj.getClass() != this.getClass()) {
+        if (obj.getClass() != this.getClass())
             return false;
-        }
-        Action action = (Action) obj;
-        return action.getCommand().equals(this.command);
+        Action other = (Action) obj;
+        return other.getCommand().equals(this.command);
     }
 
     @Override
