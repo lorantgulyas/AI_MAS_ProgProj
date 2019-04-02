@@ -11,6 +11,6 @@ public abstract class AStrategy {
         this.heuristic = heuristic;
     }
 
-    public abstract Command[][] plan(AState initialState);
+    public abstract Command[][] plan(State initialState);
 
 }

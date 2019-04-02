@@ -1,6 +1,7 @@
 package client;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 
 public class Plan {
@@ -9,6 +10,13 @@ public class Plan {
     private Plan parent;
     private int time;
     private Action action;
+
+    public Plan(State initialState) {
+        this.state = initialState;
+        this.parent = null;
+        this.time = 0;
+        this.action = null;
+    }
 
     public Plan(State state, Plan parent, int time, Action action) {
         this.state = state;
@@ -50,6 +58,29 @@ public class Plan {
         Action boxAction = new Action(command, timestamps);
         Plan boxPlan = new Plan(boxState, this, this.time + 1, boxAction);
         return boxPlan;
+    }
+
+    public Action getAction() {
+        return action;
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    public boolean isInitialState() {
+        return this.parent == null;
+    }
+
+    public Action[] extract() {
+        Plan plan = this;
+        ArrayList<Action> commands = new ArrayList<>();
+        while (!plan.isInitialState()) {
+            commands.add(plan.getAction());
+            plan = plan.parent;
+        }
+        Collections.reverse(commands);
+        return (Action[]) commands.toArray();
     }
 
     public ArrayList<Plan> getChildren(int agentID, HashSet<Timestamp> constraints) {
