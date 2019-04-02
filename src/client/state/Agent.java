@@ -1,5 +1,6 @@
 package client.state;
 
+// TODO: add color to agent
 public class Agent {
     private int id;
     private Color color;

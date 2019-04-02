@@ -92,6 +92,8 @@ public class Plan {
         return actions.toArray(new Action[0]);
     }
 
+    // TODO: make this method much nicer
+    //       eg: split it into more methods
     public ArrayList<Plan> getChildren(int agentID, HashSet<Timestamp> constraints) {
         ArrayList<Plan> children = new ArrayList<>();
         Agent agent = null;
