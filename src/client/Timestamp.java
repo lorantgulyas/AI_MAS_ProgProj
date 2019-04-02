@@ -10,6 +10,14 @@ public class Timestamp {
         this.time = time;
     }
 
+    public Position getPosition() {
+        return position;
+    }
+
+    public int getTime() {
+        return time;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {

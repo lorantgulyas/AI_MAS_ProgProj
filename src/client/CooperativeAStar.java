@@ -17,16 +17,20 @@ public class CooperativeAStar extends AStrategy {
         this.reservedCells = new HashSet<>();
     }
 
-    public Command[][] plan(AState initialState) {
+    public Command[][] plan(State initialState) {
         ArrayList<Command[]> plans = new ArrayList<>();
         Agent[] agents = initialState.getAgents();
         for (Agent agent : agents) {
-            AStar astar = new AStar(this.heuristic, initialState, this.reservedCells);
+            Plan root = new Plan(initialState);
+            AStar astar = new AStar(agent.getId(), this.heuristic, root, this.reservedCells);
             Action[] plan = astar.plan();
             ArrayList<Command> commands = new ArrayList<>() ;
             for (Action action : plan) {
                 commands.add(action.getCommand());
-                this.reservedCells.add(action.getTimestamp());
+                Timestamp[] timestamps = action.getTimestamps();
+                for (Timestamp t : timestamps) {
+                    this.reservedCells.add(t);
+                }
             }
             plans.add((Command[]) commands.toArray());
         }
@@ -61,38 +65,39 @@ public class CooperativeAStar extends AStrategy {
     }
 
     static class AStar {
+        private int agentId;
         private AHeuristic heuristic;
-        private HashSet<AState> explored;
-        private PriorityQueue<AState> frontier;
-        private HashSet<AState> frontierSet;
+        private HashSet<Plan> explored;
+        private PriorityQueue<Plan> frontier;
+        private HashSet<Plan> frontierSet;
         private HashSet<Timestamp> reservedCells;
 
-        public AStar(AHeuristic heuristic, AState state, HashSet<Timestamp> reservedCells) {
-            super();
+        public AStar(int agentId, AHeuristic heuristic, Plan plan, HashSet<Timestamp> reservedCells) {
+            this.agentId = agentId;
             this.explored = new HashSet<>();
             this.heuristic = heuristic;
-            this.frontier = new PriorityQueue<AState>();
+            this.frontier = new PriorityQueue<Plan>();
             this.frontierSet = new HashSet<>();
             this.reservedCells = reservedCells;
-            this.addToFrontier(state);
+            this.addToFrontier(plan);
         }
 
-        public AState getAndRemoveLeaf() {
-            AState n = frontier.poll();
-            frontierSet.remove(n);
-            return n;
+        public Plan getAndRemoveLeaf() {
+            Plan plan = frontier.poll();
+            frontierSet.remove(plan);
+            return plan;
         }
 
-        public void addToExplored(AState n) {
+        public void addToExplored(Plan n) {
             this.explored.add(n);
         }
 
-        public void addToFrontier(AState n) {
+        public void addToFrontier(Plan n) {
             frontier.add(n);
             frontierSet.add(n);
         }
 
-        public boolean isExplored(AState n) {
+        public boolean isExplored(Plan n) {
             return this.explored.contains(n);
         }
 
@@ -100,7 +105,7 @@ public class CooperativeAStar extends AStrategy {
             return frontier.isEmpty();
         }
 
-        public boolean inFrontier(AState n) {
+        public boolean inFrontier(Plan n) {
             return frontierSet.contains(n);
         }
 
@@ -110,14 +115,14 @@ public class CooperativeAStar extends AStrategy {
                     return null;
                 }
 
-                AState leafState = this.getAndRemoveLeaf();
+                Plan leaf = this.getAndRemoveLeaf();
 
-                if (leafState.isGoalState()) {
-                    return leafState.extractPlan();
+                if (leaf.getState().isGoalState()) {
+                    return leaf.extract();
                 }
 
-                this.addToExplored(leafState);
-                for (AState n : leafState.getExpandedStates()) {
+                this.addToExplored(leaf);
+                for (Plan n : leaf.getChildren(this.agentId, this.reservedCells)) {
                     if (!this.isExplored(n) && !this.inFrontier(n)) {
                         this.addToFrontier(n);
                     }
