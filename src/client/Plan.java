@@ -1,6 +1,4 @@
-package client.heuristics;
-
-import client.*;
+package client;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,19 +28,28 @@ public class Plan {
         return -1;
     }
 
-    private Plan getNewBoxPlan(int agentID) {
+    private Plan getBoxPlan(int agentID, int agentIndex, Command command, Timestamp agentTimestamp, Timestamp newAgentTimestamp, Timestamp boxTimestamp, Timestamp newBoxTimestamp) {
         Agent[] agents = this.state.getAgents();
         Box[] boxes = this.state.getBoxes();
-        Agent[] pullAgents = agents.clone();
-        pullAgents[agentIndex] = new Agent(agentID, agent.getColor(), newAgentPos);
+
+        Position boxPos = boxTimestamp.getPosition();
+        Position newBoxPos = newBoxTimestamp.getPosition();
+        Position newAgentPos = newAgentTimestamp.getPosition();
+
+        Agent agent = agents[agentIndex];
+        Agent[] boxAgents = agents.clone();
+        boxAgents[agentIndex] = new Agent(agentID, agent.getColor(), newAgentPos);
+
         int boxIndex = this.findBox(boxPos);
         Box box = boxes[boxIndex];
         Box[] pullBoxes = boxes.clone();
-        pullBoxes[boxIndex] = new Box(box.getLetter(), box.getColor(), agentPos);
-        State pullState = new State(pullAgents, pullBoxes, goals);
-        Action pullAction = new Action(c, new Timestamp[] { agentTimestamp, newAgentTimestamp, boxTimestamp });
-        Plan pullPlan = new Plan(pullState, this, this.time + 1, pullAction);
-        children.add(pullPlan);
+        boxes[boxIndex] = new Box(box.getLetter(), box.getColor(), newBoxPos);
+
+        State boxState = new State(boxAgents, pullBoxes, this.state.getGoals());
+        Timestamp[] timestamps = new Timestamp[] { agentTimestamp, boxTimestamp, newBoxTimestamp, newAgentTimestamp };
+        Action boxAction = new Action(command, timestamps);
+        Plan boxPlan = new Plan(boxState, this, this.time + 1, boxAction);
+        return boxPlan;
     }
 
     public ArrayList<Plan> getChildren(int agentID, HashSet<Timestamp> constraints) {
@@ -106,15 +113,7 @@ public class Plan {
                     Timestamp boxTimestamp = new Timestamp(this.time + 1, boxPos);
 
                     if (!constraints.contains(boxTimestamp) && this.state.boxAt(boxPos)) {
-                        Agent[] pullAgents = agents.clone();
-                        pullAgents[agentIndex] = new Agent(agentID, agent.getColor(), newAgentPos);
-                        int boxIndex = this.findBox(boxPos);
-                        Box box = boxes[boxIndex];
-                        Box[] pullBoxes = boxes.clone();
-                        pullBoxes[boxIndex] = new Box(box.getLetter(), box.getColor(), agentPos);
-                        State pullState = new State(pullAgents, pullBoxes, goals);
-                        Action pullAction = new Action(c, new Timestamp[] { agentTimestamp, newAgentTimestamp, boxTimestamp });
-                        Plan pullPlan = new Plan(pullState, this, this.time + 1, pullAction);
+                        Plan pullPlan = this.getBoxPlan(agentID, agentIndex, c, agentTimestamp, newAgentTimestamp, boxTimestamp, agentTimestamp);
                         children.add(pullPlan);
                     }
                     break;
@@ -129,15 +128,7 @@ public class Plan {
                     }
 
                     if (this.state.isFree((newBoxPos)) && !constraints.contains(newBoxTimestamp) && this.state.boxAt(newAgentPos)) {
-                        Agent[] pushAgents = agents.clone();
-                        pushAgents[agentIndex] = new Agent(agentID, agent.getColor(), newAgentPos);
-                        int boxIndex = this.findBox(newAgentPos);
-                        Box box = boxes[boxIndex];
-                        Box[] pushBoxes = boxes.clone();
-                        pushBoxes[boxIndex] = new Box(box.getLetter(), box.getColor(), newBoxPos);
-                        State pushState = new State(pushAgents, pushBoxes, goals);
-                        Action pushAction = new Action(c, new Timestamp[] { agentTimestamp, newAgentTimestamp, newBoxTimestamp });
-                        Plan pushPlan = new Plan(pushState, this, this.time + 1, pushAction);
+                        Plan pushPlan = this.getBoxPlan(agentID, agentIndex, c, agentTimestamp, newAgentTimestamp, newAgentTimestamp, newBoxTimestamp);
                         children.add(pushPlan);
                     }
                     break;
