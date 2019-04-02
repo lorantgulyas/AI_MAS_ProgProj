@@ -12,7 +12,7 @@ class ServerIOTest {
 
     @BeforeAll
     static void setUp() throws FileNotFoundException {
-        in = new FileReader("./MAExample.lvl");
+        in = new FileReader("src/levels/MAExample.lvl");
     }
 
     @AfterAll
