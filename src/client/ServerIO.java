@@ -14,14 +14,18 @@ public class ServerIO extends AServerIO {
 
     public ServerIO(String clientName) {
         super(clientName);
+        reader = new BufferedReader(new InputStreamReader(System.in));
     }
 
     public State readState() throws Exception {
-        reader = new BufferedReader(new InputStreamReader(System.in));
-
         // send client name
         System.out.println(name);
 
+        // parse file content
+        return parseState(reader);
+    }
+
+    public static State parseState(BufferedReader reader) throws Exception {
         // read dummy lines
         for (int i = 0; i < 5; i++)
             reader.readLine();
