@@ -1,12 +1,10 @@
 package client;
 
-import client.definitions.AState;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class State extends AState {
+public class State {
     private static boolean[][] walls;
     private static int ROW_COUNT;
     private static int COL_COUNT;

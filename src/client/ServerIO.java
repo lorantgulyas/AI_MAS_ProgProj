@@ -1,7 +1,5 @@
 package client;
 
-import client.definitions.AServerIO;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -9,12 +7,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
-public class ServerIO extends AServerIO {
+public class ServerIO {
     private BufferedReader reader;
+    private String name;
 
     public ServerIO(String clientName) {
-        super(clientName);
-        reader = new BufferedReader(new InputStreamReader(System.in));
+        this.name = clientName;
+        this.reader = new BufferedReader(new InputStreamReader(System.in));
     }
 
     public State readState() throws Exception {

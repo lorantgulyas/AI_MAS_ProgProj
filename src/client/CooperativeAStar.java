@@ -1,7 +1,6 @@
 package client;
 
 import client.definitions.AHeuristic;
-import client.definitions.AState;
 import client.definitions.AStrategy;
 
 import java.util.ArrayList;

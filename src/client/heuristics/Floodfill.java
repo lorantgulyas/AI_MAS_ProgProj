@@ -4,7 +4,6 @@ import client.NotImplementedException;
 import client.Position;
 import client.State;
 import client.definitions.AHeuristic;
-import client.definitions.AState;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
