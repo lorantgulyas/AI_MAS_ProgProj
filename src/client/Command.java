@@ -99,4 +99,27 @@ public class Command {
         else
             return String.format("%s(%s,%s)", this.actionType.toString(), this.dir1.toString(), this.dir2.toString());
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj.getClass() != this.getClass()) {
+            return false;
+        }
+        Command command = (Command) obj;
+        return this.actionType == command.actionType && this.dir1 == command.dir1 && this.dir2 == command.dir2;
+    }
+
+    @Override
+    public int hashCode() {
+        switch (this.actionType) {
+            case Move: return 1;
+            case Push: return 2;
+            case Pull: return 3;
+            case NoOp: return 4;
+            default: return 5;
+        }
+    }
 }

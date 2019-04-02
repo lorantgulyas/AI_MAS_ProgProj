@@ -17,4 +17,21 @@ public class Action {
     public Timestamp[] getTimestamps() {
         return timestamps;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj.getClass() != this.getClass()) {
+            return false;
+        }
+        Action action = (Action) obj;
+        return action.getCommand().equals(this.command);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.command.hashCode() * this.timestamps.length;
+    }
 }

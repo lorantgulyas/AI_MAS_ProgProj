@@ -112,7 +112,7 @@ public class CooperativeAStar extends AStrategy {
         public Action[] plan() {
             int i = 0;
             while (true) {
-                if (i++ % 10000 == 0) {
+                if (i++ % 1000 == 0) {
                     System.err.println(i);
                 }
                 if (this.frontierIsEmpty()) {

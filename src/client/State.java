@@ -3,6 +3,7 @@ package client;
 import client.definitions.AState;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class State extends AState {
@@ -138,5 +139,23 @@ public class State extends AState {
             s.append("\n");
         }
         return s.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj.getClass() != this.getClass()) {
+            return false;
+        }
+        State state = (State) obj;
+        return Arrays.deepEquals(this.agents, state.agents) && Arrays.deepEquals(this.boxes, state.boxes);
+    }
+
+    @Override
+    public int hashCode() {
+        // TODO: change this!
+        return 10;
     }
 }

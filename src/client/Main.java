@@ -7,6 +7,9 @@ import client.definitions.AState;
 import client.definitions.AStrategy;
 import client.heuristics.Manhattan;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+
 public class Main {
     public static void main(String[] args) throws Exception{
         // read config
@@ -16,6 +19,10 @@ public class Main {
         // read state and setup strategy/heuristic
         ServerIO serverIO = new ServerIO("soulman");
         State initialState = serverIO.readState();
+        //FileReader fr = new FileReader("./SASimple3.lvl");
+        //BufferedReader br = new BufferedReader(fr);
+        //State initialState = ServerIO.parseState(br);
+
         AHeuristic heuristic = Main.getHeuristic(config, initialState);
         AStrategy strategy = Main.getStrategy(config, heuristic);
 

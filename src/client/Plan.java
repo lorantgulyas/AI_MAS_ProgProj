@@ -109,6 +109,10 @@ public class Plan {
             }
         }
 
+        if (agent == null) {
+            return children;
+        }
+
         Position agentPos = agent.getPosition();
         int agentX = agentPos.getCol();
         int agentY = agentPos.getRow();
@@ -127,9 +131,9 @@ public class Plan {
             Position newAgentPos = new Position(newAgentX, newAgentY);
             Timestamp newAgentTimestamp = new Timestamp(this.time + 1, newAgentPos);
 
-            if (newAgentX < 0 || newAgentY < 0 || newAgentX > State.getColCount() - 1 || newAgentY > State.getRowCount() - 1) {
-                continue;
-            }
+            //if (newAgentX < 0 || newAgentY < 0 || newAgentX > State.getColCount() - 1 || newAgentY > State.getRowCount() - 1) {
+            //    continue;
+            //}
 
             if (constraints.contains(agentTimestamp) && constraints.contains(newAgentTimestamp)) {
                 continue;
@@ -152,7 +156,9 @@ public class Plan {
                     Position boxPos = new Position(boxX, boxY);
                     Timestamp boxTimestamp = new Timestamp(this.time + 1, boxPos);
 
-                    if (!constraints.contains(boxTimestamp) && this.state.boxAt(boxPos) && this.state.isFree(newAgentPos)) {
+                    if (!constraints.contains(boxTimestamp)
+                            && this.state.boxAt(boxPos)
+                            && this.state.isFree(newAgentPos)) {
                         Box pullBox = this.findBox(boxPos);
                         if (pullBox.getColor() == agent.getColor()) {
                             Plan pullPlan = this.getBoxPlan(agentID, agentIndex, c, agentTimestamp, newAgentTimestamp, boxTimestamp, agentTimestamp);
@@ -170,7 +176,9 @@ public class Plan {
                         break;
                     }
 
-                    if (this.state.isFree((newBoxPos)) && !constraints.contains(newBoxTimestamp) && this.state.boxAt(newAgentPos)) {
+                    if (this.state.isFree(newBoxPos)
+                            && !constraints.contains(newBoxTimestamp)
+                            && this.state.boxAt(newAgentPos)) {
                         Box pushBox = this.findBox(newAgentPos);
                         if (pushBox.getColor() == agent.getColor()) {
                             Plan pushPlan = this.getBoxPlan(agentID, agentIndex, c, agentTimestamp, newAgentTimestamp, newAgentTimestamp, newBoxTimestamp);
@@ -182,5 +190,28 @@ public class Plan {
         }
 
         return children;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj.getClass() != this.getClass()) {
+            return false;
+        }
+        Plan plan = (Plan) obj;
+        return plan.getAction().equals(this.action)
+                && plan.getState().equals(this.state)
+                && plan.g() == this.time;
+    }
+
+    @Override
+    public int hashCode() {
+        if (this.action == null) {
+            return this.time + this.state.hashCode();
+        } else {
+            return this.time + this.action.hashCode() + this.state.hashCode();
+        }
     }
 }
