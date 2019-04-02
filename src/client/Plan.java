@@ -201,9 +201,7 @@ public class Plan {
             return false;
         }
         Plan plan = (Plan) obj;
-        return plan.getAction().equals(this.action)
-                && plan.getState().equals(this.state)
-                && plan.g() == this.time;
+        return plan.getState().equals(this.state);
     }
 
     @Override

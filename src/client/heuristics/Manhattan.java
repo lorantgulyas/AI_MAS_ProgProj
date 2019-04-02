@@ -2,18 +2,17 @@ package client.heuristics;
 
 import client.*;
 import client.definitions.AHeuristic;
-import client.definitions.AState;
 
 import java.lang.Math;
 
 public class Manhattan extends AHeuristic {
 
-    public Manhattan(AState initialState) {
+    public Manhattan(State initialState) {
         super(initialState);
     }
 
     @Override
-    public int h(AState state) {
+    public int h(State state) {
         int h = 0;
         Agent[] agents = state.getAgents();
         Box[] boxes = state.getBoxes();

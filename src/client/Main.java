@@ -3,9 +3,9 @@ package client;
 import client.config.Config;
 import client.config.ConfigParser;
 import client.definitions.AHeuristic;
-import client.definitions.AState;
 import client.definitions.AStrategy;
 import client.heuristics.Manhattan;
+import client.heuristics.SingleTasker;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -50,9 +50,10 @@ public class Main {
         }
     }
 
-    static AHeuristic getHeuristic(Config config, AState initialState) throws Exception {
+    static AHeuristic getHeuristic(Config config, State initialState) throws Exception {
         switch (config.getHeuristic()) {
             case MANHATTAN: return new Manhattan(initialState);
+            case SINGLE_TASKER: return new SingleTasker(initialState);
             default: throw new Exception();
         }
     }

@@ -1,12 +1,13 @@
 package client.definitions;
 
 import client.Plan;
+import client.State;
 
 import java.util.Comparator;
 
 public abstract class AHeuristic implements Comparator<Plan> {
 
-    public AHeuristic(AState initialState) {
+    public AHeuristic(State initialState) {
       // subclasses should do preprocessing here
     }
 
@@ -19,5 +20,5 @@ public abstract class AHeuristic implements Comparator<Plan> {
         return p.g() + this.h(p.getState());
     }
 
-    public abstract int h(AState state);
+    public abstract int h(State state);
 }

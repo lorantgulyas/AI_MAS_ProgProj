@@ -95,7 +95,7 @@ public class Floodfill extends AHeuristic {
     }
 
     @Override
-    public int h(AState state) {
+    public int h(State state) {
         throw new NotImplementedException();
     }
 

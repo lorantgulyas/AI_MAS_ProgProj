@@ -13,6 +13,7 @@ The following keys are accepted together with their accepted values:
     - cooperative_astar
 * heuristic
     - manhattan
+    - single-tasker
 
 ### Example configuration file
 ```
