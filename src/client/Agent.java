@@ -37,4 +37,22 @@ public class Agent {
     public String toString() {
         return "id: " + id + ", color: " + color + ", position: " + position;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (this.getClass() != obj.getClass())
+            return false;
+        Agent other = (Agent) obj;
+        if (this.id != other.id)
+            return false;
+        if (this.color != other.color)
+            return false;
+        if (this.position != other.position)
+            return false;
+        return true;
+    }
 }

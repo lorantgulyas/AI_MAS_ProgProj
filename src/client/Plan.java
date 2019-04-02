@@ -204,10 +204,6 @@ public class Plan {
 
     @Override
     public int hashCode() {
-        if (this.action == null) {
-            return this.time + this.state.hashCode();
-        } else {
-            return this.time + this.action.hashCode() + this.state.hashCode();
-        }
+        return this.state.hashCode();
     }
 }
