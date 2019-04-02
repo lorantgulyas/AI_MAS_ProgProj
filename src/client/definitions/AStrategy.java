@@ -1,7 +1,7 @@
 package client.definitions;
 
 import client.Command;
-import client.State;
+import client.state.State;
 
 public abstract class AStrategy {
 

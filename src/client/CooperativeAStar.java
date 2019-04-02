@@ -2,6 +2,8 @@ package client;
 
 import client.definitions.AHeuristic;
 import client.definitions.AStrategy;
+import client.state.Agent;
+import client.state.State;
 
 import java.util.ArrayList;
 import java.util.HashSet;

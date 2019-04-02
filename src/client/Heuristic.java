@@ -1,10 +1,10 @@
 package client;
 
+import client.state.State;
+
 import java.util.Comparator;
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.ArrayDeque;
-import java.util.Arrays;
 
 public abstract class Heuristic implements Comparator<State> {
 

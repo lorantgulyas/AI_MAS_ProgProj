@@ -1,5 +1,7 @@
 package client;
 
+import client.state.*;
+
 import java.util.*;
 
 public class Plan {

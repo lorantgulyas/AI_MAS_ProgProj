@@ -1,5 +1,7 @@
 package client;
 
+import client.state.Position;
+
 public class Timestamp {
 
     private Position position;

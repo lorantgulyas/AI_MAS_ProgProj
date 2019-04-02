@@ -1,4 +1,4 @@
-package client;
+package client.state;
 
 public class Agent {
     private int id;

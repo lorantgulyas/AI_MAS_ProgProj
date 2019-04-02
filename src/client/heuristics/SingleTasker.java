@@ -1,7 +1,7 @@
 package client.heuristics;
 
-import client.*;
 import client.definitions.AHeuristic;
+import client.state.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;

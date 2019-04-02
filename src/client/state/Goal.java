@@ -1,4 +1,4 @@
-package client;
+package client.state;
 
 public class Goal {
     private char letter;

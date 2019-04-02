@@ -6,9 +6,7 @@ import client.definitions.AHeuristic;
 import client.definitions.AStrategy;
 import client.heuristics.Manhattan;
 import client.heuristics.SingleTasker;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
+import client.state.State;
 
 public class Main {
     public static void main(String[] args) throws Exception{

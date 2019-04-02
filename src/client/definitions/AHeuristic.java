@@ -1,7 +1,7 @@
 package client.definitions;
 
 import client.Plan;
-import client.State;
+import client.state.State;
 
 import java.util.Comparator;
 

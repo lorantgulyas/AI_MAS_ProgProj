@@ -1,8 +1,8 @@
 package client.heuristics;
 
 import client.NotImplementedException;
-import client.Position;
-import client.State;
+import client.state.Position;
+import client.state.State;
 import client.definitions.AHeuristic;
 
 import java.util.ArrayDeque;

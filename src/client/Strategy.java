@@ -1,5 +1,7 @@
 package client;
 
+import client.state.State;
+
 import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Stack;
