@@ -1,6 +1,6 @@
 package client.definitions;
 
-import client.Command;
+import client.graph.Command;
 import client.state.State;
 
 public abstract class AStrategy {

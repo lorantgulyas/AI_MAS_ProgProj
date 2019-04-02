@@ -1,6 +1,6 @@
 package client.definitions;
 
-import client.Plan;
+import client.graph.Plan;
 import client.state.State;
 
 import java.util.Comparator;

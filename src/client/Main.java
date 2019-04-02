@@ -4,9 +4,11 @@ import client.config.Config;
 import client.config.ConfigParser;
 import client.definitions.AHeuristic;
 import client.definitions.AStrategy;
+import client.graph.Command;
 import client.heuristics.Manhattan;
 import client.heuristics.SingleTasker;
 import client.state.State;
+import client.strategies.CooperativeAStar;
 
 public class Main {
     public static void main(String[] args) throws Exception{

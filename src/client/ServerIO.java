@@ -1,5 +1,6 @@
 package client;
 
+import client.graph.Command;
 import client.state.*;
 
 import java.io.BufferedReader;

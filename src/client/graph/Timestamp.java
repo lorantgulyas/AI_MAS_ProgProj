@@ -1,4 +1,4 @@
-package client;
+package client.graph;
 
 import client.state.Position;
 

@@ -1,5 +1,9 @@
-package client;
+package client.strategies;
 
+import client.graph.Action;
+import client.graph.Command;
+import client.graph.Plan;
+import client.graph.Timestamp;
 import client.definitions.AHeuristic;
 import client.definitions.AStrategy;
 import client.state.Agent;
