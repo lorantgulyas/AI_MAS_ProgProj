@@ -3,18 +3,18 @@ package client;
 public class Action {
 
     private Command command;
-    private Timestamp timestamp;
+    private Timestamp[] timestamps;
 
-    public Action(Command command, Timestamp timestamp) {
+    public Action(Command command, Timestamp[] timestamps) {
         this.command = command;
-        this.timestamp = timestamp;
+        this.timestamps = timestamps;
     }
 
     public Command getCommand() {
         return command;
     }
 
-    public Timestamp getTimestamp() {
-        return timestamp;
+    public Timestamp[] getTimestamps() {
+        return timestamps;
     }
 }
