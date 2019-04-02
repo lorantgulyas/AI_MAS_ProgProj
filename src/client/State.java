@@ -2,6 +2,8 @@ package client;
 
 import client.definitions.AState;
 
+import java.util.HashMap;
+
 public class State extends AState {
     private static boolean[][] walls;
     private static int ROW_COUNT;
@@ -9,11 +11,21 @@ public class State extends AState {
     private Agent[] agents;
     private Box[] boxes;
     private Goal[] goals;
+    private HashMap<Position, Agent> agentMap;
+    private HashMap<Position, Box> boxMap;
 
     public State(Agent[] agents, Box[] boxes, Goal[] goals) {
         this.agents = agents;
         this.boxes = boxes;
         this.goals = goals;
+        agentMap = new HashMap<>();
+        for (Agent agent : agents) {
+            agentMap.put(agent.getPosition(), agent);
+        }
+        boxMap = new HashMap<>();
+        for (Box box : boxes) {
+            boxMap.put(box.getPosition(), box);
+        }
     }
 
     public static void setLevel(boolean[][] initialWalls,
@@ -36,19 +48,21 @@ public class State extends AState {
     }
 
     public boolean isFree(Position position) {
-        throw new NotImplementedException();
+        return !walls[position.getCol()][position.getRow()] &&
+                !agentMap.containsKey(position) &&
+                !boxMap.containsKey(position);
     }
 
     public Agent[] getAgents() {
-        throw new NotImplementedException();
+        return agents;
     }
 
     public Box[] getBoxes() {
-        throw new NotImplementedException();
+        return boxes;
     }
 
     public Goal[] getGoals() {
-        throw new NotImplementedException();
+        return goals;
     }
 
     public Command[] extractPlan() {
@@ -56,7 +70,13 @@ public class State extends AState {
     }
 
     public boolean isGoalState() {
-        throw new NotImplementedException();
+        for (Goal goal: goals) {
+            Box box = boxMap.getOrDefault(goal.getPosition(),null);
+            if (box == null || box.getLetter() != goal.getLetter()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public AState[] getExpandedStates() {

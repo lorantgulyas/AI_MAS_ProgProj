@@ -44,6 +44,7 @@ public class Position {
 
     @Override
     public int hashCode() {
-        return this.row + this.col;
+        // works only for 50by50 maps
+        return this.row * 100 + this.col;
     }
 }
