@@ -65,6 +65,7 @@ public class SingleTasker extends AHeuristic {
             return 0;
         }
         ArrayList<Box> boxes = this.getUnfinishedBoxes(n);
+        // TODO: enable multi agent support!
         Agent agent = n.getAgents()[0];
         int sum = 0;
         int minAgent2BoxDistance = Integer.MAX_VALUE;
