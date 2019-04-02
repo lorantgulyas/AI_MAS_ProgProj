@@ -83,6 +83,8 @@ public class State extends AState {
         throw new NotImplementedException();
     }
 
+    public boolean boxAt(Position position) { throw new NotImplementedException();}
+
     @Override
     public String toString() {
         StringBuilder s = new StringBuilder();
