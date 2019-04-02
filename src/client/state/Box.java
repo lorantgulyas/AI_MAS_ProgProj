@@ -11,12 +11,6 @@ public class Box {
         this.position = position;
     }
 
-    public Box(char letter, Color color) {
-        this.letter = letter;
-        this.color = color;
-        this.position = null;
-    }
-
     public char getLetter() {
         return letter;
     }
@@ -27,10 +21,6 @@ public class Box {
 
     public Position getPosition() {
         return position;
-    }
-
-    public void setPosition(Position position) {
-        this.position = position;
     }
 
     @Override
@@ -47,12 +37,13 @@ public class Box {
         if (this.getClass() != obj.getClass())
             return false;
         Box other = (Box) obj;
-        if (this.letter != other.letter)
-            return false;
-        if (this.color != other.color)
-            return false;
-        if (this.position != other.position)
-            return false;
-        return true;
+        return this.letter == other.letter
+                && this.color == other.color
+                && this.position.equals(other.position);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.position.hashCode() * (this.color.ordinal() + 1);
     }
 }

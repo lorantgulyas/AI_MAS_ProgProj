@@ -11,12 +11,6 @@ public class Agent {
         this.position = position;
     }
 
-    public Agent (int id, Color color) {
-        this.id = id;
-        this.color = color;
-        this.position = null;
-    }
-
     public int getId() {
         return id;
     }
@@ -27,10 +21,6 @@ public class Agent {
 
     public Position getPosition() {
         return position;
-    }
-
-    public void setPosition(Position position) {
-        this.position = position;
     }
 
     @Override
@@ -47,12 +37,13 @@ public class Agent {
         if (this.getClass() != obj.getClass())
             return false;
         Agent other = (Agent) obj;
-        if (this.id != other.id)
-            return false;
-        if (this.color != other.color)
-            return false;
-        if (this.position != other.position)
-            return false;
-        return true;
+        return this.id == other.id
+                && this.color == other.color
+                && this.position.equals(other.position);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.position.hashCode() * (this.id + 1);
     }
 }

@@ -8,6 +8,7 @@ public class State {
     private static boolean[][] walls;
     private static int ROW_COUNT;
     private static int COL_COUNT;
+
     private Agent[] agents;
     private Box[] boxes;
     private Goal[] goals;
@@ -65,6 +66,7 @@ public class State {
         return goals;
     }
 
+    // TODO: improve this implementation
     public boolean agentIsDone(int agentID) {
         Agent agent = this.agents[agentID];
         ArrayList<Goal> agentGoals = new ArrayList<>();
@@ -92,6 +94,14 @@ public class State {
             }
         }
         return true;
+    }
+
+    public Agent getAgentAt(Position position) {
+        return this.agentMap.get(position);
+    }
+
+    public boolean agentAt(Position position) {
+        return this.agentMap.containsKey(position);
     }
 
     public Box getBoxAt(Position position) {
@@ -141,19 +151,27 @@ public class State {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
+        if (this == obj)
+            return true;
+        if (obj == null)
             return false;
-        }
-        if (obj.getClass() != this.getClass()) {
+        if (obj.getClass() != this.getClass())
             return false;
-        }
         State state = (State) obj;
-        return Arrays.deepEquals(this.agents, state.agents) && Arrays.deepEquals(this.boxes, state.boxes);
+        return Arrays.deepEquals(this.agents, state.agents)
+                && Arrays.deepEquals(this.boxes, state.boxes);
     }
 
     @Override
     public int hashCode() {
-        // TODO: change this!
-        return 10;
+        int a = 0;
+        for (Agent agent : this.agents) {
+            a += agent.hashCode();
+        }
+        int b = 0;
+        for (Box box : this.boxes) {
+            b += box.hashCode();
+        }
+        return a * b;
     }
 }

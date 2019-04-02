@@ -17,14 +17,6 @@ public class Position {
         return col;
     }
 
-    public void setRow(int row) {
-        this.row = row;
-    }
-
-    public void setCol(int col) {
-        this.col = col;
-    }
-
     @Override
     public String toString() {
         return "x: " + col + ", y: " + row;
@@ -32,19 +24,19 @@ public class Position {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
+        if (this == obj)
+            return true;
+        if (obj == null)
             return false;
-        }
-        if (this.getClass() != obj.getClass()) {
+        if (this.getClass() != obj.getClass())
             return false;
-        }
-        Position position = (Position) obj;
-        return this.row == position.getRow() && this.col == position.getCol();
+        Position other = (Position) obj;
+        return this.row == other.getRow()
+                && this.col == other.getCol();
     }
 
     @Override
     public int hashCode() {
-        // works only for 50by50 maps
-        return this.row * 100 + this.col;
+        return this.row + this.col;
     }
 }
