@@ -12,6 +12,7 @@ The following keys are accepted together with their accepted values:
 * strategy
     - cooperative_astar
 * heuristic
+    - floodfill
     - manhattan
     - single-tasker
 

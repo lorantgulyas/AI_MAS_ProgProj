@@ -5,26 +5,20 @@ import client.config.ConfigParser;
 import client.definitions.AHeuristic;
 import client.definitions.AStrategy;
 import client.graph.Command;
-import client.heuristics.Manhattan;
-import client.heuristics.SingleTasker;
 import client.state.State;
-import client.strategies.CooperativeAStar;
 
 public class Main {
-    public static void main(String[] args) throws Exception{
-        // read config
-        String configPath = args.length < 1 ? "src/configs/default.config" : args[0];
-        Config config = ConfigParser.readConfigFromFile(configPath);
-
-        // read state and setup strategy/heuristic
+    public static void main(String[] args) throws Exception {
+        // read state
         ServerIO serverIO = new ServerIO("soulman");
         State initialState = serverIO.readState();
-        //FileReader fr = new FileReader("./SASimple3.lvl");
-        //BufferedReader br = new BufferedReader(fr);
-        //State initialState = ServerIO.parseState(br);
 
-        AHeuristic heuristic = Main.getHeuristic(config, initialState);
-        AStrategy strategy = Main.getStrategy(config, heuristic);
+        // read config
+        String configPath = args.length < 1 ? "src/configs/default.config" : args[0];
+        Config config = ConfigParser.readConfigFromFile(configPath, initialState);
+
+        AHeuristic heuristic = config.getHeuristic();
+        AStrategy strategy = config.getStrategy();
 
         serverIO.sendComment("Using strategy: " + strategy.toString());
         serverIO.sendComment("Using heuristic: " + heuristic.toString());
@@ -47,21 +41,6 @@ public class Main {
                     throw new ServerRejectedJointActionException();
                 }
             }
-        }
-    }
-
-    static AHeuristic getHeuristic(Config config, State initialState) throws Exception {
-        switch (config.getHeuristic()) {
-            case MANHATTAN: return new Manhattan(initialState);
-            case SINGLE_TASKER: return new SingleTasker(initialState);
-            default: throw new Exception();
-        }
-    }
-
-    static AStrategy getStrategy(Config config, AHeuristic heuristic) throws Exception {
-        switch (config.getStrategy()) {
-            case COOPERATIVE_ASTAR: return new CooperativeAStar(heuristic);
-            default: throw new Exception();
         }
     }
 }

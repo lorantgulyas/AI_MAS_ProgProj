@@ -1,5 +1,8 @@
 package client.config;
 
+import client.definitions.AHeuristic;
+import client.definitions.AStrategy;
+import client.state.State;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -7,7 +10,7 @@ import java.util.HashMap;
 
 public class ConfigParser {
 
-    public static Config readConfig(String config) throws
+    public static Config readConfig(String config, State initialState) throws
             InvalidConfigException, UnknownHeuristicException, UnknownStrategyException {
         HashMap<String, String> entries = new HashMap<>();
         // strip all whitespace (except new lines)
@@ -23,13 +26,12 @@ public class ConfigParser {
             String value = keyValues[1];
             entries.put(key, value);
         }
-        return new Config(
-          Strategy.parseStrategy(entries.get("strategy")),
-          Heuristic.parseHeuristic(entries.get("heuristic"))
-        );
+        AHeuristic heuristic = Heuristic.parseHeuristic(entries.get("heuristic"), initialState);
+        AStrategy strategy = Strategy.parseStrategy(entries.get("strategy"), heuristic);
+        return new Config(strategy, heuristic);
     }
 
-    public static Config readConfigFromFile(String path) throws
+    public static Config readConfigFromFile(String path, State initialState) throws
             InvalidConfigException, IOException, UnknownHeuristicException, UnknownStrategyException {
         FileReader fr = new FileReader(path);
         BufferedReader br = new BufferedReader(fr);
@@ -39,6 +41,6 @@ public class ConfigParser {
             sb.append(line + "\n");
         }
         String config = sb.toString();
-        return ConfigParser.readConfig(config);
+        return ConfigParser.readConfig(config, initialState);
     }
 }

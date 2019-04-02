@@ -1,15 +1,18 @@
 package client.config;
 
-public enum Strategy {
+import client.definitions.AHeuristic;
+import client.definitions.AStrategy;
+import client.strategies.CooperativeAStar;
 
-    COOPERATIVE_ASTAR;
+public class Strategy {
 
-    public static Strategy parseStrategy(String strategy) throws UnknownStrategyException {
+    public static AStrategy parseStrategy(String strategy, AHeuristic heuristic) throws UnknownStrategyException {
         switch (strategy) {
             case "cooperative_astar":
-                return COOPERATIVE_ASTAR;
+                return new CooperativeAStar(heuristic);
             default:
                 throw new UnknownStrategyException();
         }
     }
+
 }

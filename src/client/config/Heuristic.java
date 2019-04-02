@@ -1,17 +1,24 @@
 package client.config;
 
-public enum Heuristic {
+import client.definitions.AHeuristic;
+import client.heuristics.Floodfill;
+import client.heuristics.Manhattan;
+import client.heuristics.SingleTasker;
+import client.state.State;
 
-    MANHATTAN, SINGLE_TASKER;
+public class Heuristic {
 
-    public static Heuristic parseHeuristic(String heuristic) throws UnknownHeuristicException {
+    public static AHeuristic parseHeuristic(String heuristic, State initialState) throws UnknownHeuristicException {
         switch (heuristic) {
+            case "floodfill":
+                return new Floodfill(initialState);
             case "manhattan":
-                return MANHATTAN;
+                return new Manhattan(initialState);
             case "single-tasker":
-                return SINGLE_TASKER;
+                return new SingleTasker(initialState);
             default:
                 throw new UnknownHeuristicException();
         }
     }
+
 }

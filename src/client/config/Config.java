@@ -1,23 +1,26 @@
 package client.config;
 
+import client.definitions.AHeuristic;
+import client.definitions.AStrategy;
+
 public class Config {
 
-    private Heuristic heuristic;
-    private Strategy strategy;
+    private AHeuristic heuristic;
+    private AStrategy strategy;
 
     public Config(
-            Strategy strategy,
-            Heuristic heuristic
+            AStrategy strategy,
+            AHeuristic heuristic
     ) {
         this.heuristic = heuristic;
         this.strategy = strategy;
     }
 
-    public Heuristic getHeuristic() {
+    public AHeuristic getHeuristic() {
         return heuristic;
     }
 
-    public Strategy getStrategy() {
+    public AStrategy getStrategy() {
         return strategy;
     }
 }
