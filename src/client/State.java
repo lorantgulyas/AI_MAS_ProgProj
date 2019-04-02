@@ -65,10 +65,6 @@ public class State extends AState {
         return goals;
     }
 
-    public Command[] extractPlan() {
-        throw new NotImplementedException();
-    }
-
     public boolean isGoalState() {
         for (Goal goal: goals) {
             Box box = boxMap.getOrDefault(goal.getPosition(),null);
@@ -79,11 +75,13 @@ public class State extends AState {
         return true;
     }
 
-    public AState[] getExpandedStates() {
-        throw new NotImplementedException();
+    public Box getBoxAt(Position position) {
+        return this.boxMap.get(position);
     }
 
-    public boolean boxAt(Position position) { throw new NotImplementedException();}
+    public boolean boxAt(Position position) {
+        return this.boxMap.containsKey(position);
+    }
 
     @Override
     public String toString() {

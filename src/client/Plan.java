@@ -25,7 +25,13 @@ public class Plan {
         this.action = action;
     }
 
-    private int findBox(Position position) {
+    private Box findBox(Position position) {
+        Box[] boxes = this.state.getBoxes();
+        int index = this.findBoxIndex(position);
+        return boxes[index];
+    }
+
+    private int findBoxIndex(Position position) {
         Box[] boxes = this.state.getBoxes();
 
         for (int i = 0; i < boxes.length; i++) {
@@ -48,7 +54,7 @@ public class Plan {
         Agent[] boxAgents = agents.clone();
         boxAgents[agentIndex] = new Agent(agentID, agent.getColor(), newAgentPos);
 
-        int boxIndex = this.findBox(boxPos);
+        int boxIndex = this.findBoxIndex(boxPos);
         Box box = boxes[boxIndex];
         Box[] pullBoxes = boxes.clone();
         boxes[boxIndex] = new Box(box.getLetter(), box.getColor(), newBoxPos);
@@ -142,8 +148,9 @@ public class Plan {
                     int boxY = agentY + Command.dirToRowChange(c.dir2);
                     Position boxPos = new Position(boxX, boxY);
                     Timestamp boxTimestamp = new Timestamp(this.time + 1, boxPos);
+                    Box pullBox = this.findBox(boxPos);
 
-                    if (!constraints.contains(boxTimestamp) && this.state.boxAt(boxPos)) {
+                    if (!constraints.contains(boxTimestamp) && this.state.boxAt(boxPos) && pullBox.getColor() == agent.getColor()) {
                         Plan pullPlan = this.getBoxPlan(agentID, agentIndex, c, agentTimestamp, newAgentTimestamp, boxTimestamp, agentTimestamp);
                         children.add(pullPlan);
                     }
@@ -151,6 +158,7 @@ public class Plan {
                 case Push:
                     int newBoxX = newAgentX + Command.dirToColChange(c.dir2);
                     int newBoxY = newAgentY + Command.dirToRowChange(c.dir2);
+                    Box pushBox = this.findBox(newAgentPos);
                     Position newBoxPos = new Position(newBoxX, newBoxY);
                     Timestamp newBoxTimestamp = new Timestamp(this.time + 1, newBoxPos);
 
@@ -158,7 +166,7 @@ public class Plan {
                         continue;
                     }
 
-                    if (this.state.isFree((newBoxPos)) && !constraints.contains(newBoxTimestamp) && this.state.boxAt(newAgentPos)) {
+                    if (this.state.isFree((newBoxPos)) && !constraints.contains(newBoxTimestamp) && this.state.boxAt(newAgentPos) && pushBox.getColor() == agent.getColor()) {
                         Plan pushPlan = this.getBoxPlan(agentID, agentIndex, c, agentTimestamp, newAgentTimestamp, newAgentTimestamp, newBoxTimestamp);
                         children.add(pushPlan);
                     }

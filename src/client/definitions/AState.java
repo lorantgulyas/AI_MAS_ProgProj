@@ -12,9 +12,5 @@ public abstract class AState {
 
     public abstract Goal[] getGoals();
 
-    public abstract Command[] extractPlan();
-
     public abstract boolean isGoalState();
-
-    public abstract AState[] getExpandedStates();
 }
