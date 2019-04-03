@@ -12,6 +12,7 @@ public class Plan {
     private Plan parent;
     private int time;
     private Action action;
+    private int _hash;
 
     public Plan(State initialState, HashSet<Timestamp> constraints) {
         this.constraints = constraints;
@@ -20,6 +21,7 @@ public class Plan {
         this.time = 0;
         this.action = null;
         this.currentConstraints = this.getCurrentConstraints();
+        this._hash = this.computeHashCode();
     }
 
     public Plan(State state, Plan parent, int time, Action action, HashSet<Timestamp> constraints) {
@@ -29,6 +31,7 @@ public class Plan {
         this.time = time;
         this.action = action;
         this.currentConstraints = this.getCurrentConstraints();
+        this._hash = this.computeHashCode();
     }
 
     private Timestamp[] getCurrentConstraints() {
@@ -204,6 +207,15 @@ public class Plan {
         return children;
     }
 
+    private int computeHashCode() {
+        int timestampsHash = 0;
+        for (Timestamp timestamp : this.currentConstraints) {
+            timestampsHash += timestamp.hashCode();
+        }
+        // plus one since there might not be any constraints
+        return (timestampsHash + 1) * this.state.hashCode();
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
@@ -219,10 +231,6 @@ public class Plan {
 
     @Override
     public int hashCode() {
-        int timestampsHash = 0;
-        for (Timestamp timestamp : this.currentConstraints) {
-            timestampsHash += timestamp.hashCode();
-        }
-        return timestampsHash + this.state.hashCode();
+        return this._hash;
     }
 }

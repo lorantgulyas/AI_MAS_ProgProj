@@ -14,6 +14,7 @@ public class State {
     private Goal[] goals;
     private HashMap<Position, Agent> agentMap;
     private HashMap<Position, Box> boxMap;
+    private int _hash;
 
     public State(Agent[] agents, Box[] boxes, Goal[] goals) {
         this.agents = agents;
@@ -27,6 +28,7 @@ public class State {
         for (Box box : boxes) {
             boxMap.put(box.getPosition(), box);
         }
+        this._hash = this.computeHashCode();
     }
 
     public static void setLevel(boolean[][] initialWalls,
@@ -112,6 +114,18 @@ public class State {
         return this.boxMap.containsKey(position);
     }
 
+    private int computeHashCode() {
+        int a = 0;
+        for (Agent agent : this.agents) {
+            a += agent.hashCode();
+        }
+        int b = 0;
+        for (Box box : this.boxes) {
+            b += box.hashCode();
+        }
+        return a * b;
+    }
+
     @Override
     public String toString() {
         StringBuilder s = new StringBuilder();
@@ -164,14 +178,6 @@ public class State {
 
     @Override
     public int hashCode() {
-        int a = 0;
-        for (Agent agent : this.agents) {
-            a += agent.hashCode();
-        }
-        int b = 0;
-        for (Box box : this.boxes) {
-            b += box.hashCode();
-        }
-        return a * b;
+        return this._hash;
     }
 }

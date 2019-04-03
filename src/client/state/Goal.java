@@ -37,6 +37,6 @@ public class Goal {
 
     @Override
     public int hashCode() {
-        return this.position.hashCode() * this.letter;
+        return this.position.hashCode() + this.letter;
     }
 }

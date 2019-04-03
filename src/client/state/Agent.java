@@ -45,6 +45,6 @@ public class Agent {
 
     @Override
     public int hashCode() {
-        return this.position.hashCode() * (this.id + 1);
+        return this.position.hashCode() + this.id + this.color.ordinal();
     }
 }

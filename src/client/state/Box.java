@@ -44,6 +44,6 @@ public class Box {
 
     @Override
     public int hashCode() {
-        return this.position.hashCode() * (this.color.ordinal() + 1);
+        return this.position.hashCode() + this.letter + this.color.ordinal();
     }
 }
