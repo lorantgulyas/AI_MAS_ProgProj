@@ -6,23 +6,41 @@ import java.util.*;
 
 public class Plan {
 
+    private Timestamp[] currentConstraints;
+    private HashSet<Timestamp> constraints;
     private State state;
     private Plan parent;
     private int time;
     private Action action;
 
-    public Plan(State initialState) {
+    public Plan(State initialState, HashSet<Timestamp> constraints) {
+        this.constraints = constraints;
         this.state = initialState;
         this.parent = null;
         this.time = 0;
         this.action = null;
+        this.currentConstraints = this.getCurrentConstraints();
     }
 
-    public Plan(State state, Plan parent, int time, Action action) {
+    public Plan(State state, Plan parent, int time, Action action, HashSet<Timestamp> constraints) {
+        this.constraints = constraints;
         this.state = state;
         this.parent = parent;
         this.time = time;
         this.action = action;
+        this.currentConstraints = this.getCurrentConstraints();
+    }
+
+    private Timestamp[] getCurrentConstraints() {
+        ArrayList<Timestamp> currentConstraints = new ArrayList<>();
+        Iterator<Timestamp> iterator = this.constraints.iterator();
+        while (iterator.hasNext()) {
+            Timestamp timestamp = iterator.next();
+            if (timestamp.getTime() == this.time) {
+                currentConstraints.add(timestamp);
+            }
+        }
+        return currentConstraints.toArray(new Timestamp[0]);
     }
 
     private Box findBox(Position position) {
@@ -61,7 +79,7 @@ public class Plan {
         State boxState = new State(boxAgents, actionBoxes , this.state.getGoals());
         Timestamp[] timestamps = new Timestamp[] { agentTimestamp, boxTimestamp, newBoxTimestamp, newAgentTimestamp };
         Action boxAction = new Action(command, timestamps);
-        Plan boxPlan = new Plan(boxState, this, this.time + 1, boxAction);
+        Plan boxPlan = new Plan(boxState, this, this.time + 1, boxAction, this.constraints);
         return boxPlan;
     }
 
@@ -94,25 +112,15 @@ public class Plan {
 
     // TODO: make this method much nicer
     //       eg: split it into more methods
-    public ArrayList<Plan> getChildren(int agentID, HashSet<Timestamp> constraints) {
+    public ArrayList<Plan> getChildren(int agentID) {
         ArrayList<Plan> children = new ArrayList<>();
-        Agent agent = null;
-        int agentIndex = -1;
+
+        Agent[] agents = this.state.getAgents();
         Box[] boxes = this.state.getBoxes();
         Goal[] goals = this.state.getGoals();
 
-        Agent[] agents = this.state.getAgents();
-        for (int i = 0; i < agents.length; i++) {
-            if (agents[i].getId() == agentID) {
-                agent = agents[i];
-                agentIndex = i;
-                break;
-            }
-        }
-
-        if (agent == null) {
-            return children;
-        }
+        int agentIndex = agentID;
+        Agent agent = agents[agentIndex];
 
         Position agentPos = agent.getPosition();
         int agentX = agentPos.getCol();
@@ -123,7 +131,7 @@ public class Plan {
             if (c.actionType == Command.Type.NoOp) {
                 if (!constraints.contains(agentTimestamp)) {
                     Action noOpAction = new Action(Command.NoOp, new Timestamp[] { agentTimestamp });
-                    Plan noOpPlan = new Plan(this.state, this, this.time + 1, noOpAction);
+                    Plan noOpPlan = new Plan(this.state, this, this.time + 1, noOpAction, this.constraints);
                     children.add(noOpPlan);
                 }
                 continue;
@@ -149,7 +157,7 @@ public class Plan {
                         moveAgents[agentIndex] = new Agent(agentID, agent.getColor(), newAgentPos);
                         State moveState = new State(moveAgents, boxes, goals);
                         Action moveAction = new Action(c, new Timestamp[] { agentTimestamp, newAgentTimestamp});
-                        Plan movePlan = new Plan(moveState, this, this.time + 1, moveAction);
+                        Plan movePlan = new Plan(moveState, this, this.time + 1, moveAction, this.constraints);
                         children.add(movePlan);
                     }
                     break;
@@ -192,6 +200,7 @@ public class Plan {
             }
         }
 
+        Collections.shuffle(children);
         return children;
     }
 
@@ -204,12 +213,16 @@ public class Plan {
         if (obj.getClass() != this.getClass())
             return false;
         Plan other = (Plan) obj;
-        return other.time == this.time
+        return Arrays.deepEquals(this.currentConstraints, other.currentConstraints)
                 && other.getState().equals(this.state);
     }
 
     @Override
     public int hashCode() {
-        return this.time * this.state.hashCode();
+        int timestampsHash = 0;
+        for (Timestamp timestamp : this.currentConstraints) {
+            timestampsHash += timestamp.hashCode();
+        }
+        return timestampsHash + this.state.hashCode();
     }
 }

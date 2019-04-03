@@ -34,7 +34,7 @@ public class Timestamp {
 
     @Override
     public int hashCode() {
-        return this.position.hashCode() * this.time;
+        return this.position.hashCode() + this.time;
     }
 }
 

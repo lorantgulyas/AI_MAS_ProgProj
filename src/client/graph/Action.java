@@ -1,5 +1,7 @@
 package client.graph;
 
+import java.util.Arrays;
+
 public class Action {
 
     private Command command;
@@ -27,11 +29,16 @@ public class Action {
         if (obj.getClass() != this.getClass())
             return false;
         Action other = (Action) obj;
-        return other.getCommand().equals(this.command);
+        return other.getCommand().equals(this.command)
+                && Arrays.deepEquals(other.timestamps, this.timestamps);
     }
 
     @Override
     public int hashCode() {
-        return this.command.hashCode() * this.timestamps.length;
+        int timestampsHash = 0;
+        for (Timestamp timestamp : this.timestamps) {
+            timestampsHash += timestamp.hashCode();
+        }
+        return timestampsHash + this.command.hashCode();
     }
 }

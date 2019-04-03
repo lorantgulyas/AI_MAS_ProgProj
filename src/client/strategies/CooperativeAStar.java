@@ -26,8 +26,8 @@ public class CooperativeAStar extends AStrategy {
         ArrayList<Command[]> plans = new ArrayList<>();
         Agent[] agents = initialState.getAgents();
         for (Agent agent : agents) {
-            Plan root = new Plan(initialState);
-            AStar astar = new AStar(agent.getId(), this.heuristic, root, this.reservedCells);
+            Plan root = new Plan(initialState, this.reservedCells);
+            AStar astar = new AStar(agent.getId(), this.heuristic, root);
             Action[] plan = astar.plan();
             ArrayList<Command> commands = new ArrayList<>();
             // a plan may be null if no solution could be found for this agent
@@ -88,14 +88,12 @@ public class CooperativeAStar extends AStrategy {
         private HashSet<Plan> explored;
         private PriorityQueue<Plan> frontier;
         private HashSet<Plan> frontierSet;
-        private HashSet<Timestamp> reservedCells;
 
-        public AStar(int agentId, AHeuristic heuristic, Plan plan, HashSet<Timestamp> reservedCells) {
+        public AStar(int agentId, AHeuristic heuristic, Plan plan) {
             this.agentId = agentId;
             this.explored = new HashSet<>();
-            this.frontier = new PriorityQueue<Plan>(heuristic);
+            this.frontier = new PriorityQueue<>(heuristic);
             this.frontierSet = new HashSet<>();
-            this.reservedCells = reservedCells;
             this.addToFrontier(plan);
         }
 
@@ -143,7 +141,7 @@ public class CooperativeAStar extends AStrategy {
                 }
 
                 this.addToExplored(leaf);
-                for (Plan node : leaf.getChildren(this.agentId, this.reservedCells)) {
+                for (Plan node : leaf.getChildren(this.agentId)) {
                     if (!this.isExplored(node) && !this.inFrontier(node)) {
                         this.addToFrontier(node);
                     }
