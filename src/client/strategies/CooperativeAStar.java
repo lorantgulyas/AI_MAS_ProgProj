@@ -129,8 +129,8 @@ public class CooperativeAStar extends AStrategy {
         public Action[] plan() {
             int i = 0;
             while (true) {
-                if (i++ % 1000 == 0) {
-                    System.err.println(i);
+                if (i % 10000 == 0) {
+                    System.err.println("Agent " + this.agentId + ": " + i);
                 }
                 if (this.frontierIsEmpty()) {
                     return null;
@@ -146,9 +146,9 @@ public class CooperativeAStar extends AStrategy {
                 for (Plan node : leaf.getChildren(this.agentId, this.reservedCells)) {
                     if (!this.isExplored(node) && !this.inFrontier(node)) {
                         this.addToFrontier(node);
-                        //System.err.println(node.getAction().getCommand());
                     }
                 }
+                i++;
             }
         }
     }
