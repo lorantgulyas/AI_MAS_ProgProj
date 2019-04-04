@@ -1,6 +1,7 @@
 package client.definitions;
 
-import client.graph.Command;
+import client.Memory;
+import client.Solution;
 import client.state.State;
 
 public abstract class AStrategy {
@@ -11,6 +12,14 @@ public abstract class AStrategy {
         this.heuristic = heuristic;
     }
 
-    public abstract Command[][] plan(State initialState);
+    protected double memoryUsed() {
+        return Memory.used();
+    }
+
+    protected double timeSpent(long startTime) {
+        return (System.currentTimeMillis() - startTime) / 1000f;
+    }
+
+    public abstract Solution plan(State initialState);
 
 }

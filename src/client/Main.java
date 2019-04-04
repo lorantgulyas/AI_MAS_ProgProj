@@ -24,16 +24,23 @@ public class Main {
         serverIO.sendComment("Using heuristic: " + heuristic.toString());
 
         // find plan
-        Command[][] jointActions;
+        Solution solution;
         try {
-            jointActions = strategy.plan(initialState);
+            solution = strategy.plan(initialState);
         } catch (OutOfMemoryError exc) {
             System.err.println("Maximum memory usage exceeded.");
             return;
         }
 
+        // print performance stats
+        PerformanceStats stats = solution.getStats();
+        serverIO.sendComment(stats.getMemoryUsed());
+        serverIO.sendComment(stats.getTimeSpent());
+        serverIO.sendComment(stats.getSolutionLength());
+        serverIO.sendComment(stats.getNodesExplored());
+
         // send joint actions to server
-        for (Command[] jointAction : jointActions) {
+        for (Command[] jointAction : solution.getPlan()) {
             boolean[] joinActionResponse = serverIO.sendJointAction(jointAction);
             for (boolean actionResponse : joinActionResponse) {
                 if (!actionResponse) {
