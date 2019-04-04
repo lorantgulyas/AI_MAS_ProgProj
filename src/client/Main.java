@@ -40,6 +40,7 @@ public class Main {
         serverIO.sendComment(stats.getTimeSpent());
         serverIO.sendComment(stats.getSolutionLength());
         serverIO.sendComment(stats.getNodesExplored());
+        serverIO.sendComment(stats.getNodesGenerated());
 
         // send joint actions to server
         for (Command[] jointAction : solution.getPlan()) {

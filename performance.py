@@ -18,6 +18,11 @@ def main():
     levels = os.listdir(args.levels)
     configs = os.listdir(args.configs)
     stats = []
+
+    configuration_text = 'configuration' if len(configs) == 1 else 'configurations'
+    level_text = 'level' if len(levels) == 1 else 'levels'
+    print(f'Running {len(configs)} {configuration_text} on {len(levels)} {level_text}.')
+
     for config_name in configs:
         config_path = os.path.join(args.configs, config_name)
         for level_name in tqdm(levels, desc=config_name, unit='level'):
@@ -41,30 +46,24 @@ def run_client(config, level, timeout):
     client = f'java -classpath out/production/programming-project client.Main {config}'
     args = ['java', '-jar', 'server.jar', '-c', client, '-l', level]
     try:
-        process = subprocess.run(args, encoding='utf-8', stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=timeout)
+        process = subprocess.run(
+            args,
+            encoding='utf-8',
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=timeout,
+            check=True,
+            shell=False
+        )
     except subprocess.CalledProcessError as exc:
         return {
-            "solved": False,
-            "error": {
-                "type": "crash",
-                "code": exc.returncode,
-            },
-            "nodes_explored": None,
-            "solution_length": None,
-            "memory_used": None,
-            "time_spent": None,
+            "type": "crash",
+            "code": exc.returncode,
         }
     except subprocess.TimeoutExpired as exc:
         return {
-            "solved": False,
-            "error": {
-                "type": "timeout",
-                "timeout": timeout,
-            },
-            "nodes_explored": None,
-            "solution_length": None,
-            "memory_used": None,
-            "time_spent": None,
+            "type": "timeout",
+            "timeout": timeout,
         }
 
     error = process.stderr
@@ -72,25 +71,11 @@ def run_client(config, level, timeout):
 
     if 'Maximum memory usage exceeded.' in error:
         return {
-            "solved": False,
-            "error": {
-                "type": "out_of_memory",
-            },
-            "nodes_explored": None,
-            "solution_length": None,
-            "memory_used": None,
-            "time_spent": None,
+            "type": "out_of_memory",
         }
 
     fail = {
-        "solved": False,
-        "error": {
-            "type": "fail",
-        },
-        "nodes_explored": None,
-        "solution_length": None,
-        "memory_used": None,
-        "time_spent": None,
+        "type": "fail",
     }
 
     solved_match = re.search('\\[server\\]\\[info\\] Level solved: Yes.', output)
@@ -100,6 +85,11 @@ def run_client(config, level, timeout):
     if nodes_explored_match is None:
         return fail
     nodes_explored = int(nodes_explored_match[1])
+
+    nodes_generated_match = re.search('Nodes generated: (\\d+)', output)
+    if nodes_generated_match is None:
+        return fail
+    nodes_generated = int(nodes_generated_match[1])
 
     solution_length_match = re.search('Solution length: (\\d+)', output)
     if solution_length_match is None:
@@ -117,9 +107,10 @@ def run_client(config, level, timeout):
     time_spent = float(f'{time_spent_match[1]}.{time_spent_match[3]}')
 
     return {
+        "type": "success",
         "solved": solved,
-        "error": None,
         "nodes_explored": nodes_explored,
+        "nodes_generated": nodes_generated,
         "solution_length": solution_length,
         "memory_used": memory_used,
         "time_spent": time_spent,
