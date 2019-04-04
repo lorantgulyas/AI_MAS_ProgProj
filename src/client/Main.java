@@ -28,12 +28,14 @@ public class Main {
         try {
             solution = strategy.plan(initialState);
         } catch (OutOfMemoryError exc) {
+            // do not change this since the performance tool expects a specific format
             System.err.println("Maximum memory usage exceeded.");
             return;
         }
 
         // print performance stats
         PerformanceStats stats = solution.getStats();
+        // do not change this since the performance tool expects a specific format
         serverIO.sendComment(stats.getMemoryUsed());
         serverIO.sendComment(stats.getTimeSpent());
         serverIO.sendComment(stats.getSolutionLength());

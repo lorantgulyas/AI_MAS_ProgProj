@@ -27,26 +27,22 @@ public class PerformanceStats {
     }
 
     public String getMemoryUsed() {
-        // do not change this since the performance tool
-        // expects a specific format
+        // do not change this since the performance tool expects a specific format
         return String.format("Memory used: %f MB", this.memoryUsed);
     }
 
     public String getTimeSpent() {
-        // do not change this since the performance tool
-        // expects a specific format
+        // do not change this since the performance tool expects a specific format
         return String.format("Time spent: %f seconds", this.timeSpent);
     }
 
     public String getNodesExplored() {
-        // do not change this since the performance tool
-        // expects a specific format
+        // do not change this since the performance tool expects a specific format
         return String.format("Nodes explored: %d", this.nodesExplored);
     }
 
     public String getSolutionLength() {
-        // do not change this since the performance tool
-        // expects a specific format
+        // do not change this since the performance tool expects a specific format
         return String.format("Solution length: %d", this.solutionLength);
     }
 
