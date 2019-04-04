@@ -14,7 +14,6 @@ def main():
     out_dir = '/'.join(args.out.split('/')[:-1])
     makedirs(out_dir)
 
-    timeout = None if args.timeout is None else args.timeout[0]
     levels = os.listdir(args.levels)
     configs = os.listdir(args.configs)
     stats = []
@@ -27,7 +26,7 @@ def main():
         config_path = os.path.join(args.configs, config_name)
         for level_name in tqdm(levels, desc=config_name, unit='level'):
             level_path = os.path.join(args.levels, level_name)
-            run_stats = run_client(config_path, level_path, timeout)
+            run_stats = run_client(config_path, level_path)
             run_stats['config'] = config_name
             run_stats['level'] = level_name
             stats.append(run_stats)
@@ -42,19 +41,11 @@ def main():
     print('Done!')
 
 
-def run_client(config, level, timeout):
+def run_client(config, level):
     client = f'java -classpath out/production/programming-project client.Main {config}'
     args = ['java', '-jar', 'server.jar', '-c', client, '-l', level]
     try:
-        process = subprocess.run(
-            args,
-            encoding='utf-8',
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            timeout=timeout,
-            check=True,
-            shell=False
-        )
+        process = subprocess.run(args, encoding='utf-8', stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, shell=False)
     except subprocess.CalledProcessError as exc:
         return {
             "type": "crash",
@@ -147,14 +138,6 @@ def parse_arguments(timestamp):
         help='Path to output file (defaults to stats/{timestamp}.json)',
         type=str,
         dest='out',
-    )
-    parser.add_argument(
-        '--timeout',
-        nargs=1,
-        default=None,
-        help='Max. time in seconds for which a client can run. Default to infinity.',
-        type=int,
-        dest='timeout',
     )
     return parser.parse_args(sys.argv[1:])
 
