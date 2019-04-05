@@ -1,5 +1,7 @@
 package client.strategies;
 
+import client.PerformanceStats;
+import client.Solution;
 import client.graph.Action;
 import client.graph.Command;
 import client.graph.Plan;
@@ -22,17 +24,21 @@ public class CooperativeAStar extends AStrategy {
         this.reservedCells = new HashSet<>();
     }
 
-    private ArrayList<Command[]> makePlans(State initialState) {
+    private CooperativeAStarResult makePlans(State initialState) {
         ArrayList<Command[]> plans = new ArrayList<>();
         Agent[] agents = initialState.getAgents();
+        long nodesExplored = 0;
+        long nodesGenerated = 0;
         for (Agent agent : agents) {
             Plan root = new Plan(initialState, this.reservedCells);
             AStar astar = new AStar(agent.getId(), this.heuristic, root);
-            Action[] plan = astar.plan();
+            AStarResult result = astar.plan();
+            nodesExplored += result.nodesExplored;
+            nodesGenerated += result.nodesGenerated;
             ArrayList<Command> commands = new ArrayList<>();
             // a plan may be null if no solution could be found for this agent
-            if (plan != null) {
-                for (Action action : plan) {
+            if (result.plan != null) {
+                for (Action action : result.plan) {
                     commands.add(action.getCommand());
                     Timestamp[] timestamps = action.getTimestamps();
                     for (Timestamp t : timestamps) {
@@ -42,7 +48,7 @@ public class CooperativeAStar extends AStrategy {
             }
             plans.add(commands.toArray(new Command[0]));
         }
-        return plans;
+        return new CooperativeAStarResult(plans, nodesExplored, nodesGenerated);
     }
 
     private int findMaxPlanLength(ArrayList<Command[]> plans) {
@@ -73,9 +79,20 @@ public class CooperativeAStar extends AStrategy {
         return jointActions.toArray(new Command[0][0]);
     }
 
-    public Command[][] plan(State initialState) {
-        ArrayList<Command[]> plans = this.makePlans(initialState);
-        return this.extendPlans(plans);
+    public Solution plan(State initialState) {
+        long startTime = System.currentTimeMillis();
+        CooperativeAStarResult result = this.makePlans(initialState);
+        Command[][] plan = this.extendPlans(result.plan);
+        double memoryUsed = this.memoryUsed();
+        double timeSpent = this.timeSpent(startTime);
+        PerformanceStats stats = new PerformanceStats(
+                memoryUsed,
+                result.nodesExplored,
+                result.nodesGenerated,
+                plan.length,
+                timeSpent
+        );
+        return new Solution(plan, stats);
     }
 
     @Override
@@ -124,20 +141,24 @@ public class CooperativeAStar extends AStrategy {
             return frontierSet.contains(n);
         }
 
-        public Action[] plan() {
-            int i = 0;
+        public AStarResult plan() {
+            long i = 0;
             while (true) {
                 if (i % 10000 == 0) {
                     System.err.println("Agent " + this.agentId + ": " + i);
                 }
                 if (this.frontierIsEmpty()) {
-                    return null;
+                    long explored = this.explored.size();
+                    long generated = explored + this.frontier.size();
+                    return new AStarResult(null, explored, generated);
                 }
 
                 Plan leaf = this.getAndRemoveLeaf();
 
                 if (leaf.getState().agentIsDone(this.agentId)) {
-                    return leaf.extract();
+                    long explored = this.explored.size();
+                    long generated = explored + this.frontier.size();
+                    return new AStarResult(leaf.extract(), explored, generated);
                 }
 
                 this.addToExplored(leaf);
@@ -148,6 +169,30 @@ public class CooperativeAStar extends AStrategy {
                 }
                 i++;
             }
+        }
+    }
+
+    class AStarResult {
+        public Action[] plan;
+        public long nodesExplored;
+        public long nodesGenerated;
+
+        public AStarResult(Action[] plan, long nodesExplored, long nodesGenerated) {
+            this.plan = plan;
+            this.nodesExplored = nodesExplored;
+            this.nodesGenerated = nodesGenerated;
+        }
+    }
+
+    class CooperativeAStarResult {
+        public ArrayList<Command[]> plan;
+        public long nodesExplored;
+        public long nodesGenerated;
+
+        public CooperativeAStarResult(ArrayList<Command[]> plan, long nodesExplored, long nodesGenerated) {
+            this.plan = plan;
+            this.nodesExplored = nodesExplored;
+            this.nodesGenerated = nodesGenerated;
         }
     }
 }
