@@ -26,7 +26,7 @@ def main():
         config_path = os.path.join(args.configs, config_name)
         for level_name in tqdm(levels, desc=config_name, unit='level'):
             level_path = os.path.join(args.levels, level_name)
-            run_stats = run_client(config_path, level_path)
+            run_stats = run_client(config_path, level_path, args.timeout)
             run_stats['config'] = config_name
             run_stats['level'] = level_name
             stats.append(run_stats)
@@ -41,22 +41,19 @@ def main():
     print('Done!')
 
 
-def run_client(config, level):
+def run_client(config, level, timeout):
     client = f'java -classpath out/production/programming-project client.Main {config}'
     args = ['java', '-jar', 'server.jar', '-c', client, '-l', level]
-    try:
-        process = subprocess.run(args, encoding='utf-8', stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, shell=False)
-    except subprocess.CalledProcessError as exc:
-        return {
-            "type": "crash",
-            "code": exc.returncode,
-        }
-    except subprocess.TimeoutExpired as exc:
-        return {
-            "type": "timeout",
-            "timeout": timeout,
-        }
 
+    # run client twice: once for timeout check and once for actual performance
+    # otherwise the pipes will cause the child process to not be killed
+    if timeout is not None:
+        timeout_process = run_process(args, subprocess.DEVNULL, timeout)
+        if not isinstance(timeout_process, subprocess.CompletedProcess):
+            # crash or timeout happened
+            return timeout_process
+
+    process = run_process(args, subprocess.PIPE, None)
     error = process.stderr
     output = process.stdout
 
@@ -108,6 +105,22 @@ def run_client(config, level):
     }
 
 
+def run_process(args, channel, timeout):
+    try:
+        process = subprocess.run(args, encoding='utf-8', stdout=channel, stderr=channel, check=True, shell=False, timeout=timeout)
+        return process
+    except subprocess.CalledProcessError as exc:
+        return {
+            "type": "crash",
+            "code": exc.returncode,
+        }
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "type": "timeout",
+            "timeout": exc.timeout,
+        }
+
+
 def makedirs(path):
     if not os.path.exists(path):
         os.makedirs(path)
@@ -135,6 +148,13 @@ def parse_arguments(timestamp):
         help='Path to output file (defaults to stats/{timestamp}.json)',
         type=str,
         dest='out',
+    )
+    parser.add_argument(
+        '--timeout',
+        default=None,
+        help='Max. time (in seconds) to solve a level. Kills a process if timeout is exceeded. Defaults to no timeout.',
+        type=int,
+        dest='timeout',
     )
     return parser.parse_args(sys.argv[1:])
 
