@@ -117,7 +117,6 @@ def parse_arguments(timestamp):
     parser = argparse.ArgumentParser(description='Get performance stats of AI client.')
     parser.add_argument(
         '--configs',
-        nargs=1,
         default='src/configs',
         help='Path to configs to run performance for (defaults to src/configs).',
         type=str,
@@ -125,7 +124,6 @@ def parse_arguments(timestamp):
     )
     parser.add_argument(
         '--levels',
-        nargs=1,
         default='src/levels',
         help='Path to levels to run performance against (defaults to src/levels).',
         type=str,
@@ -133,7 +131,6 @@ def parse_arguments(timestamp):
     )
     parser.add_argument(
         '--out',
-        nargs=1,
         default=f'stats/{timestamp.replace(":", "-")}.json',
         help='Path to output file (defaults to stats/{timestamp}.json)',
         type=str,
