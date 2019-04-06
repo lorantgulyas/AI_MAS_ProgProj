@@ -3,6 +3,7 @@ from datetime import datetime
 import json
 import os
 import re
+import signal
 import subprocess
 import sys
 from tqdm import tqdm
@@ -45,15 +46,19 @@ def run_client(config, level, timeout):
     client = f'java -classpath out/production/programming-project client.Main {config}'
     args = ['java', '-jar', 'server.jar', '-c', client, '-l', level]
 
-    # run client twice: once for timeout check and once for actual performance
-    # otherwise the pipes will cause the child process to not be killed
-    if timeout is not None:
-        timeout_process = run_process(args, subprocess.DEVNULL, timeout)
-        if not isinstance(timeout_process, subprocess.CompletedProcess):
-            # crash or timeout happened
-            return timeout_process
+    try:
+        process = run_process(args, timeout)
+    except subprocess.CalledProcessError as exc:
+        return {
+            "type": "crash",
+            "code": exc.returncode,
+        }
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "type": "timeout",
+            "timeout": exc.timeout,
+        }
 
-    process = run_process(args, subprocess.PIPE, None)
     error = process.stderr
     output = process.stdout
 
@@ -105,20 +110,28 @@ def run_client(config, level, timeout):
     }
 
 
-def run_process(args, channel, timeout):
-    try:
-        process = subprocess.run(args, encoding='utf-8', stdout=channel, stderr=channel, check=True, shell=False, timeout=timeout)
-        return process
-    except subprocess.CalledProcessError as exc:
-        return {
-            "type": "crash",
-            "code": exc.returncode,
-        }
-    except subprocess.TimeoutExpired as exc:
-        return {
-            "type": "timeout",
-            "timeout": exc.timeout,
-        }
+def run_process(args, timeout):
+    """
+    Modified version of subprocess.run that will terminate
+    not only the process but also all the child processes
+    spawned by that process
+    """
+    with subprocess.Popen(args, encoding='utf-8', stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                          shell=False, close_fds=True, preexec_fn=os.setsid) as process:
+        try:
+            stdout, stderr = process.communicate(None, timeout=timeout)
+        except subprocess.TimeoutExpired:
+            os.killpg(process.pid, signal.SIGUSR1)
+            stdout, stderr = process.communicate()
+            raise subprocess.TimeoutExpired(process.args, timeout, output=stdout, stderr=stderr)
+        except:
+            os.killpg(process.pid, signal.SIGUSR1)
+            process.wait()
+            raise
+        retcode = process.poll()
+        if retcode:
+            raise subprocess.CalledProcessError(retcode, process.args, output=stdout, stderr=stderr)
+    return subprocess.CompletedProcess(process.args, retcode, stdout, stderr)
 
 
 def makedirs(path):
