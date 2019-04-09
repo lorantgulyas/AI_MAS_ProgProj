@@ -8,18 +8,18 @@ public class State {
     private static boolean[][] walls;
     private static int ROW_COUNT;
     private static int COL_COUNT;
+    private static Goal[] goals;
 
     private Agent[] agents;
     private Box[] boxes;
-    private Goal[] goals;
+
     private HashMap<Position, Agent> agentMap;
     private HashMap<Position, Box> boxMap;
     private int _hash;
 
-    public State(Agent[] agents, Box[] boxes, Goal[] goals) {
+    public State(Agent[] agents, Box[] boxes) {
         this.agents = agents;
         this.boxes = boxes;
-        this.goals = goals;
         agentMap = new HashMap<>();
         for (Agent agent : agents) {
             agentMap.put(agent.getPosition(), agent);
@@ -32,13 +32,15 @@ public class State {
     }
 
     public static void setLevel(boolean[][] initialWalls,
-                                int rowCount, int colCount) {
+                                int rowCount, int colCount,
+                                Goal[] initialGoals) {
         walls = initialWalls;
         ROW_COUNT = rowCount;
         COL_COUNT = colCount;
+        goals = initialGoals;
     }
 
-    public boolean[][] getWalls() {
+    public static boolean[][] getWalls() {
         return walls;
     }
 
@@ -64,7 +66,7 @@ public class State {
         return boxes;
     }
 
-    public Goal[] getGoals() {
+    public static Goal[] getGoals() {
         return goals;
     }
 

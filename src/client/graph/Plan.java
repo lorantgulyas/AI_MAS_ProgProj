@@ -79,7 +79,7 @@ public class Plan {
         Box[] actionBoxes = boxes.clone();
         actionBoxes[boxIndex] = new Box(box.getLetter(), box.getColor(), newBoxPos);
 
-        State boxState = new State(boxAgents, actionBoxes , this.state.getGoals());
+        State boxState = new State(boxAgents, actionBoxes);
         Timestamp[] timestamps = new Timestamp[] { agentTimestamp, boxTimestamp, newBoxTimestamp, newAgentTimestamp };
         Action boxAction = new Action(command, timestamps);
         Plan boxPlan = new Plan(boxState, this, this.time + 1, boxAction, this.constraints);
@@ -158,7 +158,7 @@ public class Plan {
                     if (this.state.isFree(newAgentPos)) {
                         Agent[] moveAgents = agents.clone();
                         moveAgents[agentIndex] = new Agent(agentID, agent.getColor(), newAgentPos);
-                        State moveState = new State(moveAgents, boxes, goals);
+                        State moveState = new State(moveAgents, boxes);
                         Action moveAction = new Action(c, new Timestamp[] { agentTimestamp, newAgentTimestamp});
                         Plan movePlan = new Plan(moveState, this, this.time + 1, moveAction, this.constraints);
                         children.add(movePlan);

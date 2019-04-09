@@ -107,12 +107,8 @@ public class ServerIO {
             }
         }
 
-        State.setLevel(walls, rowCount, colCount);
-        return new State(
-                agents,
-                boxes.toArray(new Box[0]),
-                goals.toArray(new Goal[0])
-        );
+        State.setLevel(walls, rowCount, colCount, goals.toArray(new Goal[0]));
+        return new State(agents, boxes.toArray(new Box[0]));
     }
 
     public boolean[] sendJointAction(Command[] jointAction) throws Exception {
