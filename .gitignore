@@ -1,5 +1,7 @@
 out/
 stats/
+.idea/dictionaries
+.idea/inspectionProfiles
 .idea/misc.xml
 .idea/workspace.xml
 .idea/usage.statistics.xml

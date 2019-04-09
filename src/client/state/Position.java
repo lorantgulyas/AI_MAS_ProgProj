@@ -17,6 +17,22 @@ public class Position {
         return col;
     }
 
+    public Position north() {
+        return new Position(this.col, this.row - 1);
+    }
+
+    public Position east() {
+        return new Position(this.col + 1, this.row);
+    }
+
+    public Position south() {
+        return new Position(this.col, this.row + 1);
+    }
+
+    public Position west() {
+        return new Position(this.col - 1, this.row);
+    }
+
     @Override
     public String toString() {
         return "x: " + col + ", y: " + row;
