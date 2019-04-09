@@ -1,14 +1,16 @@
 package client.heuristics;
 
 import client.definitions.AHeuristic;
+import client.distance.LazyManhattan;
 import client.state.*;
-
-import java.lang.Math;
 
 public class Manhattan extends AHeuristic {
 
+    private LazyManhattan measurer;
+
     public Manhattan(State initialState) {
         super(initialState);
+        this.measurer = new LazyManhattan();
     }
 
     @Override
@@ -19,18 +21,14 @@ public class Manhattan extends AHeuristic {
         Goal[] goals = state.getGoals();
         for (Goal goal : goals) {
             for (Agent agent : agents) {
-                h += this.distance(goal.getPosition(), agent.getPosition());
+                h += this.measurer.distance(goal.getPosition(), agent.getPosition());
             }
         }
         for (Box box : boxes) {
             for (Agent agent : agents) {
-                h += this.distance(box.getPosition(), agent.getPosition());
+                h += this.measurer.distance(box.getPosition(), agent.getPosition());
             }
         }
         return h;
-    }
-
-    private int distance(Position p1, Position p2) {
-        return Math.abs(p1.getRow() - p2.getRow()) + Math.abs(p1.getCol() - p2.getCol());
     }
 }

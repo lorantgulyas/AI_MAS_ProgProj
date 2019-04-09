@@ -1,19 +1,17 @@
 package client.heuristics;
 
 import client.definitions.AHeuristic;
+import client.distance.LazyShortestPath;
 import client.state.*;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 
 public class SingleTasker extends AHeuristic {
-    private Measurer measurer;
+    private LazyShortestPath measurer;
 
     public SingleTasker(State initialState) {
         super(initialState);
-        this.measurer = new Measurer(initialState);
+        this.measurer = new LazyShortestPath(initialState);
     }
 
     private Box getClosestBoxToGoal(ArrayList<Box> boxes, Goal goal) {
@@ -90,126 +88,6 @@ public class SingleTasker extends AHeuristic {
             return sum + nGoals * this.measurer.getV();
         } else {
             return minAgent2BoxDistance + sum + nGoals * this.measurer.getV();
-        }
-    }
-
-    class Measurer {
-        private int V;
-        private HashMap<PositionPair, Integer> D;
-        private HashMap<Position, Integer> position2vertex;
-        private ArrayList<Position> vertex2position;
-
-        public Measurer(State state) {
-            // count number of non-wall objects
-            // and create vertex maps
-            this.D = new HashMap<>();
-            this.position2vertex = new HashMap<>();
-            this.vertex2position = new ArrayList<>();
-            this.V = 0;
-            for (int i = 0; i < state.getWalls().length; i++) {
-                boolean[] row = state.getWalls()[i];
-                for (int j = 0; j < row.length; j++) {
-                    if (!row[j]) {
-                        Position position = new Position(i, j);
-                        this.position2vertex.put(position, this.V);
-                        this.vertex2position.add(position);
-                        this.V++;
-                    }
-                }
-            }
-        }
-
-        private int breadthFirstSearch(Position start, Position end) {
-            ArrayDeque<BFSNode> frontier = new ArrayDeque<>();
-            HashSet<Position> explored = new HashSet<>();
-            frontier.add(new BFSNode(0, start));
-            while (!frontier.isEmpty()) {
-                BFSNode node = frontier.pop();
-                Position pos = node.position;
-                explored.add(pos);
-                if (pos.equals(end)) {
-                    return node.distance;
-                }
-                Position north = pos.north();
-                Position east = pos.east();
-                Position south = pos.south();
-                Position west = pos.west();
-
-                BFSNode northNode = new BFSNode(node.distance + 1, north);
-                BFSNode eastNode = new BFSNode(node.distance + 1, east);
-                BFSNode southNode = new BFSNode(node.distance + 1, south);
-                BFSNode westNode = new BFSNode(node.distance + 1, west);
-
-                if (!explored.contains(north) && this.position2vertex.containsKey(north)) {
-                    frontier.add(northNode);
-                }
-                if (!explored.contains(east) && this.position2vertex.containsKey(east)) {
-                    frontier.add(eastNode);
-                }
-                if (!explored.contains(south) && this.position2vertex.containsKey(south)) {
-                    frontier.add(southNode);
-                }
-                if (!explored.contains(west) && this.position2vertex.containsKey(west)) {
-                    frontier.add(westNode);
-                }
-            }
-
-            // return MAX_VALUE corresponding to "infinity"
-            // meaning that there are no paths between start and end
-            return Integer.MAX_VALUE;
-        }
-
-        public int distance(Position p1, Position p2) {
-            PositionPair pair = new PositionPair(p1, p2);
-            int distance = this.D.getOrDefault(pair, -1);
-            if (distance == -1) {
-                distance = this.breadthFirstSearch(p1, p2);
-                this.D.put(pair, distance);
-            }
-            return distance;
-        }
-
-        public int getV() {
-            return this.V;
-        }
-    }
-
-    class PositionPair {
-        public Position p1;
-        public Position p2;
-
-        private int _hash;
-
-        public PositionPair(Position p1, Position p2) {
-            this.p1 = p1;
-            this.p2 = p2;
-            this._hash = p1.hashCode() * p2.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null || obj.getClass() != this.getClass()) {
-                return false;
-            }
-            PositionPair other = (PositionPair) obj;
-            // must respect symmetry
-            return (this.p1.equals(other.p1) && this.p2.equals(other.p2))
-                || (this.p2.equals(other.p1) && this.p1.equals(other.p2));
-        }
-
-        @Override
-        public int hashCode() {
-            return this._hash;
-        }
-    }
-
-    class BFSNode {
-        public int distance;
-        public Position position;
-
-        public BFSNode(int distance, Position position) {
-            this.distance = distance;
-            this.position = position;
         }
     }
 }
