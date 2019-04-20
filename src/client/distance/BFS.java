@@ -1,5 +1,6 @@
 package client.distance;
 
+import client.state.Level;
 import client.state.Position;
 import client.state.State;
 
@@ -18,8 +19,10 @@ public class BFS{
         this.position2vertex = new HashMap<>();
         this.vertex2position = new ArrayList<>();
         this.V = 0;
-        for (int i = 0; i < state.getWalls().length; i++) {
-            boolean[] row = state.getWalls()[i];
+        Level level = state.getLevel();
+        boolean[][] walls = level.getWalls();
+        for (int i = 0; i < walls.length; i++) {
+            boolean[] row = walls[i];
             for (int j = 0; j < row.length; j++) {
                 if (!row[j]) {
                     Position position = new Position(i, j);

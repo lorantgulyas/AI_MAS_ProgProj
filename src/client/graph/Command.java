@@ -114,7 +114,7 @@ public class Command {
         switch (this.actionType) {
             case Move: return this.dir1 == other.dir1;
             case Push:
-            case Pull: return this.dir1 == other.dir2 && this.dir2 == other.dir2;
+            case Pull: return this.dir1 == other.dir1 && this.dir2 == other.dir2;
             case NoOp: return true;
             default: return false;
         }

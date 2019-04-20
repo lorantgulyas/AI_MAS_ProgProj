@@ -18,7 +18,7 @@ public class Manhattan extends AHeuristic {
         int h = 0;
         Agent[] agents = state.getAgents();
         Box[] boxes = state.getBoxes();
-        Goal[] goals = state.getGoals();
+        Goal[] goals = state.getLevel().getGoals();
         for (Goal goal : goals) {
             for (Agent agent : agents) {
                 h += this.measurer.distance(goal.getPosition(), agent.getPosition());

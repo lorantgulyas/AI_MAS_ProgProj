@@ -2,58 +2,78 @@ package client.strategies;
 
 import client.PerformanceStats;
 import client.Solution;
-import client.graph.Action;
-import client.graph.Command;
-import client.graph.Plan;
-import client.graph.Timestamp;
+import client.graph.*;
 import client.definitions.AHeuristic;
 import client.definitions.AStrategy;
 import client.state.Agent;
+import client.state.Position;
 import client.state.State;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.PriorityQueue;
+import java.lang.Math;
+import java.util.*;
 
 public class CooperativeAStar extends AStrategy {
 
-    private HashSet<Timestamp> reservedCells;
-
     public CooperativeAStar(AHeuristic heuristic) {
         super(heuristic);
-        this.reservedCells = new HashSet<>();
     }
 
     private CooperativeAStarResult makePlans(State initialState) {
-        ArrayList<Command[]> plans = new ArrayList<>();
+        ArrayList<Action[]> plans = new ArrayList<>();
         Agent[] agents = initialState.getAgents();
+        ArrayList<Set<Position>> cellsUsed = new ArrayList<>();
+        ArrayList<ArrayList<Action>> previousActions = new ArrayList<>();
         long nodesExplored = 0;
         long nodesGenerated = 0;
         for (Agent agent : agents) {
-            Plan root = new Plan(initialState, this.reservedCells);
-            AStar astar = new AStar(agent.getId(), this.heuristic, root);
-            AStarResult result = astar.plan();
+            AStar astar = new AStar(this.heuristic, initialState);
+            AStarResult result = astar.plan(agent.getId(), cellsUsed, previousActions);
             nodesExplored += result.nodesExplored;
             nodesGenerated += result.nodesGenerated;
-            ArrayList<Command> commands = new ArrayList<>();
             // a plan may be null if no solution could be found for this agent
             if (result.plan != null) {
-                for (Action action : result.plan) {
-                    commands.add(action.getCommand());
-                    Timestamp[] timestamps = action.getTimestamps();
-                    for (Timestamp t : timestamps) {
-                        this.reservedCells.add(t);
-                    }
-                };
+                this.updateCellsUsed(cellsUsed, result.plan);
+                this.updatePreviousActions(previousActions, result.plan);
             }
-            plans.add(commands.toArray(new Command[0]));
+            Action[] actions = result.plan == null ? new Action[] {} : result.plan;
+            plans.add(actions);
         }
         return new CooperativeAStarResult(plans, nodesExplored, nodesGenerated);
     }
 
-    private int findMaxPlanLength(ArrayList<Command[]> plans) {
+    private void updateCellsUsed(ArrayList<Set<Position>> cellsUsed, Action[] plan) {
+        // update reserved cells with cells in this plan
+        int nCellsUsed = cellsUsed.size();
+        int nPlan = plan.length;
+        int nMin = Math.min(nCellsUsed, nPlan);
+        for (int i = 0; i < nMin; i++) {
+            cellsUsed.get(i).addAll(plan[i].getCellsUsed());
+        }
+        for (int i = nMin; i < nPlan; i++) {
+            // clone cells used from action
+            HashSet<Position> used = new HashSet<>(plan[i].getCellsUsed());
+            cellsUsed.add(used);
+        }
+    }
+
+    private void updatePreviousActions(ArrayList<ArrayList<Action>> previousActions, Action[] plan) {
+        // update previous actions with actions in this plan
+        int nPreviousActions = previousActions.size();
+        int nPlan = plan.length;
+        int nMin = Math.min(nPreviousActions , nPlan);
+        for (int i = 0; i < nMin; i++) {
+            previousActions.get(i).add(plan[i]);
+        }
+        for (int i = nMin; i < nPlan; i++) {
+            ArrayList<Action> actions = new ArrayList<>();
+            actions.add(plan[i]);
+            previousActions.add(actions);
+        }
+    }
+
+    private int findMaxPlanLength(ArrayList<Action[]> plans) {
         int maxLength = Integer.MIN_VALUE;
-        for (Command[] plan : plans) {
+        for (Action[] plan : plans) {
             if (maxLength < plan.length) {
                 maxLength = plan.length;
             }
@@ -61,15 +81,17 @@ public class CooperativeAStar extends AStrategy {
         return maxLength;
     }
 
-    private Command[][] extendPlans(ArrayList<Command[]> plans) {
+    // TODO: it is actually not correct to just extend with NoOps
+    // since the agent may be blocking other agents
+    private Command[][] extendPlans(ArrayList<Action[]> plans) {
         // extend plans with NoOps
         int maxLength = findMaxPlanLength(plans);
         ArrayList<Command[]> jointActions = new ArrayList<>();
         for (int i = 0; i < maxLength; i++) {
             ArrayList<Command> jointAction = new ArrayList<>();
-            for (Command[] plan : plans) {
-                if (i < plan.length) {
-                    jointAction.add(plan[i]);
+            for (Action[] actions : plans) {
+                if (i < actions.length) {
+                    jointAction.add(actions[i].getCommand());
                 } else {
                     jointAction.add(Command.NoOp);
                 }
@@ -101,17 +123,19 @@ public class CooperativeAStar extends AStrategy {
     }
 
     class AStar {
-        private int agentId;
         private HashSet<Plan> explored;
         private PriorityQueue<Plan> frontier;
         private HashSet<Plan> frontierSet;
+        private AHeuristic heuristic;
 
-        public AStar(int agentId, AHeuristic heuristic, Plan plan) {
-            this.agentId = agentId;
+        public AStar(AHeuristic heuristic, State initialState) {
+            PlanComparator comparator = new PlanComparator();
+            this.heuristic = heuristic;
             this.explored = new HashSet<>();
-            this.frontier = new PriorityQueue<>(heuristic);
+            this.frontier = new PriorityQueue<>(comparator);
             this.frontierSet = new HashSet<>();
-            this.addToFrontier(plan);
+            Plan root = new Plan(initialState);
+            this.addToFrontier(root);
         }
 
         private Plan getAndRemoveLeaf() {
@@ -141,11 +165,11 @@ public class CooperativeAStar extends AStrategy {
             return frontierSet.contains(n);
         }
 
-        public AStarResult plan() {
+        public AStarResult plan(int agentId, ArrayList<Set<Position>> cellsUsed, ArrayList<ArrayList<Action>> previousCommands) {
             long i = 0;
             while (true) {
                 if (i % 10000 == 0) {
-                    System.err.println("Agent " + this.agentId + ": " + i);
+                    System.err.println("Agent " + agentId + ": " + i);
                 }
                 if (this.frontierIsEmpty()) {
                     long explored = this.explored.size();
@@ -155,14 +179,15 @@ public class CooperativeAStar extends AStrategy {
 
                 Plan leaf = this.getAndRemoveLeaf();
 
-                if (leaf.getState().agentIsDone(this.agentId)) {
+                if (leaf.getState().agentIsDone(agentId)) {
                     long explored = this.explored.size();
                     long generated = explored + this.frontier.size();
                     return new AStarResult(leaf.extract(), explored, generated);
                 }
 
                 this.addToExplored(leaf);
-                for (Plan node : leaf.getChildren(this.agentId)) {
+                ArrayList<Plan> children = leaf.getConstrainedChildren(this.heuristic, agentId, cellsUsed, previousCommands);
+                for (Plan node : children) {
                     if (!this.isExplored(node) && !this.inFrontier(node)) {
                         this.addToFrontier(node);
                     }
@@ -185,11 +210,11 @@ public class CooperativeAStar extends AStrategy {
     }
 
     class CooperativeAStarResult {
-        public ArrayList<Command[]> plan;
+        public ArrayList<Action[]> plan;
         public long nodesExplored;
         public long nodesGenerated;
 
-        public CooperativeAStarResult(ArrayList<Command[]> plan, long nodesExplored, long nodesGenerated) {
+        public CooperativeAStarResult(ArrayList<Action[]> plan, long nodesExplored, long nodesGenerated) {
             this.plan = plan;
             this.nodesExplored = nodesExplored;
             this.nodesGenerated = nodesGenerated;

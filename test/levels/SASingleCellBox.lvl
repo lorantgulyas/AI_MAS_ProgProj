@@ -1,0 +1,15 @@
+#domain
+hospital
+#levelname
+SASingleCellBox
+#colors
+red: 0
+#initial
++++
++0+
++++
+#goal
++++
++ +
++++
+#end

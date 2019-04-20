@@ -4,6 +4,7 @@ import client.graph.Command;
 import client.state.*;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +26,12 @@ public class ServerIO {
 
         // parse file content
         return parseState(reader);
+    }
+
+    public static State readFromFile(String filename) throws Exception {
+        FileReader fr = new FileReader(filename);
+        BufferedReader br = new BufferedReader(fr);
+        return ServerIO.parseState(br);
     }
 
     public static State parseState(BufferedReader reader) throws Exception {
@@ -64,6 +71,7 @@ public class ServerIO {
         // create wall matrix, agents, boxes
         Agent[] agents = new Agent[agentColors.size()];
         ArrayList<Box> boxes = new ArrayList<>();
+        int boxIndex = 0;
         int colCount = rawLevel.get(0).length();
         int rowCount = rawLevel.size();
         boolean[][] walls = new boolean[colCount][rowCount];
@@ -80,7 +88,8 @@ public class ServerIO {
                     agents[agentId] = new Agent(agentId,
                             agentColors.get(agentId), new Position(x, y));
                 } else if (c >= 'A' && c <= 'Z') {
-                    boxes.add(new Box(c, boxColors.get(c), new Position(x, y)));
+                    boxes.add(new Box(boxIndex, c, boxColors.get(c), new Position(x, y)));
+                    boxIndex++;
                 } else if (c != ' ') {
                     throw new Error("Unknown character: " + c);
                 }
@@ -107,12 +116,8 @@ public class ServerIO {
             }
         }
 
-        State.setLevel(walls, rowCount, colCount);
-        return new State(
-                agents,
-                boxes.toArray(new Box[0]),
-                goals.toArray(new Goal[0])
-        );
+        Level level = new Level(walls, rowCount, colCount, goals.toArray(new Goal[0]));
+        return new State(level, agents, boxes.toArray(new Box[0]));
     }
 
     public boolean[] sendJointAction(Command[] jointAction) throws Exception {

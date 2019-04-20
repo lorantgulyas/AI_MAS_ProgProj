@@ -24,6 +24,8 @@ public class Main {
         serverIO.sendComment("Using heuristic: " + heuristic.toString());
 
         // find plan
+        int h = heuristic.h(initialState);
+        initialState.setH(h);
         Solution solution;
         try {
             solution = strategy.plan(initialState);
@@ -44,8 +46,8 @@ public class Main {
 
         // send joint actions to server
         for (Command[] jointAction : solution.getPlan()) {
-            boolean[] joinActionResponse = serverIO.sendJointAction(jointAction);
-            for (boolean actionResponse : joinActionResponse) {
+            boolean[] jointActionResponse = serverIO.sendJointAction(jointAction);
+            for (boolean actionResponse : jointActionResponse) {
                 if (!actionResponse) {
                     // TODO: figure out how to fix plan that went wrong...
                     throw new ServerRejectedJointActionException();

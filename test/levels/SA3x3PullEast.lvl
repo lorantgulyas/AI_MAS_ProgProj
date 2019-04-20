@@ -1,0 +1,19 @@
+#domain
+hospital
+#levelname
+SA3x3PullEast
+#colors
+red: 0, A
+#initial
++++++
+++ ++
++A0 +
+++ ++
++++++
+#goal
++++++
+++ ++
++A  +
+++ ++
++++++
+#end

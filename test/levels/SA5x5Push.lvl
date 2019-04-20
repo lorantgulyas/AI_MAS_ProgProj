@@ -1,0 +1,23 @@
+#domain
+hospital
+#levelname
+SA5x5Push
+#colors
+red: 0, A, B, C, D
+#initial
++++++++
++     +
++  A  +
++ D0B +
++  C  +
++     +
++++++++
+#goal
++++++++
++A   B+
++     +
++     +
++     +
++D   C+
++++++++
+#end

@@ -17,9 +17,7 @@ public class SingleTasker extends AHeuristic {
     private Box getClosestBoxToGoal(ArrayList<Box> boxes, Goal goal) {
         Box closest = null;
         int minDistance = Integer.MAX_VALUE;
-        int n = boxes.size();
-        for (int i = 0; i < n; i++) {
-            Box box = boxes.get(i);
+        for (Box box : boxes) {
             if (box.getLetter() == goal.getLetter()) {
                 int distance = this.measurer.distance(box.getPosition(), goal.getPosition());
                 if (distance < minDistance) {
@@ -32,12 +30,11 @@ public class SingleTasker extends AHeuristic {
     }
 
     private ArrayList<Goal> getUnfulfilledGoals(State state) {
-        Goal[] goals = state.getGoals();
+        Goal[] goals = state.getLevel().getGoals();
         ArrayList<Goal> unfulfilled = new ArrayList<>();
-        for (int i = 0; i < goals.length; i++) {
-            Goal goal = goals[i];
+        for (Goal goal : goals) {
             Box box = state.getBoxAt(goal.getPosition());
-            if (box != null && box.getLetter() != goal.getLetter()) {
+            if (box == null || box.getLetter() != goal.getLetter()) {
                 unfulfilled.add(goal);
             }
         }
@@ -45,33 +42,40 @@ public class SingleTasker extends AHeuristic {
     }
 
     private ArrayList<Box> getUnfinishedBoxes(State state) {
-        ArrayList<Box> unfulfilled = new ArrayList<>();
+        Level level = state.getLevel();
+        ArrayList<Box> unfinished = new ArrayList<>();
         Box[] boxes = state.getBoxes();
-        Goal[] goals = state.getGoals();
         for (Box box : boxes) {
-            for (Goal goal : goals) {
-                if (box.getLetter() != goal.getLetter()) {
-                    unfulfilled.add(box);
+            Goal goal = level.getGoalAt(box.getPosition());
+            if (goal == null || box.getLetter() != goal.getLetter()) {
+                unfinished.add(box);
+            }
+        }
+        return unfinished;
+    }
+
+    private ArrayList<Goal> getAgentGoals(ArrayList<Goal> goals, ArrayList<Box> boxes, Agent agent) {
+        ArrayList<Goal> agentGoals = new ArrayList<>();
+        for (Goal goal : goals) {
+            for (Box box : boxes) {
+                if (box.getLetter() == goal.getLetter() && box.getColor() == agent.getColor()) {
+                    agentGoals.add(goal);
                 }
             }
         }
-        return unfulfilled;
+        return agentGoals;
     }
 
-    public int h(State n) {
-        ArrayList<Goal> goals = this.getUnfulfilledGoals(n);
+    private int agentHeuristic(ArrayList<Goal> goals, ArrayList<Box> boxes, Agent agent) {
+        goals = this.getAgentGoals(goals, boxes, agent);
         int nGoals = goals.size();
         if (nGoals == 0) {
             return 0;
         }
-        ArrayList<Box> boxes = this.getUnfinishedBoxes(n);
-        // TODO: enable multi agent support!
-        Agent agent = n.getAgents()[0];
         int sum = 0;
         int minAgent2BoxDistance = Integer.MAX_VALUE;
         int minWalkDistance = Integer.MAX_VALUE;
-        for (int i = 0; i < nGoals; i++) {
-            Goal goal = goals.get(i);
+        for (Goal goal : goals) {
             Box box = this.getClosestBoxToGoal(boxes, goal);
             if (box != null) {
                 int box2goalDistance = this.measurer.distance(box.getPosition(), goal.getPosition());
@@ -84,10 +88,22 @@ public class SingleTasker extends AHeuristic {
                 }
             }
         }
-        if (minAgent2BoxDistance == Integer.MAX_VALUE) {
-            return sum + nGoals * this.measurer.getV();
-        } else {
-            return minAgent2BoxDistance + sum + nGoals * this.measurer.getV();
+        return minAgent2BoxDistance == Integer.MAX_VALUE
+                ? sum + nGoals * this.measurer.getV()
+                : minAgent2BoxDistance + sum + nGoals * this.measurer.getV();
+    }
+
+    public int h(State n) {
+        ArrayList<Goal> goals = this.getUnfulfilledGoals(n);
+        if (goals.size() == 0) {
+            return 0;
         }
+        ArrayList<Box> boxes = this.getUnfinishedBoxes(n);
+        Agent[] agents = n.getAgents();
+        int h = 0;
+        for (Agent agent : agents) {
+            h += this.agentHeuristic(goals, boxes, agent);
+        }
+        return h;
     }
 }

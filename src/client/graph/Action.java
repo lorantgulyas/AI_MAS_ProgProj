@@ -1,23 +1,49 @@
 package client.graph;
 
+import client.state.Position;
+
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Action {
 
+    private int agentID;
     private Command command;
-    private Timestamp[] timestamps;
+    private Set<Position> cellsUsed;
 
-    public Action(Command command, Timestamp[] timestamps) {
+    public Action(int agentID, Command command, Set<Position> cellsUsed) {
+        this.agentID = agentID;
         this.command = command;
-        this.timestamps = timestamps;
+        this.cellsUsed = cellsUsed;
+    }
+
+    public Action(int agentID, Command command, Position[] cellsUsed) {
+        this.agentID = agentID;
+        this.command = command;
+        this.cellsUsed = new HashSet<>(cellsUsed.length);
+        this.cellsUsed.addAll(Arrays.asList(cellsUsed));
+    }
+
+    public int getAgentID() {
+        return agentID;
+    }
+
+    public Set<Position> getCellsUsed() {
+        return cellsUsed;
     }
 
     public Command getCommand() {
         return command;
     }
 
-    public Timestamp[] getTimestamps() {
-        return timestamps;
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(this.agentID);
+        builder.append(":");
+        builder.append(this.command.toString());
+        return builder.toString();
     }
 
     @Override
@@ -29,16 +55,12 @@ public class Action {
         if (obj.getClass() != this.getClass())
             return false;
         Action other = (Action) obj;
-        return other.getCommand().equals(this.command)
-                && Arrays.deepEquals(other.timestamps, this.timestamps);
+        return other.agentID == this.agentID
+                && other.getCommand().equals(this.command);
     }
 
     @Override
     public int hashCode() {
-        int timestampsHash = 0;
-        for (Timestamp timestamp : this.timestamps) {
-            timestampsHash += timestamp.hashCode();
-        }
-        return timestampsHash + this.command.hashCode();
+        return agentID + this.command.hashCode();
     }
 }

@@ -1,9 +1,10 @@
 package client;
 
-import client.state.State;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 import java.io.*;
 
@@ -21,10 +22,13 @@ class ServerIOTest {
     }
 
     @Test
-    void readState() throws Exception {
-        BufferedReader br = new BufferedReader(in);
-        State state = ServerIO.parseState(br);
-        // assert here
-        System.err.println(state);
+    void readState() {
+        Assertions.assertDoesNotThrow(new Executable() {
+            @Override
+            public void execute() throws Throwable {
+                BufferedReader br = new BufferedReader(in);
+                ServerIO.parseState(br);
+            }
+        });
     }
 }

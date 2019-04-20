@@ -1,12 +1,16 @@
 package client.state;
 
+import client.graph.Command;
+
 public class Position {
     private int row;
     private int col;
+    private int _hash;
 
     public Position(int col, int row) {
         this.row = row;
         this.col = col;
+        this._hash = this.computeHashCode();
     }
 
     public int getRow() {
@@ -15,6 +19,18 @@ public class Position {
 
     public int getCol() {
         return col;
+    }
+
+    public Position go(Command.Dir dir) {
+        switch (dir) {
+            case E: return this.east();
+            case S: return this.south();
+            case W: return this.west();
+            case N: return this.north();
+            default:
+                // this case should not be reached
+                return null;
+        }
     }
 
     public Position north() {
@@ -35,7 +51,7 @@ public class Position {
 
     @Override
     public String toString() {
-        return "x: " + col + ", y: " + row;
+        return "(" + this.col + "," + this.row + ")";
     }
 
     @Override
@@ -47,12 +63,16 @@ public class Position {
         if (this.getClass() != obj.getClass())
             return false;
         Position other = (Position) obj;
-        return this.row == other.getRow()
-                && this.col == other.getCol();
+        return this.row == other.getRow() && this.col == other.getCol();
     }
 
     @Override
     public int hashCode() {
-        return this.row + this.col;
+        return this._hash;
+    }
+
+    private int computeHashCode() {
+        // plus one to avoid multiplying by zero
+        return (this.row + 1) * (this.col + 1);
     }
 }

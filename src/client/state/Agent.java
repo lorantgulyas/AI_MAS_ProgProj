@@ -5,11 +5,13 @@ public class Agent {
     private int id;
     private Color color;
     private Position position;
+    private int _hash;
 
     public Agent(int id, Color color, Position position) {
         this.id = id;
         this.color = color;
         this.position = position;
+        this._hash = this.computeHashCode();
     }
 
     public int getId() {
@@ -45,6 +47,11 @@ public class Agent {
 
     @Override
     public int hashCode() {
-        return this.position.hashCode() + this.id + this.color.ordinal();
+        return this._hash;
+    }
+
+    private int computeHashCode() {
+        // plus one to avoid multiplying by zero
+        return (this.id + 1) * (this.color.ordinal() + 1) * (this.position.hashCode() + 1);
     }
 }

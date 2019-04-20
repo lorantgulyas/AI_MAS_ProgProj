@@ -5,55 +5,44 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public class State {
-    private static boolean[][] walls;
-    private static int ROW_COUNT;
-    private static int COL_COUNT;
-
     private Agent[] agents;
     private Box[] boxes;
-    private Goal[] goals;
+    private Level level;
     private HashMap<Position, Agent> agentMap;
     private HashMap<Position, Box> boxMap;
+    private int h;
     private int _hash;
 
-    public State(Agent[] agents, Box[] boxes, Goal[] goals) {
+    /**
+     * Constructs a new state.
+     *
+     * @param level Associated level (walls and goals).
+     * @param agents Agents in the state.
+     * @param boxes Boxes in the state.
+     */
+    public State(Level level, Agent[] agents, Box[] boxes) {
         this.agents = agents;
         this.boxes = boxes;
-        this.goals = goals;
-        agentMap = new HashMap<>();
+        this.level = level;
+        this.agentMap = new HashMap<>();
         for (Agent agent : agents) {
-            agentMap.put(agent.getPosition(), agent);
+            this.agentMap.put(agent.getPosition(), agent);
         }
-        boxMap = new HashMap<>();
+        this.boxMap = new HashMap<>();
         for (Box box : boxes) {
-            boxMap.put(box.getPosition(), box);
+            this.boxMap.put(box.getPosition(), box);
         }
         this._hash = this.computeHashCode();
     }
 
-    public static void setLevel(boolean[][] initialWalls,
-                                int rowCount, int colCount) {
-        walls = initialWalls;
-        ROW_COUNT = rowCount;
-        COL_COUNT = colCount;
-    }
-
-    public boolean[][] getWalls() {
-        return walls;
-    }
-
-    public static int getColCount() {
-        return COL_COUNT;
-    }
-
-    public static int getRowCount() {
-        return ROW_COUNT;
+    public Level getLevel() {
+        return level;
     }
 
     public boolean isFree(Position position) {
-        return !walls[position.getCol()][position.getRow()] &&
-                !agentMap.containsKey(position) &&
-                !boxMap.containsKey(position);
+        return !this.level.wallAt(position) &&
+                !this.agentMap.containsKey(position) &&
+                !this.boxMap.containsKey(position);
     }
 
     public Agent[] getAgents() {
@@ -64,15 +53,30 @@ public class State {
         return boxes;
     }
 
-    public Goal[] getGoals() {
-        return goals;
+    /**
+     * Retrieves heuristic value.
+     * @return
+     */
+    public int h() {
+        return this.h;
+    }
+
+    /**
+     * Sets heuristic value. This is implemented as a setter rather than as a constructor
+     * since the heuristic functon needs to compute h on a state. Therefore we need to
+     * construct the state, compute h and then associate h with the state.
+     *
+     * @param h Heuristic value.
+     */
+    public void setH(int h) {
+        this.h = h;
     }
 
     // TODO: improve this implementation
     public boolean agentIsDone(int agentID) {
         Agent agent = this.agents[agentID];
         ArrayList<Goal> agentGoals = new ArrayList<>();
-        for (Goal goal : this.goals) {
+        for (Goal goal : this.level.getGoals()) {
             for (Box box : this.boxes) {
                 if (box.getLetter() == goal.getLetter() && box.getColor() == agent.getColor()) {
                     agentGoals.add(goal);
@@ -89,7 +93,7 @@ public class State {
     }
 
     public boolean isGoalState() {
-        for (Goal goal : goals) {
+        for (Goal goal : this.level.getGoals()) {
             Box box = boxMap.getOrDefault(goal.getPosition(), null);
             if (box == null || box.getLetter() != goal.getLetter()) {
                 return false;
@@ -114,24 +118,16 @@ public class State {
         return this.boxMap.containsKey(position);
     }
 
-    private int computeHashCode() {
-        int a = 0;
-        for (Agent agent : this.agents) {
-            a += agent.hashCode();
-        }
-        int b = 0;
-        for (Box box : this.boxes) {
-            b += box.hashCode();
-        }
-        return a * b;
-    }
-
     @Override
     public String toString() {
+        boolean[][] walls = this.level.getWalls();
+        int rowCount = this.level.getRowCount();
+        int colCount = this.level.getColCount();
+        Goal[] goals = this.level.getGoals();
         StringBuilder s = new StringBuilder();
-        char[][] level = new char[COL_COUNT][ROW_COUNT];
-        for (int y = 0; y < ROW_COUNT; y++) {
-            for (int x = 0; x < COL_COUNT; x++) {
+        char[][] level = new char[colCount][rowCount];
+        for (int y = 0; y < rowCount; y++) {
+            for (int x = 0; x < colCount; x++) {
                 if (walls[x][y]) {
                     level[x][y] = '+';
                 } else {
@@ -154,8 +150,8 @@ public class State {
             Position pos = agent.getPosition();
             level[pos.getCol()][pos.getRow()] = Character.forDigit(agent.getId(), 10);
         }
-        for (int y = 0; y < ROW_COUNT; y++) {
-            for (int x = 0; x < COL_COUNT; x++) {
+        for (int y = 0; y < rowCount; y++) {
+            for (int x = 0; x < colCount; x++) {
                 s.append(level[x][y]);
             }
             s.append("\n");
@@ -179,5 +175,17 @@ public class State {
     @Override
     public int hashCode() {
         return this._hash;
+    }
+
+    private int computeHashCode() {
+        int a = 0;
+        for (Agent agent : this.agents) {
+            a += agent.hashCode();
+        }
+        int b = 0;
+        for (Box box : this.boxes) {
+            b += box.hashCode();
+        }
+        return a * b;
     }
 }
