@@ -28,7 +28,7 @@ class FloodfillTest {
         // assert here
         System.err.println(state);
         Floodfill ff = new Floodfill(state);
-        ff.findRooms();
-        ff.prioritizeGoals();
+        ff.findRooms(state.getLevel());
+        ff.prioritizeGoals(state.getLevel());
     }
 }

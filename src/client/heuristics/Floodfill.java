@@ -71,21 +71,24 @@ public class Floodfill extends AHeuristic {
         }
     }
 
-    public void findRooms() {
+    public void findRooms(Level level) {
         // return if already preprocessed
         if (rooms != null) return;
 
-        boolean[][] walls = State.getWalls();
+        boolean[][] walls = level.getWalls();
+        int colCount = level.getColCount();
+        int rowCount = level.getRowCount();
+
         // TODO: add goal positions!!!
         // TODO: fallback on storages, when there are no rooms (half plus on map)
-        rooms = new boolean[State.getColCount()][State.getRowCount()];
+        rooms = new boolean[colCount][rowCount];
         // prefill
-        for (int y = 0; y < State.getRowCount(); y++)
-            for (int x = 0; x < State.getColCount(); x++)
+        for (int y = 0; y < rowCount; y++)
+            for (int x = 0; x < colCount; x++)
                 rooms[x][y] = false;
         // detect rooms
-        for (int y = 1; y < State.getRowCount() - 2; y++) {
-            for (int x = 1; x < State.getColCount() - 2; x++) {
+        for (int y = 1; y < rowCount - 2; y++) {
+            for (int x = 1; x < colCount - 2; x++) {
                 // 2x2 window
                 if (!(walls[x][y] || walls[x + 1][y] || walls[x][y + 1] || walls[x + 1][y + 1])) {
                     rooms[x][y] = rooms[x + 1][y] = rooms[x][y + 1] = rooms[x + 1][y + 1] = true;
@@ -95,8 +98,8 @@ public class Floodfill extends AHeuristic {
 
         // print
         StringBuilder s = new StringBuilder();
-        for (int y = 0; y < State.getRowCount(); y++) {
-            for (int x = 0; x < State.getColCount(); x++) {
+        for (int y = 0; y < rowCount; y++) {
+            for (int x = 0; x < colCount; x++) {
                 if (rooms[x][y]) {
                     s.append("O");
                 } else if (walls[x][y]) {
@@ -110,12 +113,12 @@ public class Floodfill extends AHeuristic {
         System.err.println(s.toString());
     }
 
-    public void prioritizeGoals() {
-        for (Goal goal : State.getGoals()) {
+    public void prioritizeGoals(Level level) {
+        for (Goal goal : level.getGoals()) {
             Position pos = goal.getPosition();
             int priority = Integer.MAX_VALUE;
-            for (int y = 0; y < State.getRowCount(); y++) {
-                for (int x = 0; x < State.getColCount(); x++) {
+            for (int y = 0; y < level.getRowCount(); y++) {
+                for (int x = 0; x < level.getColCount(); x++) {
                     if (rooms[x][y] && (matrix[pos.getCol()][pos.getRow()][x][y] < priority)) {
                         priority = matrix[pos.getCol()][pos.getRow()][x][y];
                     }
@@ -127,7 +130,7 @@ public class Floodfill extends AHeuristic {
         }
 
         // print
-        for (Goal goal : State.getGoals()) {
+        for (Goal goal : level.getGoals()) {
             System.err.println(goal);
         }
     }
@@ -161,7 +164,7 @@ public class Floodfill extends AHeuristic {
         int h = 0;
         Agent[] agents = state.getAgents();
         Box[] boxes = state.getBoxes();
-        Goal[] goals = State.getGoals();
+        Goal[] goals = state.getLevel().getGoals();
         for (Goal goal : goals) {
             for (Agent agent : agents) {
                 h += this.distance(goal.getPosition(), agent.getPosition());
