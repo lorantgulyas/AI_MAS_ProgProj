@@ -135,8 +135,8 @@ public class Plan {
             return ActionGenerator.constrainedChildren(currentState, constraints.get(this.time), agentID);
         } else {
             HashSet cs = new HashSet();
-            cs.addAll(constraints.get(this.time + 1));
             cs.addAll(constraints.get(this.time));
+            cs.addAll(constraints.get(this.time + 1));
             return ActionGenerator.constrainedChildren(currentState, cs, agentID);
         }
     }
