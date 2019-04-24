@@ -72,11 +72,20 @@ public class ServerIO {
         Agent[] agents = new Agent[agentColors.size()];
         ArrayList<Box> boxes = new ArrayList<>();
         int boxIndex = 0;
-        int colCount = rawLevel.get(0).length();
         int rowCount = rawLevel.size();
-        boolean[][] walls = new boolean[colCount][rowCount];
+
+        int maxColCount = 0;
+        for (int y = 0; y < rowCount; y++) {
+            int colCount = rawLevel.get(y).length();
+            if (maxColCount < colCount) {
+                maxColCount = colCount;
+            }
+        }
+
+        boolean[][] walls = new boolean[maxColCount][rowCount];
         for (int y = 0; y < rowCount; y++) {
             char[] rowChars = rawLevel.get(y).toCharArray();
+            int colCount = rowChars.length;
             for (int x = 0; x < colCount; x++) {
                 char c = rowChars[x];
                 walls[x][y] = false;
@@ -94,6 +103,9 @@ public class ServerIO {
                     throw new Error("Unknown character: " + c);
                 }
             }
+            for (int x = colCount; x < maxColCount; x++) {
+                walls[x][y] = true;
+            }
         }
 
         // parse goal state
@@ -108,6 +120,7 @@ public class ServerIO {
         ArrayList<Goal> goals = new ArrayList<>();
         for (int y = 0; y < rowCount; y++) {
             char[] rowChars = rawLevel.get(y).toCharArray();
+            int colCount = rowChars.length;
             for (int x = 0; x < colCount; x++) {
                 char c = rowChars[x];
                 if (c >= 'A' && c <= 'Z') {
@@ -116,7 +129,7 @@ public class ServerIO {
             }
         }
 
-        Level level = new Level(walls, rowCount, colCount, goals.toArray(new Goal[0]));
+        Level level = new Level(walls, rowCount, maxColCount, goals.toArray(new Goal[0]));
         return new State(level, agents, boxes.toArray(new Box[0]));
     }
 
