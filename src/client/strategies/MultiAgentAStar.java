@@ -22,6 +22,7 @@ public class MultiAgentAStar extends AStrategy {
     }
 
     public Solution plan(State initialState) {
+        long startTime = System.currentTimeMillis();
         ArrayList<ThreadedAgent> agents = this.getThreadedAgents(this.heuristic, initialState);
         this.startThreads(agents);
 
@@ -54,7 +55,7 @@ public class MultiAgentAStar extends AStrategy {
         }
 
         Command[][] plan = this.actions2plan(actions, agents.size());
-        PerformanceStats stats = this.getPerformanceStats(results, plan.length);
+        PerformanceStats stats = this.getPerformanceStats(results, plan.length, startTime);
         return new Solution(plan, stats);
     }
 
@@ -65,22 +66,16 @@ public class MultiAgentAStar extends AStrategy {
             ThreadedAgent threadedAgent = new ThreadedAgent(agent.getId(), heuristic, initialState);
             threadedAgents.add(threadedAgent);
         }
-        ArrayList<ConcurrentLinkedDeque<Plan>> messageQueues = new ArrayList<>();
+        ThreadedAgent[] threadedAgentsArray = threadedAgents.toArray(new ThreadedAgent[0]);
         for (ThreadedAgent threadedAgent : threadedAgents) {
-            ConcurrentLinkedDeque<Plan> messageQueue = threadedAgent.getMessageQueue();
-            messageQueues.add(messageQueue);
-        }
-        ConcurrentLinkedDeque<Plan>[] messageQueuesArray = messageQueues.toArray(new ConcurrentLinkedDeque[0]);
-        for (ThreadedAgent threadedAgent : threadedAgents) {
-            threadedAgent.setOtherAgentsMessageQueues(messageQueuesArray);
+            threadedAgent.setOtherAgents(threadedAgentsArray);
         }
         return threadedAgents;
     }
 
     private void startThreads(ArrayList<ThreadedAgent> agents) {
         for (ThreadedAgent agent : agents) {
-            Thread thread = new Thread(agent, agent.toString());
-            thread.start();
+            agent.start();
         }
     }
 
@@ -97,10 +92,9 @@ public class MultiAgentAStar extends AStrategy {
         return jointActions.toArray(new Command[0][0]);
     }
 
-    private PerformanceStats getPerformanceStats(Result[] results, int planLength) {
+    private PerformanceStats getPerformanceStats(Result[] results, int planLength, long startTime) {
         long nodesExplored = 0;
         long nodesGenerated = 0;
-        long startTime = System.currentTimeMillis();
         double memoryUsed = this.memoryUsed();
         double timeSpent = this.timeSpent(startTime);
 

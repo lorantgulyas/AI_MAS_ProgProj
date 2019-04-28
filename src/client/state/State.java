@@ -93,9 +93,16 @@ public class State {
     }
 
     public boolean isGoalState() {
-        for (Goal goal : this.level.getGoals()) {
-            Box box = boxMap.getOrDefault(goal.getPosition(), null);
-            if (box == null || box.getLetter() != goal.getLetter()) {
+        //for (Goal goal : this.level.getGoals()) {
+        //    Box box = this.boxMap.getOrDefault(goal.getPosition(), null);
+        //    if (box == null || box.getLetter() != goal.getLetter()) {
+        //        return false;
+        //    }
+        //}
+        //return true;
+        // TODO: uncomment above and remove below
+        for (Agent agent : this.agents) {
+            if (!this.agentIsDone(agent.getId())) {
                 return false;
             }
         }
