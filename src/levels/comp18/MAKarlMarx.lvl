@@ -1,0 +1,92 @@
+#domain
+hospital
+#levelname
+MAKarlMarx
+#colors
+blue: 0, 1, 3, 6, A, B, C, D, E, F, G, H, I, J, K
+red: 2, L
+green: 4, M, N, O
+pink: 5, 7, P, S, V, Y
+purple: 8, Q, T, W, Z
+cyan: 9, R, U, X
+#initial
+++++++++++++++++++++++++++++++++++++++++++++++++
+++ + + + + +  + + + + + +6789                  +
++0KJIHGFEDCBAKJIHGFEDCBA+                      +
+++ + + + + ++ + + + + +++                      +
++++++++++++++++++++++++++                      +
++++++++2   +                                   +
++  1  +    +                                   +
++J+ + +4   +                                   +
++H+ + +    +                                   +
++F+ + +    + K H   J W V Z P   U   W       Z   +
++D+ + ++++ +   W T R   P   K   J V P Q H T P   +
++B+ + +AB+ +       W Z V       T   X   P S   H +
++A+ + + C+5+   X       I   K S Q Y   W         +
++C+ + + D+3+ X   Y   R       V   W U R     P   +
++E+ + ++++ +   Y W P   S W   J W T     P J Q   +
++G+ + +    + H K W X   V H X R Z   X J     T U +
++I+ + +LLLL+   Q P V   H   R     H K I   I Z K +
++K+ + +MNO++ J T   H     T J Q Y W       I U S +
+++++++++++++   Z I       T   U           I I R +
++P   Y         Q Q P K         S U J H K T   Z +
++    Z   X   R U   X       Q     Q R   U   K   +
++U T   V V   Z   I Z       V S       Y   J W U +
++        H   Y Q K R     H     K K   I I   K   +
++R S       Y J I       T X   J   S   J   S Q   +
++H         X Z P K T X   I   S   V   K   R J R +
++  T V     I R       R     W   Y W I Q   K Y   +
++  P I   P J V W   X Q Z   S P   Y Y           +
++  R Y   Z Z R X     I J       Y Q U   V     S +
++        V   H P U I Q R   Q I R T       U J   +
++      P   R     Z   Q   Z   H V P H     S     +
++U T J Y P       S Q R   W V   Y   Y K W Y J T +
++H W K H     U   Z Q   T T Y Y J H U Z S   P V +
++K P     I K U W   K U Z   Y     T   T Y J Q X +
++S     U J S R   Y U     V X W H       H X     +
++H H V             T U Q     W   K W T H   R   +
++P   Z U R   Q     I I I S   X   I   V Z S     +
++    J T X   X S X       H X   R V     Q     U +
++    Z     T P     Z V S       Q U S     W   P +
+++++++++++++++++++++++++++++++++++++++++++++++++
+#goal
+++++++++++++++++++++++++++++++++++++++++++++++++
+++A+C+E+G+I+KA+C+E+G+I+K+                      +
++                       +                      +
+++B+D+F+H+J++B+D+F+H+J+++                      +
++++++++++++++++++++++++++                      +
++++++++    +                                   +
++     +    +                                   +
++ + +A+ MNO+                                   +
++ + +B+    +                                   +
++ + +C+    +     X           J   U   U I I   R +
++ + +D++++ + S       I   H   W               I +
++ + +E+  + + S Z J       H T U   P   W     Q   +
++ + +F+  + + V   X P Z   R         V   H H I S +
++ + +G+  + +   R   Q   V V S   X       W T   J +
++ + +H++++ + Y       W     T       U U       X +
++ + +I+    +         H           K     P U     +
++ + +J+    + W       I   Z   X W       W       +
++ + +K+   ++     K   J S           H V R       +
+++++++++++++ T     S X H   Y   Q H S J T       +
++  J   P X K R         W Z U V             I   +
++T R   H   R     J   W P Z   V K     V   T   H +
++    T     I   R     T Z Q     J U V   J       +
++Q S W W   P         Z Y   S P     S     V   K +
++    K Q R       X Q Y     P   K   Q   Y     Z +
++  T P U U             P   U   V   T   Y       +
++Y     P H     H K Z   P S   Z         Q     P +
++X     R         V       P     H     Z J T Q Z +
++T     T         T J     P R R       X   W Y   +
++U J Q I   S             W         Y Y H     Z +
++U Y X   R   U P   K   P   I         U R   I V +
++          T S K       X     Z   X             +
++        Q I   H     K                   I     +
++    Y Q         Q       K   Y R   Q           +
++  I I         H     Q V         V W T     X I +
++      U Z P R Y K       H K   X         Y   J +
++  Y       X   J R         J   U   K       Y T +
++Z V       H       W U S     W     Y V   Q K   +
++I X   W V     S S       K S I       X J   J   +
+++++++++++++++++++++++++++++++++++++++++++++++++
+#end

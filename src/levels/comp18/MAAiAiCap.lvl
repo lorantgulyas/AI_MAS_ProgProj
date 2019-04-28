@@ -1,0 +1,71 @@
+#domain
+hospital
+#levelname
+MAAiAiCap
+#colors
+red: 0, A
+green: 1, B
+cyan: Z
+#initial
+++++++++++++++++++++
++0ZA  Z     Z      +
++ Z Z    ZZZZ ZZZZZ+
++ Z   Z   Z Z      +
++ Z ZZZ Z Z ZZZZZZ +
++ Z   Z   Z      Z +
++ ZZZ ZZ ZZZZZZZ Z +
++ Z          1ZZ   +
++ Z    ZZZZZZZ     +
++ Z  Z        ZZ   +
++ Z ZZZ Z Z Z Z ZZ +
++ ZZZ ZZ ZZ ZZ Z Z +
++ Z            ZZZ +
++ Z    ZZZZZ Z     +
++ Z        Z  ZZZZ +
++ Z ZZZ Z Z Z ZZZZ +
++ Z   Z   Z      Z +
++ ZZZ ZZ ZZZ ZZZZZ +
++ Z            Z   +
++ Z    ZZZZZZZ     +
++ Z     Z  Z   Z   +
++ Z Z Z Z Z Z  Z   +
++ Z Z Z Z Z Z ZZ   +
++              Z   +
++ ZBZZZ Z Z ZZZZZZ +
++ Z   Z   Z      Z +
++ ZZZ ZZ ZZZZZZZ Z +
++ Z            Z   +
++ Z    ZZZZZZZ     +
+++++++++++++++++++++
+#goal
+++++++++++++++++++++
++                 A+
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++                  +
++B                 +
+++++++++++++++++++++
+#end

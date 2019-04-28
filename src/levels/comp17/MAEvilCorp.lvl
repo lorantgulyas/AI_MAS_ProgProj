@@ -1,0 +1,28 @@
+#domain
+hospital
+#levelname
+MAEvilCorp
+#colors
+red: 0, B, C, D, E
+green: 1, A, F, G, H, I, J
+#initial
+++++++++++++
++          +
++  0  ++++++
++     FGHIJ+
++A+E+ ++++++
++B+ + +
++C+ + +
++D+1+ +
++++++++
+#goal
+++++++++++++
++     FGHIJ+
++     ++++++
++          +
++ + +A++++++
++ + +B+
++ + +C+
++ + +D+
++++++++
+#end

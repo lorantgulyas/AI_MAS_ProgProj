@@ -1,0 +1,39 @@
+#domain
+hospital
+#levelname
+MABronies
+#colors
+green: 1, A, F, K, P, U
+red: 0, B, G, L, Q, V
+grey: 2, C, H, M, R
+blue: 3, D, I, N, S
+pink: 4, E, J, O, T
+#initial
+++++++++++++++++
++0 A   E    B 2+
+++++    O   ++++
++1   G    F    +
++  V    H   T+ +
++ P  K     I +C+
++ L     J    +3+
++    M     N +++
++ S R   Q   U  +
++ + + + + + ++D+
++ + + + + + ++ +
++ + + + + + ++4+
+++++++++++++++++
+#goal
+++++++++++++++++
++              +
+++++        ++++
++              +
++            + +
++            + +
++            + +
++            +++
++              +
++G+J+M+P+S+V++ +
++F+I+L+O+R+U++ +
++E+H+K+N+Q+T++ +
+++++++++++++++++
+#end

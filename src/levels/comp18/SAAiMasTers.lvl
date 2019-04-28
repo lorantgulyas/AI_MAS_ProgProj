@@ -1,0 +1,43 @@
+#domain
+hospital
+#levelname
+SAAiMasTers
+#colors
+blue: 0, A, L, M
+#initial
++++++++++++++++++++++++++++++++++
+++ AA+++++++++++AAAAAAAAAAAAAAAA+
++  AAA++++++++++AA+++++++++++++A+
+++ 0AAAAAAAAAAAAA +AAAAAAAAAAAAA+
+++ +++++++++++++ ++A+++++++++++++
+++               +AAAAAAAAAAAAAA+
+++               ++++++++++++++A+
+++               +AAAAAAAAAAAAAA+
+++               +A++++++++++++++
+++               +AAAAAAAAAAAAAA+
+++ + + + + + + + ++++++++++++++A+
+++ + + + + + + + +AAAAAAAAAAAAAA+
+++ + + + + + + + +A++++++++++++++
+++ + + + + + + + +AAAAAAAAAAAAAA+
+++ + + + + + + + +++++A++++A+++A+
+++ + + + + + + + +++L+A+MM+A+++++
++++++++++++++++++++++++++++++++++
+#goal
++++++++++++++++++++++++++++++++++
+++A  +++++++++++                +
++AA   ++++++++++  +++++++++++++ +
+++A              A+             +
+++A+++++++++++++A++ +++++++++++++
+++AAAAAAAAAAAAAAA+              +
+++AAAAAAAAAAAAAAA++++++++++++++ +
+++AAAAAAAAAAAAAAA+              +
+++AAAAAAAAAAAAAAA+ ++++++++++++++
+++AAAAAAAAAAAAAAA+              +
+++A+A+A+A+A+A+A+A++++++++++++++ +
+++A+A+A+A+A+A+A+A+              +
+++A+A+A+A+A+A+A+A+ ++++++++++++++
+++A+A+A+A+A+A+A+A+              +
+++A+A+A+A+A+A+A+A+++++ ++++ +++ +
+++A+A+A+A+A+A+A+A+++ + +  + +++++
++++++++++++++++++++++++++++++++++
+#end

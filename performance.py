@@ -150,8 +150,8 @@ def parse_arguments(timestamp):
     )
     parser.add_argument(
         '--levels',
-        default='src/levels',
-        help='Path to levels to run performance against (defaults to src/levels).',
+        default='src/levels/custom',
+        help='Path to levels to run performance against (defaults to src/levels/custom).',
         type=str,
         dest='levels',
     )

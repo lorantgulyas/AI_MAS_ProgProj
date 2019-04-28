@@ -1,0 +1,23 @@
+#domain
+hospital
+#levelname
+SAGroupOne
+#colors
+blue: 0, A, B, C, D, E, F, G
+#initial
++++
++ +++++++++++++++
++0GFEDCBA       +
++ +++++++++++++++
++        +
+++ +++++++
+ +++
+#goal
++++
++ +++++++++++++++
++        ABCDEFG+
++ +++++++++++++++
++        +
+++ +++++++
+ +++
+#end
