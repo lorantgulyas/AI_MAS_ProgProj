@@ -3,7 +3,8 @@ package client.config;
 import client.definitions.AHeuristic;
 import client.heuristics.Floodfill;
 import client.heuristics.Manhattan;
-import client.heuristics.SingleTasker;
+import client.heuristics.SingleTaskerManhattan;
+import client.heuristics.SingleTaskerShortestPath;
 import client.state.State;
 
 public class Heuristic {
@@ -14,8 +15,10 @@ public class Heuristic {
                 return new Floodfill(initialState);
             case "manhattan":
                 return new Manhattan(initialState);
-            case "single-tasker":
-                return new SingleTasker(initialState);
+            case "single-tasker-manhattan":
+                return new SingleTaskerManhattan(initialState);
+            case "single-tasker-shortest-path":
+                return new SingleTaskerShortestPath(initialState);
             default:
                 throw new UnknownHeuristicException();
         }

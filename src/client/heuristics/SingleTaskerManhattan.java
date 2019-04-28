@@ -1,17 +1,18 @@
 package client.heuristics;
 
 import client.definitions.AHeuristic;
+import client.distance.LazyManhattan;
 import client.distance.LazyShortestPath;
 import client.state.*;
 
 import java.util.ArrayList;
 
-public class SingleTaskerShortestPath extends AHeuristic {
-    private LazyShortestPath measurer;
+public class SingleTaskerManhattan extends AHeuristic {
+    private LazyManhattan measurer;
 
-    public SingleTaskerShortestPath(State initialState) {
+    public SingleTaskerManhattan(State initialState) {
         super(initialState);
-        this.measurer = new LazyShortestPath(initialState);
+        this.measurer = new LazyManhattan();
     }
 
     private Box getClosestBoxToGoal(ArrayList<Box> boxes, Goal goal) {
@@ -89,8 +90,8 @@ public class SingleTaskerShortestPath extends AHeuristic {
             }
         }
         return minAgent2BoxDistance == Integer.MAX_VALUE
-                ? sum + nGoals * this.measurer.getV()
-                : minAgent2BoxDistance + sum + nGoals * this.measurer.getV();
+                ? sum + nGoals * 100
+                : minAgent2BoxDistance + sum + nGoals * 100;
     }
 
     public int h(State n) {

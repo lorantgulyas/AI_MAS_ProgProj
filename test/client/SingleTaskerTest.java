@@ -1,6 +1,6 @@
 package client;
 
-import client.heuristics.SingleTasker;
+import client.heuristics.SingleTaskerShortestPath;
 import client.state.State;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ public class SingleTaskerTest {
         // box to goal distance = 2
         // agent to goal-box distance = 1
         int expected = 2 + 1 + 1 * 5;
-        int actual = new SingleTasker(this.singleAgent).h(this.singleAgent);
+        int actual = new SingleTaskerShortestPath(this.singleAgent).h(this.singleAgent);
         Assertions.assertEquals(expected, actual);
     }
 
@@ -43,14 +43,14 @@ public class SingleTaskerTest {
         // agent 0 to goal-box distance = 1
         // agent 1 to goal-box distance = 7
         int expected = (6 + 1 + 1 * 16) + (1 + 7 + 1 * 16);
-        int actual = new SingleTasker(this.multiAgent).h(this.multiAgent);
+        int actual = new SingleTaskerShortestPath(this.multiAgent).h(this.multiAgent);
         Assertions.assertEquals(expected, actual);
     }
 
     @Test
     public void computesZeroForASolvedLevel() {
         int expected = 0;
-        int actual = new SingleTasker(this.solved).h(this.solved);
+        int actual = new SingleTaskerShortestPath(this.solved).h(this.solved);
         Assertions.assertEquals(expected, actual);
     }
 

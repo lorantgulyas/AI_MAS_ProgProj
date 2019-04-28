@@ -6,10 +6,10 @@ import client.state.*;
 
 import java.util.ArrayList;
 
-public class SingleTasker extends AHeuristic {
+public class SingleTaskerShortestPath extends AHeuristic {
     private LazyShortestPath measurer;
 
-    public SingleTasker(State initialState) {
+    public SingleTaskerShortestPath(State initialState) {
         super(initialState);
         this.measurer = new LazyShortestPath(initialState);
     }
