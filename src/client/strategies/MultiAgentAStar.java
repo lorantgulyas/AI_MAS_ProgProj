@@ -22,7 +22,7 @@ public class MultiAgentAStar extends AStrategy {
     }
 
     public Solution plan(State initialState) {
-        ArrayList<ThreadedAgent> agents = this.getThreadedAgents(initialState);
+        ArrayList<ThreadedAgent> agents = this.getThreadedAgents(this.heuristic, initialState);
         this.startThreads(agents);
 
         for (ThreadedAgent agent : agents) {
@@ -58,11 +58,11 @@ public class MultiAgentAStar extends AStrategy {
         return new Solution(plan, stats);
     }
 
-    private ArrayList<ThreadedAgent> getThreadedAgents(State initialState) {
+    private ArrayList<ThreadedAgent> getThreadedAgents(AHeuristic heuristic, State initialState) {
         Agent[] agents = initialState.getAgents();
         ArrayList<ThreadedAgent> threadedAgents = new ArrayList<>();
         for (Agent agent : agents) {
-            ThreadedAgent threadedAgent = new ThreadedAgent(agent.getId());
+            ThreadedAgent threadedAgent = new ThreadedAgent(agent.getId(), heuristic, initialState);
             threadedAgents.add(threadedAgent);
         }
         ArrayList<ConcurrentLinkedDeque<Plan>> messageQueues = new ArrayList<>();

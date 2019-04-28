@@ -14,7 +14,6 @@ public class Result {
     }
 
     public boolean hasPlan() {
-        // TODO
-        return false;
+        return this.actions != null;
     }
 }
