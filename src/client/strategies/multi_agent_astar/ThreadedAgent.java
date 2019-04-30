@@ -3,16 +3,16 @@ package client.strategies.multi_agent_astar;
 import client.definitions.AHeuristic;
 import client.graph.Plan;
 import client.graph.PlanComparator;
+import client.strategies.multi_agent_astar.messages.Message;
+import client.strategies.multi_agent_astar.messages.SendNode;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class ThreadedAgent extends Thread {
 
     private int agentID;
 
-    private ConcurrentLinkedDeque<Plan> messageQueue;
-    private ThreadedAgent[] otherAgents;
+    private Channel channel;
 
     private HashMap<Plan, Plan> explored;
     private PriorityQueue<Plan> frontier;
@@ -23,7 +23,7 @@ public class ThreadedAgent extends Thread {
 
     public ThreadedAgent(int agentID, AHeuristic heuristic, client.state.State initialState) {
         this.agentID = agentID;
-        this.messageQueue = new ConcurrentLinkedDeque<>();
+        this.channel = new Channel(agentID);
         PlanComparator comparator = new PlanComparator();
         this.heuristic = heuristic;
         this.explored = new HashMap<>();
@@ -37,15 +37,11 @@ public class ThreadedAgent extends Thread {
         return this.agentID;
     }
 
-    public void addMessage(Plan message) {
-        this.messageQueue.add(message);
+    public Channel getChannel() {
+        return this.channel;
     }
 
-    public boolean messageQueueIsEmpty() {
-        return this.messageQueue.isEmpty();
-    }
-
-    public boolean frontierIsEmpty() {
+    private boolean frontierIsEmpty() {
         return this.frontier.isEmpty();
     }
 
@@ -55,15 +51,7 @@ public class ThreadedAgent extends Thread {
      * @param agents
      */
     public void setOtherAgents(ThreadedAgent[] agents) {
-        ThreadedAgent[] otherAgents = new ThreadedAgent[agents.length - 1];
-        int j = 0;
-        for (int i = 0; i < agents.length; i++) {
-            if (i != this.agentID) {
-                otherAgents[j] = agents[i];
-                j++;
-            }
-        }
-        this.otherAgents = otherAgents;
+        this.channel.setChannels(agents);
     }
 
     public Result getResult() {
@@ -136,9 +124,12 @@ public class ThreadedAgent extends Thread {
     }
 
     private void processMessages() {
-        while (!this.messageQueue.isEmpty()) {
-            Plan message = this.messageQueue.poll();
-            this.processMessage(message);
+        ArrayList<Message> messages = this.channel.deliverAll();
+        for (Message message : messages) {
+            if (message instanceof SendNode) {
+                SendNode nodeMessage = (SendNode) message;
+                this.processMessage(nodeMessage.getNode());
+            }
         }
     }
 
@@ -180,7 +171,8 @@ public class ThreadedAgent extends Thread {
 
     private boolean noSolutionExists(boolean frontierIsEmpty) {
         // TODO: verify that no solution exists (we might not be done yet)
-        if (frontierIsEmpty && this.otherAgentsFrontierIsEmpty() && this.messageQueueIsEmpty() && this.otherAgentsMessageQueueIsEmpty()) {
+        //if (frontierIsEmpty && this.otherAgentsFrontierIsEmpty() && this.messageQueueIsEmpty() && this.otherAgentsMessageQueueIsEmpty()) {
+        if (false) {
             long explored = this.explored.size();
             long generated = explored + this.frontier.size();
             this.result = new Result(null, explored, generated);
@@ -195,7 +187,7 @@ public class ThreadedAgent extends Thread {
 
         // TODO: verify that this is an optimal solution (we might not be done yet)
         if (leaf.getState().isGoalState()) {
-            this.broadcast(leaf);
+            this.channel.broadcast(leaf);
             long explored = this.explored.size();
             long generated = explored + this.frontier.size();
             this.result = new Result(leaf.extract(), explored, generated);
@@ -203,7 +195,7 @@ public class ThreadedAgent extends Thread {
         }
 
         // TODO: only actions that are public to other agents should be sent in order to save on communication overhead
-        this.broadcast(leaf);
+        this.channel.broadcast(leaf);
 
         ArrayList<Plan> children = leaf.getChildren(this.heuristic, this.agentID);
         for (Plan child : children) {
@@ -249,32 +241,6 @@ public class ThreadedAgent extends Thread {
                 this.removeFromFrontier(child);
             }
         }
-    }
-
-    private void broadcast(Plan message) {
-        for (ThreadedAgent agent : this.otherAgents) {
-            if (!agent.isDone()) {
-                agent.addMessage(message);
-            }
-        }
-    }
-
-    private boolean otherAgentsFrontierIsEmpty() {
-        for (ThreadedAgent agent : this.otherAgents) {
-            if (!agent.frontierIsEmpty()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean otherAgentsMessageQueueIsEmpty() {
-        for (ThreadedAgent agent : this.otherAgents) {
-            if (!agent.messageQueueIsEmpty()) {
-                return false;
-            }
-        }
-        return true;
     }
 
     @Override
