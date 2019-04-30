@@ -136,11 +136,9 @@ public class ThreadedAgent extends Thread {
     }
 
     private void processMessages() {
-        int queueSize = this.messageQueue.size();
-        while (queueSize != 0) {
+        while (!this.messageQueue.isEmpty()) {
             Plan message = this.messageQueue.poll();
             this.processMessage(message);
-            queueSize--;
         }
     }
 
