@@ -33,30 +33,12 @@ public class ThreadedAgent extends Thread {
         this.addToFrontier(root);
     }
 
-    private Plan getAndRemoveLeaf() {
-        Plan plan = this.frontier.poll();
-        this.frontierSet.remove(plan);
-        return plan;
+    public int getAgentID() {
+        return this.agentID;
     }
 
-    private void addToExplored(Plan n) {
-        this.explored.put(n, n);
-    }
-
-    private void addToFrontier(Plan n) {
-        this.frontier.add(n);
-        this.frontierSet.put(n, n);
-    }
-
-    private void replaceInFrontier(Plan previous, Plan next) {
-        this.frontier.remove(previous);
-        this.frontier.add(next);
-        if (this.frontierSet.containsKey(previous)) {
-            this.frontierSet.replace(previous, next);
-        } else {
-            System.err.println("NO!");
-            this.frontierSet.put(previous, next);
-        }
+    public void addMessage(Plan message) {
+        this.messageQueue.add(message);
     }
 
     public boolean messageQueueIsEmpty() {
@@ -65,14 +47,6 @@ public class ThreadedAgent extends Thread {
 
     public boolean frontierIsEmpty() {
         return this.frontier.isEmpty();
-    }
-
-    public int getAgentID() {
-        return this.agentID;
-    }
-
-    public void addMessage(Plan message) {
-        this.messageQueue.add(message);
     }
 
     /**
@@ -100,152 +74,73 @@ public class ThreadedAgent extends Thread {
         return this.result != null;
     }
 
+    private Plan getAndRemoveLeaf() {
+        Plan plan = this.frontier.poll();
+        this.frontierSet.remove(plan);
+        return plan;
+    }
+
+    private void addToExplored(Plan n) {
+        this.explored.put(n, n);
+    }
+
+    private void addToFrontier(Plan n) {
+        this.frontier.add(n);
+        this.frontierSet.put(n, n);
+    }
+
+    private void replaceInFrontier(Plan previous, Plan next) {
+        this.frontier.remove(previous);
+        this.frontier.add(next);
+        this.frontierSet.replace(previous, next);
+    }
+
+    private void explored2frontier(Plan node) {
+        this.explored.remove(node);
+        this.addToFrontier(node);
+    }
+
+    private void explored2frontierAndReplace(Plan previous, Plan next) {
+        this.explored.remove(previous);
+        this.replaceInFrontier(previous, next);
+    }
+
+    private void removeFromFrontier(Plan node) {
+        this.frontierSet.remove(node);
+        this.frontier.remove(node);
+    }
+
     public void run() {
         long i = 0;
         while (true) {
-            if (i % 500 == 0) {
+            if (i % 50000 == 0) {
                 System.err.println("Agent " + this.agentID + ": " + i);
             }
-
-            // process messages
-            int queueSize = this.messageQueue.size();
-            while (queueSize != 0) {
-            //while (!this.messageQueue.isEmpty()) {
-                Plan message = this.messageQueue.poll();
-                this.processMessage(message);
-                queueSize--;
-                // TODO: remove
-                //this.checkFrontiers();
-            }
-
-            // check for solution
-            // TODO: verify that no solution exists (we might not be done yet)
+            this.processMessages();
             boolean frontierIsEmpty = this.frontierIsEmpty();
-            if (frontierIsEmpty && this.otherAgentsFrontierIsEmpty() && this.messageQueueIsEmpty() && this.otherAgentsMessageQueueIsEmpty()) {
-                long explored = this.explored.size();
-                long generated = explored + this.frontier.size();
-                this.result = new Result(null, explored, generated);
+            boolean noSolutionExists = this.noSolutionExists(frontierIsEmpty);
+            if (noSolutionExists) {
                 System.err.println("Agent " + this.agentID + ": No solution found.");
                 break;
             }
-
             if (frontierIsEmpty) {
-                //System.err.println("Agent " + this.agentID + ": Frontier is empty.");
                 continue;
             }
-
-            // expand (explore)
-            Plan leaf = this.getAndRemoveLeaf();
-            this.addToExplored(leaf);
-
-            //System.err.println("Agent " + this.agentID + ": Not empty.");
-
-            // TODO: verify that this is an optimal solution (we might not be done yet)
-            if (leaf.getState().isGoalState()) {
-                this.broadcast(leaf);
-                long explored = this.explored.size();
-                long generated = explored + this.frontier.size();
-                this.result = new Result(leaf.extract(), explored, generated);
+            boolean solved = this.expand();
+            if (solved) {
                 System.err.println("Agent " + this.agentID + ": Is goal state.");
                 break;
-            }
-
-            // TODO: only actions that are public to other agents should be sent in order to save on communication overhead
-            this.broadcast(leaf);
-
-            ArrayList<Plan> children = leaf.getChildren(this.heuristic, this.agentID);
-            for (Plan child : children) {
-                //if (this.explored.containsKey(child) && (this.frontier.contains(child) || this.frontierSet.containsKey(child))) {
-                //    System.err.println("Agent " + this.agentID + ": Explored and frontier contains child!");
-                //}
-                if (this.frontier.contains(child) && !this.frontierSet.containsKey(child)) {
-                    System.err.println("Agent " + this.agentID + ": Frontier but not frontierSet!");
-                }
-
-                Plan childFromExplored = this.explored.get(child);
-                Plan childFromFrontier = this.frontierSet.get(child);
-                boolean inExplored = childFromExplored != null;
-                boolean inFrontier = childFromFrontier != null;
-                if (!inExplored && !inFrontier) {
-                    this.addToFrontier(child);
-                } else if (inExplored && !inFrontier) {
-                    if (child.f() < childFromExplored.f()) {
-                        this.explored.remove(child);
-                        this.addToFrontier(child);
-                    }
-                } else if (!inExplored && inFrontier) {
-                    if (child.f() < childFromFrontier.f()) {
-                        this.replaceInFrontier(childFromFrontier, child);
-                    }
-                } else {
-                    if (childFromExplored.f() < childFromFrontier.f()) {
-                        if (child.f() < childFromExplored.f()) {
-                            this.explored.remove(child);
-                            this.replaceInFrontier(childFromFrontier, child);
-                        } else {
-                            // same f-value in explored and frontier
-                            // so we don't need to explore it again
-                            this.frontierSet.remove(child);
-                            this.frontier.remove(child);
-                        }
-                    } else if (childFromFrontier.f() < childFromExplored.f()) {
-                        if (child.f() < childFromFrontier.f()) {
-                            this.explored.remove(child);
-                            this.replaceInFrontier(childFromFrontier, child);
-                        } else {
-                            this.explored.remove(child);
-                        }
-                    } else {
-                        // same f-value in explored and frontier
-                        // so we don't need to explore it again
-                        this.frontierSet.remove(child);
-                        this.frontier.remove(child);
-                    }
-                }
-
-                /*
-                Plan childFromExplored = this.explored.get(child);
-                if (childFromExplored == null || child.f() < childFromExplored.f()) {
-                    //if (this.frontier.contains(child)) {
-                    //    System.err.println("Agent " + this.agentID + ": Frontier contains child!");
-                    //}
-                    Plan childFromFrontier = this.frontierSet.get(child);
-                    if (childFromFrontier == null) {
-                        this.addToFrontier(child);
-                    } else if (child.f() < childFromFrontier.f()) {
-                        this.replaceInFrontier(childFromFrontier, child);
-                    } else {
-                        this.addToFrontier(child);
-                    }
-
-                    if (childFromExplored != null) {
-                        this.explored.remove(childFromExplored);
-                    }
-                }
-                */
-
-                // TODO: remove
-                //this.checkFrontiers();
             }
             i++;
         }
     }
 
-    private void checkFrontiers() {
-        for (Plan node : this.frontier) {
-            if (!this.frontierSet.containsKey(node)) {
-                System.err.println("BAD (not in set)!");
-            }
-        }
-        Collection<Plan> values = this.frontierSet.values();
-        for (Plan node : values) {
-            if (!this.frontier.contains(node)) {
-                System.err.println("BAD (not in frontier)!");
-            }
-        }
-        HashSet<Plan> set = new HashSet<>(values);
-        if (set.size() != values.size()) {
-            System.err.println("BAD (frontier set contains duplicates)!");
+    private void processMessages() {
+        int queueSize = this.messageQueue.size();
+        while (queueSize != 0) {
+            Plan message = this.messageQueue.poll();
+            this.processMessage(message);
+            queueSize--;
         }
     }
 
@@ -256,8 +151,7 @@ public class ThreadedAgent extends Thread {
             this.addToFrontier(message);
         } else if (fromFrontier == null && fromExplored != null) {
             if (message.g() < fromExplored.g()) {
-                this.explored.remove(fromExplored);
-                this.addToFrontier(message);
+                this.explored2frontier(message);
             }
         } else if (fromFrontier != null && fromExplored == null) {
             if (message.g() < fromFrontier.g()) {
@@ -266,26 +160,95 @@ public class ThreadedAgent extends Thread {
         } else {
             if (fromExplored.g() < fromFrontier.g()) {
                 if (message.g() < fromExplored.g()) {
-                    this.explored.remove(fromExplored);
-                    this.replaceInFrontier(fromFrontier, message);
+                    this.explored2frontierAndReplace(fromExplored, message);
                 } else {
                     // same g-value in explored and frontier
                     // so we don't need to explore it again
-                    this.frontierSet.remove(message);
-                    this.frontier.remove(message);
+                    this.removeFromFrontier(message);
                 }
             } else if (fromFrontier.g() < fromExplored.g()) {
                 if (message.g() < fromFrontier.f()) {
-                    this.explored.remove(fromExplored);
-                    this.replaceInFrontier(fromFrontier, message);
+                    this.explored2frontierAndReplace(fromExplored, message);
                 } else {
                     this.explored.remove(fromExplored);
                 }
             } else {
                 // same g-value in explored and frontier
                 // so we don't need to explore it again
-                this.frontierSet.remove(message);
-                this.frontier.remove(message);
+                this.removeFromFrontier(message);
+            }
+        }
+    }
+
+    private boolean noSolutionExists(boolean frontierIsEmpty) {
+        // TODO: verify that no solution exists (we might not be done yet)
+        if (frontierIsEmpty && this.otherAgentsFrontierIsEmpty() && this.messageQueueIsEmpty() && this.otherAgentsMessageQueueIsEmpty()) {
+            long explored = this.explored.size();
+            long generated = explored + this.frontier.size();
+            this.result = new Result(null, explored, generated);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean expand() {
+        Plan leaf = this.getAndRemoveLeaf();
+        this.addToExplored(leaf);
+
+        // TODO: verify that this is an optimal solution (we might not be done yet)
+        if (leaf.getState().isGoalState()) {
+            this.broadcast(leaf);
+            long explored = this.explored.size();
+            long generated = explored + this.frontier.size();
+            this.result = new Result(leaf.extract(), explored, generated);
+            return true;
+        }
+
+        // TODO: only actions that are public to other agents should be sent in order to save on communication overhead
+        this.broadcast(leaf);
+
+        ArrayList<Plan> children = leaf.getChildren(this.heuristic, this.agentID);
+        for (Plan child : children) {
+            this.processChild(child);
+        }
+
+        return false;
+    }
+
+    private void processChild(Plan child) {
+        Plan childFromExplored = this.explored.get(child);
+        Plan childFromFrontier = this.frontierSet.get(child);
+        boolean inExplored = childFromExplored != null;
+        boolean inFrontier = childFromFrontier != null;
+        if (!inExplored && !inFrontier) {
+            this.addToFrontier(child);
+        } else if (inExplored && !inFrontier) {
+            if (child.f() < childFromExplored.f()) {
+                this.explored2frontier(child);
+            }
+        } else if (!inExplored && inFrontier) {
+            if (child.f() < childFromFrontier.f()) {
+                this.replaceInFrontier(childFromFrontier, child);
+            }
+        } else {
+            if (childFromExplored.f() < childFromFrontier.f()) {
+                if (child.f() < childFromExplored.f()) {
+                    this.explored2frontierAndReplace(childFromFrontier, child);
+                } else {
+                    // same f-value in explored and frontier
+                    // so we don't need to explore it again
+                    this.removeFromFrontier(child);
+                }
+            } else if (childFromFrontier.f() < childFromExplored.f()) {
+                if (child.f() < childFromFrontier.f()) {
+                    this.explored2frontierAndReplace(childFromFrontier, child);
+                } else {
+                    this.explored.remove(child);
+                }
+            } else {
+                // same f-value in explored and frontier
+                // so we don't need to explore it again
+                this.removeFromFrontier(child);
             }
         }
     }

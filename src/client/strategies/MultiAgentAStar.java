@@ -62,6 +62,9 @@ public class MultiAgentAStar extends AStrategy {
         ArrayList<ThreadedAgent> threadedAgents = new ArrayList<>();
         for (Agent agent : agents) {
             ThreadedAgent threadedAgent = new ThreadedAgent(agent.getId(), heuristic, initialState);
+            // make absolutely sure that all agents run with the same priority
+            // for some reason this seems to be necessary
+            threadedAgent.setPriority(5);
             threadedAgents.add(threadedAgent);
         }
         ThreadedAgent[] threadedAgentsArray = threadedAgents.toArray(new ThreadedAgent[0]);
