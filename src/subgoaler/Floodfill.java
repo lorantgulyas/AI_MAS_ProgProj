@@ -1,9 +1,6 @@
 package subgoaler;
 
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
+import java.util.*;
 
 public class Floodfill implements Comparator<State> {
     private int[][][][] matrix;
@@ -68,19 +65,71 @@ public class Floodfill implements Comparator<State> {
         if (rooms != null) return;
 
         boolean[][] walls = State.getWalls();
-        // TODO: add goal positions!!!
         // TODO: fallback on storages, when there are no rooms (half plus on map)
         rooms = new boolean[State.getYmax()][State.getXmax()];
         // prefill
         for (int y = 0; y < State.getYmax(); y++)
             for (int x = 0; x < State.getXmax(); x++)
                 rooms[y][x] = false;
-        // detect rooms
+
+
+        // detect rooms that can't have goal positions
+        Goal[] goals = State.getGoals();
+        HashMap<Position, Goal> goalMap = new HashMap<>();
+        for (Goal goal : goals) {
+            goalMap.put(goal.getPosition(), goal);
+        }
         for (int y = 1; y < State.getYmax() - 2; y++) {
             for (int x = 1; x < State.getXmax() - 2; x++) {
                 // 2x2 window
+                // XX
+                // XX
                 if (!(walls[y][x] || walls[y][x + 1] || walls[y + 1][x] || walls[y + 1][x + 1])) {
-                    rooms[y][x] = rooms[y][x + 1] = rooms[y + 1][x] = rooms[y + 1][x + 1] = true;
+                    if (!(goalMap.containsKey(new Position(x, y)) ||
+                            goalMap.containsKey(new Position(x + 1,y)) ||
+                            goalMap.containsKey(new Position(x, y + 1)) ||
+                            goalMap.containsKey(new Position(x + 1, y + 1)))) {
+                        rooms[y][x] = rooms[y][x + 1] = rooms[y + 1][x] = rooms[y + 1][x + 1] = true;
+                    }
+                }
+            }
+        }
+
+        // fallback 1 - detect rooms that have goal positions
+        if (!hasRooms(rooms)) {
+            System.err.println("Fallback 1 rooms");
+            for (int y = 1; y < State.getYmax() - 2; y++) {
+                for (int x = 1; x < State.getXmax() - 2; x++) {
+                    // 2x2 window
+                    if (!(walls[y][x] || walls[y][x + 1] || walls[y + 1][x] || walls[y + 1][x + 1])) {
+                        rooms[y][x] = rooms[y][x + 1] = rooms[y + 1][x] = rooms[y + 1][x + 1] = true;
+                    }
+                }
+            }
+        }
+
+        // fallback 2 - corners
+        if (!hasRooms(rooms)) {
+            System.err.println("Fallback 2 rooms");
+            for (int y = 1; y < State.getYmax() - 1; y++) {
+                for (int x = 1; x < State.getXmax() - 1; x++) {
+                    // corner 3 out of 1
+                    //  0
+                    // 0X0
+                    //  0
+                    int freeNeighbors = 0;
+                    if (!walls[y][x] && !goalMap.containsKey(new Position(x, y))) {
+                        if (!walls[y - 1][x] && !goalMap.containsKey(new Position(x, y - 1)))
+                            freeNeighbors++;
+                        if (!walls[y + 1][x] && !goalMap.containsKey(new Position(x, y + 1)))
+                            freeNeighbors++;
+                        if (!walls[y][x - 1] && !goalMap.containsKey(new Position(x - 1, y)))
+                            freeNeighbors++;
+                        if (!walls[y][x + 1] && !goalMap.containsKey(new Position(x + 1, y)))
+                            freeNeighbors++;
+                        if (freeNeighbors > 2)
+                            rooms[y][x] = true;
+                    }
                 }
             }
         }
@@ -100,6 +149,17 @@ public class Floodfill implements Comparator<State> {
             s.append("\n");
         }
         System.err.println(s.toString());
+    }
+
+
+
+    boolean hasRooms(boolean[][] rooms) {
+        for (boolean[] col : rooms) {
+            for (boolean b : col) {
+                if (b) return true;
+            }
+        }
+        return false;
     }
 
     public void prioritizeGoals() {
