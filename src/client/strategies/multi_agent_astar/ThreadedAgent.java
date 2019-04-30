@@ -4,9 +4,7 @@ import client.definitions.AHeuristic;
 import client.graph.Plan;
 import client.graph.PlanComparator;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.PriorityQueue;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class ThreadedAgent extends Thread {
@@ -61,6 +59,10 @@ public class ThreadedAgent extends Thread {
         }
     }
 
+    public boolean messageQueueIsEmpty() {
+        return this.messageQueue.isEmpty();
+    }
+
     public boolean frontierIsEmpty() {
         return this.frontier.isEmpty();
     }
@@ -101,26 +103,29 @@ public class ThreadedAgent extends Thread {
     public void run() {
         long i = 0;
         while (true) {
-            if (i % 1 == 0) {
+            if (i % 500 == 0) {
                 System.err.println("Agent " + this.agentID + ": " + i);
             }
 
             // process messages
-            while (!this.messageQueue.isEmpty()) {
+            int queueSize = this.messageQueue.size();
+            while (queueSize != 0) {
+            //while (!this.messageQueue.isEmpty()) {
                 Plan message = this.messageQueue.poll();
                 this.processMessage(message);
+                queueSize--;
                 // TODO: remove
-                this.checkFrontiers();
+                //this.checkFrontiers();
             }
 
             // check for solution
             // TODO: verify that no solution exists (we might not be done yet)
             boolean frontierIsEmpty = this.frontierIsEmpty();
-            if (frontierIsEmpty && this.otherAgentsFrontierIsEmpty()) {
+            if (frontierIsEmpty && this.otherAgentsFrontierIsEmpty() && this.messageQueueIsEmpty() && this.otherAgentsMessageQueueIsEmpty()) {
                 long explored = this.explored.size();
                 long generated = explored + this.frontier.size();
                 this.result = new Result(null, explored, generated);
-                //System.err.println("Agent " + this.agentID + ": No solution found.");
+                System.err.println("Agent " + this.agentID + ": No solution found.");
                 break;
             }
 
@@ -141,7 +146,7 @@ public class ThreadedAgent extends Thread {
                 long explored = this.explored.size();
                 long generated = explored + this.frontier.size();
                 this.result = new Result(leaf.extract(), explored, generated);
-                //System.err.println("Agent " + this.agentID + ": Is goal state.");
+                System.err.println("Agent " + this.agentID + ": Is goal state.");
                 break;
             }
 
@@ -220,7 +225,7 @@ public class ThreadedAgent extends Thread {
                 */
 
                 // TODO: remove
-                this.checkFrontiers();
+                //this.checkFrontiers();
             }
             i++;
         }
@@ -229,30 +234,58 @@ public class ThreadedAgent extends Thread {
     private void checkFrontiers() {
         for (Plan node : this.frontier) {
             if (!this.frontierSet.containsKey(node)) {
-                System.err.println("BAD!");
+                System.err.println("BAD (not in set)!");
             }
+        }
+        Collection<Plan> values = this.frontierSet.values();
+        for (Plan node : values) {
+            if (!this.frontier.contains(node)) {
+                System.err.println("BAD (not in frontier)!");
+            }
+        }
+        HashSet<Plan> set = new HashSet<>(values);
+        if (set.size() != values.size()) {
+            System.err.println("BAD (frontier set contains duplicates)!");
         }
     }
 
     private void processMessage(Plan message) {
-        boolean addedToFrontier = false;
         Plan fromFrontier = this.frontierSet.get(message);
-        if (fromFrontier != null && message.g() < fromFrontier.g()) {
-            //if (this.frontier.contains(message)) {
-            //    System.err.println("Agent " + this.agentID + ": Frontier contains message (frontier)!");
-            //}
-            this.replaceInFrontier(fromFrontier, message);
-            addedToFrontier = true;
-        }
-
         Plan fromExplored = this.explored.get(message);
-        if (fromExplored != null && (message.g() < fromExplored.g() || addedToFrontier)) {
-            this.explored.remove(fromExplored);
-            //if (this.frontier.contains(message)) {
-            //    System.err.println("Agent " + this.agentID + ": Frontier contains message (explored)!");
-            //}
-            if (!addedToFrontier) {
+        if (fromFrontier == null && fromExplored == null) {
+            this.addToFrontier(message);
+        } else if (fromFrontier == null && fromExplored != null) {
+            if (message.g() < fromExplored.g()) {
+                this.explored.remove(fromExplored);
                 this.addToFrontier(message);
+            }
+        } else if (fromFrontier != null && fromExplored == null) {
+            if (message.g() < fromFrontier.g()) {
+                this.replaceInFrontier(fromFrontier, message);
+            }
+        } else {
+            if (fromExplored.g() < fromFrontier.g()) {
+                if (message.g() < fromExplored.g()) {
+                    this.explored.remove(fromExplored);
+                    this.replaceInFrontier(fromFrontier, message);
+                } else {
+                    // same g-value in explored and frontier
+                    // so we don't need to explore it again
+                    this.frontierSet.remove(message);
+                    this.frontier.remove(message);
+                }
+            } else if (fromFrontier.g() < fromExplored.g()) {
+                if (message.g() < fromFrontier.f()) {
+                    this.explored.remove(fromExplored);
+                    this.replaceInFrontier(fromFrontier, message);
+                } else {
+                    this.explored.remove(fromExplored);
+                }
+            } else {
+                // same g-value in explored and frontier
+                // so we don't need to explore it again
+                this.frontierSet.remove(message);
+                this.frontier.remove(message);
             }
         }
     }
@@ -268,6 +301,15 @@ public class ThreadedAgent extends Thread {
     private boolean otherAgentsFrontierIsEmpty() {
         for (ThreadedAgent agent : this.otherAgents) {
             if (!agent.frontierIsEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean otherAgentsMessageQueueIsEmpty() {
+        for (ThreadedAgent agent : this.otherAgents) {
+            if (!agent.messageQueueIsEmpty()) {
                 return false;
             }
         }

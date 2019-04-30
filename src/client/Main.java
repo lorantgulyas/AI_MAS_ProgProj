@@ -11,12 +11,12 @@ public class Main {
     public static void main(String[] args) throws Exception {
         // read state
         ServerIO serverIO = new ServerIO("soulman");
-        //State initialState = serverIO.readState();
-        State initialState = ServerIO.readFromFile("src/levels/custom/MAExample.lvl");
+        State initialState = serverIO.readState();
+        //State initialState = ServerIO.readFromFile("src/levels/custom/MAExample.lvl");
 
         // read config
-        //String configPath = args.length < 1 ? "src/configs/default.config" : args[0];
-        String configPath = "src/configs/maa_single_tasker_shortest_path.config";
+        String configPath = args.length < 1 ? "src/configs/default.config" : args[0];
+        //String configPath = "src/configs/maa_single_tasker_shortest_path.config";
         Config config = ConfigParser.readConfigFromFile(configPath, initialState);
 
         AHeuristic heuristic = config.getHeuristic();
