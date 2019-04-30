@@ -13,7 +13,6 @@ import client.strategies.multi_agent_astar.Result;
 import client.strategies.multi_agent_astar.ThreadedAgent;
 
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class MultiAgentAStar extends AStrategy {
 
@@ -35,7 +34,6 @@ public class MultiAgentAStar extends AStrategy {
             }
         }
 
-
         Result[] results = new Result[agents.size()];
         for (ThreadedAgent agent : agents) {
             results[agent.getAgentID()] = agent.getResult();
@@ -49,13 +47,13 @@ public class MultiAgentAStar extends AStrategy {
             }
         }
 
+        Command[][] plan = actions == null ? new Command[0][0] : this.actions2plan(actions, agents.size());
+        PerformanceStats stats = this.getPerformanceStats(results, plan.length, startTime);
+
         if (actions == null) {
             System.err.println("Error! Multi Agent A* did not find a solution.");
-            return null;
         }
 
-        Command[][] plan = this.actions2plan(actions, agents.size());
-        PerformanceStats stats = this.getPerformanceStats(results, plan.length, startTime);
         return new Solution(plan, stats);
     }
 
