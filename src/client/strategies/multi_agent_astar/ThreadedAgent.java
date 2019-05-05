@@ -1,6 +1,7 @@
 package client.strategies.multi_agent_astar;
 
 import client.definitions.AHeuristic;
+import client.definitions.AMessagePolicy;
 import client.graph.Action;
 import client.graph.Plan;
 import client.graph.PlanComparator;
@@ -12,6 +13,7 @@ public class ThreadedAgent extends Thread {
 
     private int agentID;
     private AHeuristic heuristic;
+    private AMessagePolicy policy;
 
     private Channel channel;
     private HashMap<EmptyFrontierRequest, EmptyFrontierResponse[]> emptyFrontierSnapshots;
@@ -26,10 +28,17 @@ public class ThreadedAgent extends Thread {
     private Terminator terminator;
     private Result result;
 
-    public ThreadedAgent(int agentID, Terminator terminator, AHeuristic heuristic, client.state.State initialState) {
+    public ThreadedAgent(
+            int agentID,
+            Terminator terminator,
+            AHeuristic heuristic,
+            AMessagePolicy policy,
+            client.state.State initialState
+    ) {
         this.agentID = agentID;
-        this.terminator = terminator;
         this.heuristic = heuristic;
+        this.policy = policy;
+        this.terminator = terminator;
         this.channel = new Channel(agentID);
         this.emptyFrontierSnapshots = new HashMap<>();
         PlanComparator comparator = new PlanComparator();
@@ -224,8 +233,8 @@ public class ThreadedAgent extends Thread {
             return;
         }
 
-        // TODO: only actions that are public to other agents should be sent in order to save on communication overhead
-        this.channel.broadcast(leaf);
+        Iterable<Integer> receivers = this.policy.receivers(leaf.getState(), this.agentID);
+        this.channel.sendTo(receivers, leaf);
 
         ArrayList<Plan> successors = leaf.getChildren(this.heuristic, this.agentID);
         for (Plan successor : successors) {

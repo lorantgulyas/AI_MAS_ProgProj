@@ -3,10 +3,10 @@ package client.strategies;
 import client.PerformanceStats;
 import client.Solution;
 import client.definitions.AHeuristic;
+import client.definitions.AMessagePolicy;
 import client.definitions.AStrategy;
 import client.graph.Action;
 import client.graph.Command;
-import client.graph.Plan;
 import client.state.Agent;
 import client.state.State;
 import client.strategies.multi_agent_astar.Result;
@@ -17,8 +17,11 @@ import java.util.ArrayList;
 
 public class MultiAgentAStar extends AStrategy {
 
-    public MultiAgentAStar(AHeuristic heuristic) {
+    private AMessagePolicy policy;
+
+    public MultiAgentAStar(AHeuristic heuristic, AMessagePolicy policy) {
         super(heuristic);
+        this.policy = policy;
     }
 
     public Solution plan(State initialState) {
@@ -63,7 +66,13 @@ public class MultiAgentAStar extends AStrategy {
         Terminator terminator = new Terminator();
         ArrayList<ThreadedAgent> threadedAgents = new ArrayList<>();
         for (Agent agent : agents) {
-            ThreadedAgent threadedAgent = new ThreadedAgent(agent.getId(), terminator, heuristic, initialState);
+            ThreadedAgent threadedAgent = new ThreadedAgent(
+                    agent.getId(),
+                    terminator,
+                    heuristic,
+                    this.policy,
+                    initialState
+            );
             // make absolutely sure that all agents run with the same priority
             // for some reason this seems to be necessary
             threadedAgent.setPriority(5);
