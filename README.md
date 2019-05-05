@@ -19,6 +19,9 @@ The following keys are accepted together with their accepted values:
     - single-tasker-shortest-path
 * message_policy
     - broadcast
+    - manhattan-nearby(x)
+
+Note that x in manhattan-nearby must be a positive integer.
 
 ### Example configuration file
 ```

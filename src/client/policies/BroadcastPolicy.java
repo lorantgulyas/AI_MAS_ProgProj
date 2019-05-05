@@ -6,6 +6,9 @@ import client.state.State;
 
 import java.util.ArrayList;
 
+/**
+ * Policy that dictates to always send a message to all agents.
+ */
 public class BroadcastPolicy extends AMessagePolicy {
 
     private ArrayList<ArrayList<Integer>> agents;
@@ -30,4 +33,8 @@ public class BroadcastPolicy extends AMessagePolicy {
         return this.agents.get(sender);
     }
 
+    @Override
+    public String toString() {
+        return "broadcast";
+    }
 }
