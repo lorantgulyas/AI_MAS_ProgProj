@@ -124,12 +124,26 @@ public class ServerIO {
             for (int x = 0; x < colCount; x++) {
                 char c = rowChars[x];
                 if (c >= 'A' && c <= 'Z') {
-                    goals.add(new Goal(c, new Position(x, y)));
+                    goals.add(new Goal(c, new Position(x, y), boxColors.get(c)));
                 }
             }
         }
 
         Level level = new Level(walls, rowCount, maxColCount, goals.toArray(new Goal[0]));
+
+        // get agents goals
+        Goal[][] agentsGoals = new Goal[agents.length][];
+        for (Agent agent : agents) {
+            ArrayList<Goal> agentGoals = new ArrayList<>();
+            for (Goal goal : goals) {
+                if (goal.getColor() == agent.getColor()) {
+                    agentGoals.add(goal);
+                }
+            }
+            agentsGoals[agent.getId()] = agentGoals.toArray(new Goal[0]);
+        }
+        level.setAgentsGoals(agentsGoals);
+
         return new State(level, agents, boxes.toArray(new Box[0]));
     }
 

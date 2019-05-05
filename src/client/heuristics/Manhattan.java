@@ -16,18 +16,23 @@ public class Manhattan extends AHeuristic {
     @Override
     public int h(State state) {
         int h = 0;
+        Level level = state.getLevel();
         Agent[] agents = state.getAgents();
         Box[] boxes = state.getBoxes();
-        Goal[] goals = state.getLevel().getGoals();
-        for (Goal goal : goals) {
-            for (Agent agent : agents) {
-                h += this.measurer.distance(goal.getPosition(), agent.getPosition());
-            }
-        }
         for (Box box : boxes) {
+            Position boxPos = box.getPosition();
             for (Agent agent : agents) {
-                h += this.measurer.distance(box.getPosition(), agent.getPosition());
+                if (agent.getColor() == box.getColor()) {
+                    h += this.measurer.distance(boxPos, agent.getPosition());
+                    Goal[] goals = level.getAgentGoals(agent.getId());
+                    for (Goal goal : goals) {
+                        if (goal.getLetter() == box.getLetter()) {
+                            h += this.measurer.distance(boxPos, goal.getPosition());
+                        }
+                    }
+                }
             }
+
         }
         return h;
     }
