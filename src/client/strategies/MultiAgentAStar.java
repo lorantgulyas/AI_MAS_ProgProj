@@ -10,6 +10,7 @@ import client.graph.Plan;
 import client.state.Agent;
 import client.state.State;
 import client.strategies.multi_agent_astar.Result;
+import client.strategies.multi_agent_astar.Terminator;
 import client.strategies.multi_agent_astar.ThreadedAgent;
 
 import java.util.ArrayList;
@@ -59,9 +60,10 @@ public class MultiAgentAStar extends AStrategy {
 
     private ArrayList<ThreadedAgent> getThreadedAgents(AHeuristic heuristic, State initialState) {
         Agent[] agents = initialState.getAgents();
+        Terminator terminator = new Terminator();
         ArrayList<ThreadedAgent> threadedAgents = new ArrayList<>();
         for (Agent agent : agents) {
-            ThreadedAgent threadedAgent = new ThreadedAgent(agent.getId(), heuristic, initialState);
+            ThreadedAgent threadedAgent = new ThreadedAgent(agent.getId(), terminator, heuristic, initialState);
             // make absolutely sure that all agents run with the same priority
             // for some reason this seems to be necessary
             threadedAgent.setPriority(5);

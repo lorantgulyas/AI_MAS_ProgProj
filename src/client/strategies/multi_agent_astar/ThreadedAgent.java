@@ -1,29 +1,37 @@
 package client.strategies.multi_agent_astar;
 
 import client.definitions.AHeuristic;
+import client.graph.Action;
 import client.graph.Plan;
 import client.graph.PlanComparator;
-import client.strategies.multi_agent_astar.messages.Message;
-import client.strategies.multi_agent_astar.messages.SendNode;
+import client.strategies.multi_agent_astar.messages.*;
 
 import java.util.*;
 
 public class ThreadedAgent extends Thread {
 
     private int agentID;
-    private Channel channel;
     private AHeuristic heuristic;
+
+    private Channel channel;
+    private HashMap<EmptyFrontierRequest, EmptyFrontierResponse[]> emptyFrontierSnapshots;
+    private int nAgents;
+
+    private boolean verifyingNoSolutionExists = false;
 
     private HashMap<Plan, Plan> explored;
     private PriorityQueue<Plan> frontier;
     private HashMap<Plan, Plan> frontierSet;
 
+    private Terminator terminator;
     private Result result;
 
-    public ThreadedAgent(int agentID, AHeuristic heuristic, client.state.State initialState) {
+    public ThreadedAgent(int agentID, Terminator terminator, AHeuristic heuristic, client.state.State initialState) {
         this.agentID = agentID;
-        this.channel = new Channel(agentID);
+        this.terminator = terminator;
         this.heuristic = heuristic;
+        this.channel = new Channel(agentID);
+        this.emptyFrontierSnapshots = new HashMap<>();
         PlanComparator comparator = new PlanComparator();
         this.explored = new HashMap<>();
         this.frontier = new PriorityQueue<>(comparator);
@@ -46,6 +54,7 @@ public class ThreadedAgent extends Thread {
      * @param agents
      */
     public void setOtherAgents(ThreadedAgent[] agents) {
+        this.nAgents = agents.length;
         this.channel.setChannels(agents);
     }
 
@@ -103,26 +112,23 @@ public class ThreadedAgent extends Thread {
 
     public void run() {
         long i = 0;
-        while (true) {
+        while (this.terminator.isAlive()) {
             if (i % 50000 == 0) {
                 System.err.println("Agent " + this.agentID + ": " + i);
             }
             this.processMessages();
             boolean frontierIsEmpty = this.frontierIsEmpty();
-            boolean noSolutionExists = this.verifyNoSolutionExists(frontierIsEmpty);
-            if (noSolutionExists) {
-                System.err.println("Agent " + this.agentID + ": No solution found.");
-                break;
-            }
+            this.verifyNoSolutionExists(frontierIsEmpty);
             if (frontierIsEmpty) {
                 continue;
             }
-            boolean solved = this.expand();
-            if (solved) {
-                System.err.println("Agent " + this.agentID + ": Is goal state.");
-                break;
-            }
+            this.expand();
             i++;
+        }
+
+        // wrap up by setting a result if it has not already been set
+        if (this.result == null) {
+            this.setResult(null);
         }
     }
 
@@ -131,12 +137,16 @@ public class ThreadedAgent extends Thread {
         for (Message message : messages) {
             if (message instanceof SendNode) {
                 SendNode nodeMessage = (SendNode) message;
-                this.processMessage(nodeMessage.getNode());
+                this.processNode(nodeMessage.getNode());
+            } else if (message instanceof EmptyFrontierRequest) {
+                this.processEmptyFrontierRequest((EmptyFrontierRequest) message);
+            } else if (message instanceof EmptyFrontierResponse) {
+                this.processEmptyFrontierResponse((EmptyFrontierResponse) message);
             }
         }
     }
 
-    private void processMessage(Plan message) {
+    private void processNode(Plan message) {
         Plan fromFrontier = this.frontierSet.get(message);
         Plan fromExplored = this.explored.get(message);
         if (fromFrontier == null && fromExplored == null) {
@@ -172,13 +182,46 @@ public class ThreadedAgent extends Thread {
         }
     }
 
-    private boolean expand() {
+    private void processEmptyFrontierRequest(EmptyFrontierRequest request) {
+        boolean state = this.frontierIsEmpty();
+        this.channel.sendEmptyFrontierResponse(request, state);
+    }
+
+    private void processEmptyFrontierResponse(EmptyFrontierResponse response) {
+        EmptyFrontierRequest request = response.getRequest();
+        EmptyFrontierResponse[] responses = this.emptyFrontierSnapshots.get(request);
+        int fromAgentID = response.getAgentID();
+        responses[fromAgentID] = response;
+
+        // check if all responses have been received
+        for (EmptyFrontierResponse r : responses) {
+            if (r == null) {
+                return;
+            }
+        }
+
+        this.verifyingNoSolutionExists = false;
+
+        // check if all frontiers are empty
+        for (EmptyFrontierResponse r : responses) {
+            if (!r.getState()) {
+                return;
+            }
+        }
+
+        // all responses have been received and all frontiers are empty
+        this.setResult(null);
+        this.terminator.foundNoSolution();
+        System.err.println("Agent " + this.agentID + ": No solution found.");
+    }
+
+    private void expand() {
         Plan leaf = this.getAndRemoveLeaf();
         this.addToExplored(leaf);
 
-        boolean isOptimalSolution = this.verifyIsOptimalSolution(leaf);
-        if (isOptimalSolution) {
-            return true;
+        boolean isSolution = this.verifyIsSolution(leaf);
+        if (isSolution) {
+            return;
         }
 
         // TODO: only actions that are public to other agents should be sent in order to save on communication overhead
@@ -188,8 +231,6 @@ public class ThreadedAgent extends Thread {
         for (Plan successor : successors) {
             this.processSuccessor(successor);
         }
-
-        return false;
     }
 
     private void processSuccessor(Plan successor) {
@@ -230,28 +271,32 @@ public class ThreadedAgent extends Thread {
         }
     }
 
-    private boolean verifyIsOptimalSolution(Plan node) {
-        // TODO: verify that this is an optimal solution (we might not be done yet)
+    private boolean verifyIsSolution(Plan node) {
+        // TODO: verify that this is an optimal solution (we might not have found an optimal solution yet)
         if (node.getState().isGoalState()) {
-            this.channel.broadcast(node);
-            long explored = this.explored.size();
-            long generated = explored + this.frontier.size();
-            this.result = new Result(node.extract(), explored, generated);
+            this.setResult(node.extract());
+            this.terminator.foundSolution();
+            System.err.println("Agent " + this.agentID + ": Is goal state.");
             return true;
         }
         return false;
     }
 
-    private boolean verifyNoSolutionExists(boolean frontierIsEmpty) {
-        // TODO: verify that no solution exists (we might not be done yet)
-        //if (frontierIsEmpty && this.otherAgentsFrontierIsEmpty() && this.messageQueueIsEmpty() && this.otherAgentsMessageQueueIsEmpty()) {
-        if (false) {
-            long explored = this.explored.size();
-            long generated = explored + this.frontier.size();
-            this.result = new Result(null, explored, generated);
-            return true;
+    private void verifyNoSolutionExists(boolean frontierIsEmpty) {
+        if (!this.verifyingNoSolutionExists && frontierIsEmpty) {
+            EmptyFrontierRequest request = this.channel.makeEmptyFrontierRequest(frontierIsEmpty);
+            EmptyFrontierResponse[] responses = new EmptyFrontierResponse[this.nAgents];
+            responses[this.agentID] = new EmptyFrontierResponse(request, this.agentID, frontierIsEmpty);
+            this.emptyFrontierSnapshots.put(request, responses);
+            this.verifyingNoSolutionExists = true;
+            this.channel.sendEmptyFrontierRequest(request);
         }
-        return false;
+    }
+
+    private void setResult(Action[] actions) {
+        long explored = this.explored.size();
+        long generated = explored + this.frontier.size();
+        this.result = new Result(actions, explored, generated);
     }
 
     @Override

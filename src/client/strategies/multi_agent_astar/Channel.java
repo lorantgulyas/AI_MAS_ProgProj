@@ -1,8 +1,7 @@
 package client.strategies.multi_agent_astar;
 
 import client.graph.Plan;
-import client.strategies.multi_agent_astar.messages.Message;
-import client.strategies.multi_agent_astar.messages.SendNode;
+import client.strategies.multi_agent_astar.messages.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,10 +37,22 @@ public class Channel {
         return agentID;
     }
 
+    /**
+     * Delivers the earliest received message.
+     * This will remove the message from the queue.
+     *
+     * @return The earliest received message.
+     */
     public Message deliver() {
         return this.queue.poll();
     }
 
+    /**
+     * Delivers all the received messages.
+     * The messages will be removed from the queue.
+     *
+     * @return The received messages in order of when the were received.
+     */
     public ArrayList<Message> deliverAll() {
         ArrayList<Message> messages = new ArrayList<>();
         while (!this.queue.isEmpty()) {
@@ -49,10 +60,6 @@ public class Channel {
             messages.add(message);
         }
         return messages;
-    }
-
-    public boolean isEmpty() {
-        return this.queue.isEmpty();
     }
 
     /**
@@ -69,16 +76,20 @@ public class Channel {
         }
     }
 
+    /**
+     * Receives a message from another channel and adds it to the tail of the queue.
+     *
+     * @param message The message sent from another agent.
+     */
     public void receive(Message message) {
         this.queue.add(message);
     }
 
-    public void sendTo(int toAgentID, Plan node) {
-        Channel channel = this.channelsMap.get(toAgentID);
-        SendNode message = new SendNode(this.agentID, node);
-        channel.receive(message);
-    }
-
+    /**
+     * Sends a node to all other agents.
+     *
+     * @param node The node to broadcast.
+     */
     public void broadcast(Plan node) {
         SendNode message = new SendNode(this.agentID, node);
         for (Channel channel : this.channels) {
@@ -86,4 +97,62 @@ public class Channel {
         }
     }
 
+    /**
+     * Sends a node to an agent.
+     *
+     * @param toAgentID The agent to send the message to.
+     * @param node The node to send.
+     */
+    public void sendTo(int toAgentID, Plan node) {
+        Channel channel = this.channelsMap.get(toAgentID);
+        SendNode message = new SendNode(this.agentID, node);
+        channel.receive(message);
+    }
+
+    /**
+     * Sends a node to multiple agents.
+     *
+     * @param toAgentIDs Agents to send the message to.
+     * @param node The node to send.
+     */
+    public void sendTo(Iterable<Integer> toAgentIDs, Plan node) {
+        SendNode message = new SendNode(this.agentID, node);
+        for (int toAgentID : toAgentIDs) {
+            Channel channel = this.channelsMap.get(toAgentID);
+            channel.receive(message);
+        }
+    }
+
+    /**
+     * Creates a request to verify that their frontiers are empty.
+     *
+     * @param empty The state of frontier of the sending agent.
+     * @return The snapshot request message.
+     */
+    public EmptyFrontierRequest makeEmptyFrontierRequest(boolean empty) {
+        String token = "empty-frontier:" + this.agentID + ":" + this.clock;
+        this.clock++;
+        return new EmptyFrontierRequest(this.agentID, token, empty);
+    }
+
+    /**
+     * Sends a message to all other agents to verify that their frontiers are empty.
+     */
+    public void sendEmptyFrontierRequest(EmptyFrontierRequest request) {
+        for (Channel channel : this.channels) {
+            channel.receive(request);
+        }
+    }
+
+    /**
+     * Sends a response to an empty frontier snapshot request.
+     *
+     * @param request Request from the initiating process.
+     * @param empty State of the frontier of the agent.
+     */
+    public void sendEmptyFrontierResponse(EmptyFrontierRequest request, boolean empty) {
+        EmptyFrontierResponse response = new EmptyFrontierResponse(request, this.agentID, empty);
+        Channel channel = this.channelsMap.get(request.getAgentID());
+        channel.receive(response);
+    }
 }
