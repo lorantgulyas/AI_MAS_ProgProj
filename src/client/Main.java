@@ -45,6 +45,7 @@ public class Main {
         serverIO.sendComment(stats.getMemoryUsed());
         serverIO.sendComment(stats.getTimeSpent());
         serverIO.sendComment(stats.getSolutionLength());
+        serverIO.sendComment(stats.getMessagesSent());
         serverIO.sendComment(stats.getNodesExplored());
         serverIO.sendComment(stats.getNodesGenerated());
 

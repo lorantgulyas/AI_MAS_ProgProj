@@ -4,11 +4,13 @@ import client.graph.Action;
 
 public class Result {
     public Action[] actions;
+    public long messagesSent;
     public long nodesExplored;
     public long nodesGenerated;
 
-    public Result(Action[] actions, long nodesExplored, long nodesGenerated) {
+    public Result(Action[] actions, long messagesSent, long nodesExplored, long nodesGenerated) {
         this.actions = actions;
+        this.messagesSent = messagesSent;
         this.nodesExplored = nodesExplored;
         this.nodesGenerated = nodesGenerated;
     }

@@ -14,11 +14,13 @@ public class Channel {
     private Channel[] channels;
     private HashMap<Integer, Channel> channelsMap;
     private ConcurrentLinkedDeque<Message> queue;
+    private long messagesSent;
 
     public Channel(int agentID) {
         this.agentID = agentID;
         this.clock = 0;
         this.queue = new ConcurrentLinkedDeque<>();
+        this.messagesSent = 0;
     }
 
     private Channel[] findOtherChannels(ThreadedAgent[] agents) {
@@ -35,6 +37,10 @@ public class Channel {
 
     public int getAgentID() {
         return agentID;
+    }
+
+    public long getMessagesSent() {
+        return this.messagesSent;
     }
 
     /**
@@ -83,6 +89,7 @@ public class Channel {
      */
     public void receive(Message message) {
         this.queue.add(message);
+        this.messagesSent++;
     }
 
     /**
@@ -95,6 +102,7 @@ public class Channel {
         for (Channel channel : this.channels) {
             channel.receive(message);
         }
+        this.messagesSent += this.channels.length;
     }
 
     /**
@@ -107,6 +115,7 @@ public class Channel {
         Channel channel = this.channelsMap.get(toAgentID);
         SendNode message = new SendNode(this.agentID, node);
         channel.receive(message);
+        this.messagesSent++;
     }
 
     /**
@@ -120,6 +129,7 @@ public class Channel {
         for (int toAgentID : toAgentIDs) {
             Channel channel = this.channelsMap.get(toAgentID);
             channel.receive(message);
+            this.messagesSent++;
         }
     }
 
@@ -142,6 +152,7 @@ public class Channel {
         for (Channel channel : this.channels) {
             channel.receive(request);
         }
+        this.messagesSent += this.channels.length;
     }
 
     /**
@@ -154,5 +165,6 @@ public class Channel {
         EmptyFrontierResponse response = new EmptyFrontierResponse(request, this.agentID, empty);
         Channel channel = this.channelsMap.get(request.getAgentID());
         channel.receive(response);
+        this.messagesSent++;
     }
 }

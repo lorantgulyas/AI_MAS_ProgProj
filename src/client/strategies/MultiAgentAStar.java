@@ -96,17 +96,19 @@ public class MultiAgentAStar extends AStrategy {
     }
 
     private PerformanceStats getPerformanceStats(Result[] results, int planLength, long startTime) {
+        long messagesSent = 0;
         long nodesExplored = 0;
         long nodesGenerated = 0;
         double memoryUsed = this.memoryUsed();
         double timeSpent = this.timeSpent(startTime);
 
         for (Result result : results) {
+            messagesSent += result.messagesSent;
             nodesExplored += result.nodesExplored;
             nodesGenerated += result.nodesGenerated;
         }
 
-        return new PerformanceStats(memoryUsed, nodesExplored, nodesGenerated, planLength, timeSpent);
+        return new PerformanceStats(memoryUsed, messagesSent, nodesExplored, nodesGenerated, planLength, timeSpent);
     }
 }
 

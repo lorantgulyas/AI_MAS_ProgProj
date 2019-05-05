@@ -294,9 +294,10 @@ public class ThreadedAgent extends Thread {
     }
 
     private void setResult(Action[] actions) {
+        long messages = this.channel.getMessagesSent();
         long explored = this.explored.size();
         long generated = explored + this.frontier.size();
-        this.result = new Result(actions, explored, generated);
+        this.result = new Result(actions, messages, explored, generated);
     }
 
     @Override
