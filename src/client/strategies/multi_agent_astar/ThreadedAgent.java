@@ -233,7 +233,7 @@ public class ThreadedAgent extends Thread {
             return;
         }
 
-        Iterable<Integer> receivers = this.policy.receivers(leaf.getState(), this.agentID);
+        Iterable<Integer> receivers = this.policy.receivers(leaf, this.agentID);
         this.channel.sendTo(receivers, leaf);
 
         ArrayList<Plan> successors = leaf.getChildren(this.heuristic, this.agentID);

@@ -1,6 +1,7 @@
 package client.policies;
 
 import client.definitions.AMessagePolicy;
+import client.graph.Plan;
 import client.state.Agent;
 import client.state.State;
 
@@ -29,7 +30,7 @@ public class BroadcastPolicy extends AMessagePolicy {
     }
 
     @Override
-    public Iterable<Integer> receivers(State state, int sender) {
+    public Iterable<Integer> receivers(Plan node, int sender) {
         return this.agents.get(sender);
     }
 

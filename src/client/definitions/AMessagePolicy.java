@@ -1,5 +1,6 @@
 package client.definitions;
 
+import client.graph.Plan;
 import client.state.State;
 
 /**
@@ -15,10 +16,10 @@ public abstract class AMessagePolicy {
     /**
      * Finds which agents need to receive messages about the current expanded state.
      *
-     * @param state Currently expanded state.
+     * @param node Currently expanded node.
      * @param sender ID of the sending agent.
      * @return
      */
-    public abstract Iterable<Integer> receivers(State state, int sender);
+    public abstract Iterable<Integer> receivers(Plan node, int sender);
 
 }
