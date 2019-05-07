@@ -10,6 +10,7 @@ public class Level {
     private int colCount;
     private Goal[] goals;
     private HashMap<Position, Goal> goalMap;
+    private Goal[][] agentsGoals;
 
     public Level(boolean[][] walls, int rowCount, int colCount, Goal[] goals) {
         this.walls = walls;
@@ -20,6 +21,16 @@ public class Level {
         for (Goal goal : goals) {
             this.goalMap.put(goal.getPosition(), goal);
         }
+    }
+
+    /**
+     * Usage: agent0Goals = level.getAgentGoals(0)
+     *
+     * @param agentID ID of the agent to get goals for.
+     * @return Goals that the given agent can help achieve.
+     */
+    public Goal[] getAgentGoals(int agentID) {
+        return this.agentsGoals[agentID];
     }
 
     public boolean[][] getWalls() {
@@ -44,6 +55,10 @@ public class Level {
 
     public Goal getGoalAt(Position position) {
         return this.goalMap.get(position);
+    }
+
+    public void setAgentsGoals(Goal[][] agentsGoals) {
+        this.agentsGoals = agentsGoals ;
     }
 
     public boolean wallAt(Position position) {

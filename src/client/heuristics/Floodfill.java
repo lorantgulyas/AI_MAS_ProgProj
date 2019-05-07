@@ -104,4 +104,8 @@ public class Floodfill extends AHeuristic {
         throw new NotImplementedException();
     }
 
+    @Override
+    public String toString() {
+        return "floodfill";
+    }
 }

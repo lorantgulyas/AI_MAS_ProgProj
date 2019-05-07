@@ -109,6 +109,7 @@ public class CooperativeAStar extends AStrategy {
         double timeSpent = this.timeSpent(startTime);
         PerformanceStats stats = new PerformanceStats(
                 memoryUsed,
+                0,
                 result.nodesExplored,
                 result.nodesGenerated,
                 plan.length,

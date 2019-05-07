@@ -94,7 +94,7 @@ public class State {
 
     public boolean isGoalState() {
         for (Goal goal : this.level.getGoals()) {
-            Box box = boxMap.getOrDefault(goal.getPosition(), null);
+            Box box = this.boxMap.getOrDefault(goal.getPosition(), null);
             if (box == null || box.getLetter() != goal.getLetter()) {
                 return false;
             }

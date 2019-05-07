@@ -63,8 +63,12 @@ public class Plan {
         return time;
     }
 
+    public Plan getParent() {
+        return this.parent;
+    }
+
     public State getState() {
-        return state;
+        return this.state;
     }
 
     public boolean isInitialState() {

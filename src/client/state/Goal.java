@@ -1,12 +1,19 @@
 package client.state;
 
 public class Goal {
+
+    private Color color;
     private char letter;
     private Position position;
 
-    public Goal(char letter, Position position) {
+    public Goal(char letter, Position position, Color color) {
+        this.color = color;
         this.letter = letter;
         this.position = position;
+    }
+
+    public Color getColor() {
+        return this.color;
     }
 
     public char getLetter() {

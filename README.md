@@ -11,13 +11,23 @@ The following keys are accepted together with their accepted values:
 
 * strategy
     - cooperative_astar
+    - multi-agent_astar
 * heuristic
     - floodfill
     - manhattan
-    - single-tasker
+    - single-tasker-manhattan
+    - single-tasker-shortest-path
+* message_policy
+    - broadcast
+    - nearby(x)
+    - public
+    - public-nearby(x)
+
+Note that x in nearby and public-nearby must be a positive integer.
 
 ### Example configuration file
 ```
 strategy: cooperative_astar
 heuristic: manhattan
-``` 
+message_policy: broadcast
+```

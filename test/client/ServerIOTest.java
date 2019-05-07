@@ -83,8 +83,8 @@ public class ServerIOTest {
             }
         }
         Goal[] goals = new Goal[] {
-            new Goal('A', new Position(1, 3)),
-            new Goal('B', new Position(3, 3)),
+            new Goal('A', new Position(1, 3), Color.RED),
+            new Goal('B', new Position(3, 3), Color.GREEN),
         };
         Level level = new Level(walls,5,  5, goals);
         Agent[] agents = new Agent[] {
