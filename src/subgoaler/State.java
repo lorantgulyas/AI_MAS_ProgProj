@@ -38,15 +38,11 @@ public class State {
 
     public State(Agent[] agents, Box[] boxes) {
         this.agents = agents;
-        this.boxes = boxes;
 //        agentMap = new HashMap<>();
 //        for (Agent agent : agents) {
 //            agentMap.put(agent.getPosition(), agent);
 //        }
-        boxMap = new HashMap<>();
-        for (int i = 0; i < boxes.length; i++) {
-            boxMap.put(boxes[i].getPosition(), i);
-        }
+        setBoxes(boxes);
     }
 
     public Agent[] getAgents() {
@@ -59,6 +55,14 @@ public class State {
 
     public static Goal[] getGoals() {
         return goals;
+    }
+
+    public void setBoxes(Box[] boxes) {
+        this.boxes = boxes;
+        boxMap = new HashMap<>();
+        for (int i = 0; i < boxes.length; i++) {
+            boxMap.put(boxes[i].getPosition(), i);
+        }
     }
 
     public static boolean[][] getWalls() {
@@ -179,6 +183,7 @@ public class State {
     }
 
     public boolean isGoalState() {
+        // TODO: maybe update this to check for assigned boxes
         for (Goal goal : goals) {
             if (!boxMap.containsKey(goal.getPosition()))
                 return false;

@@ -1,6 +1,7 @@
 package subgoaler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -11,6 +12,9 @@ public class Main {
         Floodfill ff = new Floodfill(state);
         ff.findRooms();
         ff.prioritizeGoals();
+        Box[] prioritizedBoxes = ff.prioritizeBoxes(state.getBoxes());
+        state.setBoxes(prioritizedBoxes);
+        state = ff.goalDependencies(state);
 
         SerializedAStar sas = new SerializedAStar(ff);
         ArrayList<Command> cmds = sas.serializedPlan(state);

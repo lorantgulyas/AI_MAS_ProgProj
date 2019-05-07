@@ -5,7 +5,7 @@ import java.util.*;
 public class Floodfill implements Comparator<State> {
     private int[][][][] matrix;
     private boolean[][] rooms;
-    public static final int UNDISCOVERED = -1;
+    public static final int UNDISCOVERED = Integer.MAX_VALUE;
 
     public Floodfill(State initialState) {
         int xMax = State.getXmax();
@@ -36,7 +36,7 @@ public class Floodfill implements Comparator<State> {
             toExplore.add(pos);
             while (!toExplore.isEmpty()) {
                 pos = toExplore.pop();
-                int x = pos.getX(),  y = pos.getY();
+                int x = pos.getX(), y = pos.getY();
                 currentDistance = matrix[goalY][goalX][y][x] + 1;
 
                 // ugly shit
@@ -86,7 +86,7 @@ public class Floodfill implements Comparator<State> {
                 // XX
                 if (!(walls[y][x] || walls[y][x + 1] || walls[y + 1][x] || walls[y + 1][x + 1])) {
                     if (!(goalMap.containsKey(new Position(x, y)) ||
-                            goalMap.containsKey(new Position(x + 1,y)) ||
+                            goalMap.containsKey(new Position(x + 1, y)) ||
                             goalMap.containsKey(new Position(x, y + 1)) ||
                             goalMap.containsKey(new Position(x + 1, y + 1)))) {
                         rooms[y][x] = rooms[y][x + 1] = rooms[y + 1][x] = rooms[y + 1][x + 1] = true;
@@ -152,7 +152,6 @@ public class Floodfill implements Comparator<State> {
     }
 
 
-
     boolean hasRooms(boolean[][] rooms) {
         for (boolean[] col : rooms) {
             for (boolean b : col) {
@@ -186,6 +185,201 @@ public class Floodfill implements Comparator<State> {
         }
     }
 
+    public Box[] prioritizeBoxes(Box[] boxes) {
+        // TODO: this works only for initial preprocessing, make it work for each subgoal
+        Goal[] goals = State.getGoals();
+        HashSet<Box> boxSet = new HashSet<>(Arrays.asList(boxes));
+        ArrayList<Box> boxList = new ArrayList<>();
+
+        // assign boxes to goals in correct order
+        for (int i = 0; i < goals.length; i++) {
+            int minDistance = Integer.MAX_VALUE;
+            Box minBox = boxSet.iterator().next();
+            for (Box box : boxes) {
+                if (boxSet.contains(box) &&
+                        box.getLetter() == goals[i].getLetter() &&
+                        minDistance > distance(box.getPosition(), goals[i].getPosition())) {
+                    minBox = box;
+                    minDistance = distance(box.getPosition(), goals[i].getPosition());
+                }
+            }
+            boxSet.remove(minBox);
+            boxList.add(minBox);
+        }
+
+        // append all remaining
+        boxList.addAll(boxSet);
+
+        return boxList.toArray(Box[]::new);
+    }
+
+    public State goalDependencies(State state) {
+        Box[] boxes = state.getBoxes();
+        Goal[] goals = State.getGoals();
+        HashMap<Position, Integer> goalMap = new HashMap<>();
+        HashMap<Position, HashSet<Position>> taskMap = new HashMap<>();
+        for (int i = 0; i < goals.length; i++) {
+            goalMap.put(goals[i].getPosition(), i);
+            taskMap.put(goals[i].getPosition(), new HashSet<>());
+        }
+
+        // for each goal prioritized on depth
+        for (int i = 0; i < goals.length; i++) {
+            Goal goal = goals[i];
+
+            // find the closest box
+            // it has the same index in the boxes array, if it already has local priority
+            Box box = boxes[i];
+//            int minDistance = Integer.MAX_VALUE;
+//            Box minBox = null;
+//            for (Box box : boxSet) {
+//                int currDistance = distance(box.getPosition(), goal.getPosition());
+//                if (currDistance < minDistance && box.getLetter() == goal.getLetter()) {
+//                    minDistance = currDistance;
+//                    minBox = box;
+//                }
+//            }
+
+            // find a path from box to goal (possibly shortest, but avoiding goals)
+            // miniAstar!
+            Position[] moves = {
+                    new Position(0, -1),
+                    new Position(1, 0),
+                    new Position(0, 1),
+                    new Position(-1, 0)
+            };
+            ArrayList<Step> path = new ArrayList<>();
+            boolean[][] walls = State.getWalls();
+            Step init = new Step(box.getPosition(), 0,
+                    distance(box.getPosition(), goal.getPosition()), null);
+            PriorityQueue<Step> frontier = new PriorityQueue<>(100, init);
+            HashSet<Position> frontierSet = new HashSet<>();
+            HashSet<Position> explored = new HashSet<>();
+            frontier.add(init);
+            frontierSet.add(init.position);
+
+            while (!frontier.isEmpty()) {
+                Step leaf = frontier.poll();
+                frontierSet.remove(leaf.position);
+
+                // found our goal
+                if (leaf.position.equals(goal.getPosition())) {
+                    while (leaf.parent != null) {
+                        path.add(leaf.parent); // don't add the goal pos itself
+                        leaf = leaf.parent;
+                    }
+                    break;
+                }
+
+                // expand our states
+                explored.add(leaf.position);
+                for (Position move : moves) {
+                    Position newPos = leaf.position.add(move);
+                    // if neither wall nor explored
+                    if (!explored.contains(newPos) && !frontierSet.contains(newPos) &&
+                            !walls[newPos.getY()][newPos.getX()]) {
+                        int stepCost = goalMap.containsKey(newPos) ? 10 : 1;
+                        if (newPos.equals(goal.getPosition())) {
+                            stepCost = 0;
+                        }
+                        Step newStep = new Step(newPos, leaf.g + stepCost,
+                                distance(newPos, goal.getPosition()), leaf);
+                        frontier.add(newStep);
+                        frontierSet.add(newPos);
+                    }
+                }
+            }
+
+            // check if path has goals on it, then add it to those goals as dependency
+            for (Step step : path) {
+                if (goalMap.containsKey(step.position)) {
+                    HashSet<Position> posSet = taskMap.getOrDefault(step.position, new HashSet<>());
+                    posSet.add(goal.getPosition());
+                    taskMap.put(step.position, posSet);
+                }
+            }
+        } // end of goal iteration
+
+        // log dependency map
+//        for (Map.Entry<Position, HashSet<Position>> entry : taskMap.entrySet()) {
+//            System.err.print(goals[goalMap.get(entry.getKey())].getLetter() + " has dependents: ");
+//            for (Position depPos : entry.getValue()) {
+//                System.err.print(goals[goalMap.get(depPos)].getLetter() + ", ");
+//            }
+//            System.err.print("\n");
+//        }
+
+        // prioritize tasks
+        ArrayList<Position> ordered = new ArrayList<>();
+        HashSet<Position> visited = new HashSet<>();
+
+        while (taskMap.size() != 0) {
+            Position minPos = null;
+            int minDependents = Integer.MAX_VALUE;
+
+            // iterate taskMap
+            Iterator<Map.Entry<Position, HashSet<Position>>> iter = taskMap.entrySet().iterator();
+            while (iter.hasNext()) {
+                Map.Entry<Position, HashSet<Position>> entry = iter.next();
+                HashSet<Position> val = entry.getValue();
+                val.removeAll(visited);
+                // add goals without dependencies
+                if (val.size() == 0) {
+                    ordered.add(entry.getKey());
+                    visited.add(entry.getKey());
+                    iter.remove();
+                }
+                // find minimum
+                if (val.size() < minDependents) {
+                    minDependents = val.size();
+                    minPos = entry.getKey();
+                }
+            }
+            // if minimum is not zero dep, fallback here
+            if (taskMap.containsKey(minPos)) {
+                ordered.add(minPos);
+                visited.add(minPos);
+                taskMap.remove(minPos);
+            }
+        }
+
+        // extend boxes with unused
+        Goal[] newGoals = new Goal[goals.length];
+        ArrayList<Box> newBoxes = new ArrayList<>();
+        for (int i = 0; i < goals.length; i++) {
+            int oldIndex = goalMap.get(ordered.get(i));
+            newGoals[i] = goals[oldIndex];
+            newBoxes.add(boxes[oldIndex]);
+        }
+        HashSet<Box> allBoxes = new HashSet<>(Arrays.asList(boxes));
+        allBoxes.removeAll(newBoxes);
+        newBoxes.addAll(allBoxes);
+        Box[] unusedBoxes = newBoxes.toArray(Box[]::new);
+
+        State.setGoals(newGoals);
+        state.setBoxes(unusedBoxes);
+        return state;
+    }
+
+    private class Step implements Comparator<Step> {
+        public Position position;
+        public int g;
+        public int h;
+        public Step parent;
+
+        public Step(Position position, int g, int h, Step parent) {
+            this.position = position;
+            this.g = g;
+            this.h = h;
+            this.parent = parent;
+        }
+
+        @Override
+        public int compare(Step s1, Step s2) {
+            return s1.g + s1.h - s2.g - s2.h;
+        }
+    }
+
     public void printMatrix(int goalX, int goalY) {
         StringBuilder s = new StringBuilder();
 
@@ -212,6 +406,9 @@ public class Floodfill implements Comparator<State> {
 
     @Override
     public int compare(State n1, State n2) {
+        // greedy
+//        return h(n1) - h(n2);
+        // A*
         return n1.g() + h(n1) - n2.g() - h(n2);
     }
 
@@ -219,25 +416,21 @@ public class Floodfill implements Comparator<State> {
         int h = 0;
         Agent[] agents = state.getAgents();
         Goal[] goals = State.getGoals();
-        HashSet<Box> assignedBoxes = new HashSet<>();
         Box[] boxes = state.getBoxes();
 
-        Box minBox = boxes[0];
-        for (Goal goal : goals) {
-            int minDistance = Integer.MAX_VALUE;
-            for (Box box : boxes) {
-                if (!assignedBoxes.contains(box) &&
-                        (minDistance > distance(box.getPosition(), goal.getPosition())) &&
-                        (box.getLetter() == goal.getLetter())) {
-                    minBox = box;
-                    minDistance = distance(box.getPosition(), goal.getPosition());
-                }
-            }
-            assignedBoxes.add(minBox);
-            h += minDistance;
+        // admissible
+//        for (int i = 0; i < goals.length; i++) {
+//            h += distance(goals[i].getPosition(), boxes[i].getPosition());
+//        }
+
+        for (int i = 0; i < goals.length; i++) {
+            h += distance(goals[i].getPosition(), boxes[i].getPosition()) *
+                    // not admissible
+                    // experimental heuristics
+                    (i == (goals.length - 1) ? 1 : 10);
         }
 
-        h += distance(minBox.getPosition(), agents[0].getPosition());
+        h += distance(boxes[goals.length - 1].getPosition(), agents[0].getPosition());
         return h;
     }
 }

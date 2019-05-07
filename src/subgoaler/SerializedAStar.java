@@ -1,5 +1,6 @@
 package subgoaler;
 
+import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -18,9 +19,12 @@ public class SerializedAStar {
         ArrayList<Command> cmds = new ArrayList<>();
         subresult = init;
         for (int i = 0; i < allGoals.length; i++) {
-            System.err.println("------------------ " + i);
+//        for (int i = 0; i < 7; i++) {
+//            if (i == 59) {
+//                System.err.println("kek");
+//            }
             State.setGoals(Arrays.copyOfRange(allGoals, 0, i + 1));
-            System.err.println(subresult);
+            System.err.println("--- task: " + i + ", goal: " + allGoals[i]);
             ArrayList<Command> subCmds = plan(subresult);
             cmds.addAll(subCmds);
 //            for (Command cmd : subCmds) {
@@ -31,14 +35,13 @@ public class SerializedAStar {
     }
 
     public ArrayList<Command> plan(State init) {
-        System.err.format("Search starting");
         AStar strategy = new AStar(ff);
         strategy.addToFrontier(init);
 
         int iterations = 0;
         while (true) {
             if (iterations % 10000 == 0) {
-                System.err.println(iterations);
+                System.err.println("i: " + iterations + ", " + strategy.searchStatus());
             }
 
             if (strategy.frontierIsEmpty()) {
@@ -46,6 +49,13 @@ public class SerializedAStar {
             }
 
             State leafState = strategy.getAndRemoveLeaf();
+
+            // debug stuff starts
+//            int g = leafState.g();
+//            int h = ff.h(leafState);
+//            Position agentPos = leafState.getAgents()[0].getPosition();
+//            Position boxPos = leafState.getBoxes()[State.getGoals().length - 1].getPosition();
+            // debug stuff ends
 
             if (leafState.isGoalState()) {
                 ArrayList<Command> res = leafState.extractPlan();
@@ -70,12 +80,26 @@ public class SerializedAStar {
         private PriorityQueue<State> frontier;
         private HashSet<State> frontierSet;
         private HashSet<State> explored;
+        private final long startTime;
 
         public AStar(Floodfill ff) {
             this.ff = ff;
             frontier = new PriorityQueue<>(100, ff);
             frontierSet = new HashSet<>();
             explored = new HashSet<>();
+            this.startTime = System.currentTimeMillis();
+        }
+
+        public int countExplored() {
+            return this.explored.size();
+        }
+
+        public float timeSpent() {
+            return (System.currentTimeMillis() - this.startTime) / 1000f;
+        }
+
+        public String searchStatus() {
+            return String.format("#Explored: %,6d, #Frontier: %,6d, #Generated: %,6d, Time: %3.2f s \t%s", this.countExplored(), this.countFrontier(), this.countExplored()+this.countFrontier(), this.timeSpent(), Memory.stringRep());
         }
 
         public State getAndRemoveLeaf() {
