@@ -19,10 +19,11 @@ The following keys are accepted together with their accepted values:
     - single-tasker-shortest-path
 * message_policy
     - broadcast
-    - manhattan-nearby(x)
-    - public-actions
+    - nearby(x)
+    - public
+    - public-nearby(x)
 
-Note that x in manhattan-nearby must be a positive integer.
+Note that x in nearby and public-nearby must be a positive integer.
 
 ### Example configuration file
 ```

@@ -1,8 +1,9 @@
 package client.config;
 
 import client.definitions.AMessagePolicy;
-import client.policies.ManhattanNearbyPolicy;
-import client.policies.PublicActionsPolicy;
+import client.policies.NearbyPolicy;
+import client.policies.PublicNearbyPolicy;
+import client.policies.PublicPolicy;
 import client.state.State;
 import client.policies.BroadcastPolicy;
 
@@ -16,16 +17,24 @@ public class MessagePolicy {
             return new BroadcastPolicy(initialState);
         }
 
-        if (policy.equals("public-actions")) {
-            return new PublicActionsPolicy(initialState);
+        if (policy.equals("public")) {
+            return new PublicPolicy(initialState);
         }
 
-        Pattern manhattanNearby = Pattern.compile("manhattan-nearby\\((\\d+)\\)");
-        Matcher matcher = manhattanNearby.matcher(policy);
-        if (matcher.matches()) {
-            String maxDistanceStr = matcher.group(1);
+        Pattern nearby = Pattern.compile("nearby\\((\\d+)\\)");
+        Matcher nearbyMatcher = nearby.matcher(policy);
+        if (nearbyMatcher.matches()) {
+            String maxDistanceStr = nearbyMatcher.group(1);
             int maxDistance = Integer.parseInt(maxDistanceStr);
-            return new ManhattanNearbyPolicy(initialState, maxDistance);
+            return new NearbyPolicy(initialState, maxDistance);
+        }
+
+        Pattern publicNearby = Pattern.compile("public-nearby\\((\\d+)\\)");
+        Matcher publicMatcher = publicNearby.matcher(policy);
+        if (publicMatcher.matches()) {
+            String maxDistanceStr = publicMatcher.group(1);
+            int maxDistance = Integer.parseInt(maxDistanceStr);
+            return new PublicNearbyPolicy(initialState, maxDistance);
         }
 
         throw new UnknownMessagePolicyException();
