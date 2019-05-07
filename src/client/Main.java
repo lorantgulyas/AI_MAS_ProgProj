@@ -17,8 +17,8 @@ public class Main {
         String configPath = args.length < 1 ? "src/configs/default.config" : args[0];
 
         // debug
-        //State initialState = ServerIO.readFromFile("src/levels/comp18/MABahaMAs.lvl");
-        //String configPath = "src/configs/maa_single_tasker_manhattan.config";
+        //State initialState = ServerIO.readFromFile("src/levels/custom/MACorridors1.lvl");
+        //String configPath = "src/configs/maa_stsp_pn3.config";
 
         Config config = ConfigParser.readConfigFromFile(configPath, initialState);
 

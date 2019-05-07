@@ -6,6 +6,7 @@ import client.definitions.AHeuristic;
 import client.definitions.AMessagePolicy;
 import client.definitions.AStrategy;
 import client.graph.Action;
+import client.graph.ActionMerger;
 import client.graph.Command;
 import client.graph.StateGenerator;
 import client.state.Agent;
@@ -60,7 +61,7 @@ public class MultiAgentAStar extends AStrategy {
             }
         }
 
-        Command[][] plan = actions == null ? new Command[0][0] : this.actions2plan(initialState, actions, agents.size());
+        Command[][] plan = actions == null ? new Command[0][0] : this.actions2plan(initialState, actions);
         PerformanceStats stats = this.getPerformanceStats(results, plan.length, startTime);
 
         if (actions == null) {
@@ -100,75 +101,37 @@ public class MultiAgentAStar extends AStrategy {
         }
     }
 
-    private Command[][] actions2plan(State initialState, Action[] actions, int nAgents) {
-
-        ArrayList<Command[]> combinedActions = new ArrayList<>();
-        LinkedList[] container = new LinkedList[nAgents];
-
-        for (int i = 0; i < nAgents; i++) {
-            LinkedList<Action> myActions = new LinkedList<>();
-            for (Action action : actions) {
-                if (action.getAgentID() == i) {
-                    myActions.add(action);
-                }
+    private Command[][] actions2plan(State initialState, Action[] actions) {
+        int nAgents = initialState.getAgents().length;
+        ArrayList<Command[]> jointActions = new ArrayList<>();
+        for (Action action : actions) {
+            Command[] jointAction = new Command[nAgents];
+            for (int i = 0; i < nAgents; i++) {
+                jointAction[i] = Command.NoOp;
             }
-            container[i] = myActions;
+            jointAction[action.getAgentID()] = action.getCommand();
+            jointActions.add(jointAction);
         }
-
-        State state = initialState;
-
-        boolean done = false;
-        while (!done) {
-
-            ArrayList<Action> topActions = new ArrayList<>();
-            for (int i = 0; i < container.length; i++) {
-                Action agentAction = (Action) container[i].poll();
-                topActions.add(agentAction);
+        return jointActions.toArray(new Command[0][0]);
+        /*
+        ArrayList<ArrayList<Action>> jointActions = ActionMerger.merge(initialState, actions);
+        Command[][] plan = new Command[jointActions.size()][];
+        int i = 0;
+        for (ArrayList<Action> jointAction : jointActions) {
+            Command[] commands = new Command[jointAction.size()];
+            int j = 0;
+            for (Action action : jointAction) {
+                commands[j] = action.getCommand();
+                j++;
             }
-
-            for (int i = nAgents; 0 < i; i--) {
-                ArrayList<Action> remainingActions = new ArrayList<>();
-                for (Action action : actions) {
-                    if (!topActions.contains(action)) {
-                        remainingActions.add(action);
-                    }
-                }
-
-
-            }
-
-
-            boolean merged = detectConflict(state, topActions, remainingActions);
-
-            boolean allActionsAreMerged = true;
-            for (int i = 0; i < container.length; i++) {
-                if (!container[i].isEmpty()) {
-                    allActionsAreMerged = false;
-                    break;
-                }
-            }
-            done = allActionsAreMerged;
-
+            plan[i] = commands;
+            i++;
         }
-
-        return combinedActions.toArray(new Command[0][0]);
+        return plan;
+        */
     }
 
-    private boolean detectConflict(State state, ArrayList<Action> topActions, Iterable<Action> remainingActions) {
-        if (ConflictDetector.conflict(state, topActions) != -1) {
-            return true;
-        }
 
-        state = StateGenerator.generate(state, topActions);
-
-        for (Action action : remainingActions) {
-            if (ConflictDetector.conflict(state, action)) {
-                return true;
-            }
-            state = StateGenerator.generate(state, action);
-        }
-        return false;
-    }
 
     private PerformanceStats getPerformanceStats(Result[] results, int planLength, long startTime) {
         long messagesSent = 0;

@@ -18,8 +18,6 @@ public class ConflictDetector {
         Agent agent = state.getAgents()[agentID];
         Position agentPos = agent.getPosition();
         switch (command.actionType) {
-            case NoOp:
-                return false;
             case Move:
                 Position moveTo = agentPos.go(command.dir1);
                 return !state.isFree(moveTo);
@@ -36,34 +34,29 @@ public class ConflictDetector {
         }
     }
 
-    public static int conflict(State state, Iterable<Action> actions) {
+    public static boolean conflict(State state, Iterable<Action> actions) {
         ArrayList<Set<Position>> cellsUsed = new ArrayList<>();
-        int i = 0;
         for (Action action : actions) {
             // check if action can be applied in the given state
             if (ConflictDetector.conflict(state, action)) {
-                return i;
+                return true;
             }
             cellsUsed.add(action.getCellsUsed());
-            i++;
         }
 
         // check that no actions are moving to the same location
         int n = cellsUsed.size();
-        for (i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++) {
             Set<Position> cells = cellsUsed.get(i);
             for (Position cell : cells) {
                 for (int j = 0; j < n; j++) {
-                    if (i != j) {
-                        Set<Position> otherCells = cellsUsed.get(j);
-                        if (otherCells.contains(cell)) {
-                            return i;
-                        }
+                    if (i != j && cellsUsed.get(j).contains(cell)) {
+                        return true;
                     }
                 }
             }
         }
 
-        return -1;
+        return false;
     }
 }
