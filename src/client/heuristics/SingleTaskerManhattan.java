@@ -107,4 +107,9 @@ public class SingleTaskerManhattan extends AHeuristic {
         }
         return h;
     }
+
+    @Override
+    public String toString() {
+        return "single-tasker-manhattan";
+    }
 }

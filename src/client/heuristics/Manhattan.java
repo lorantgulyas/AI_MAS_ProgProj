@@ -36,4 +36,9 @@ public class Manhattan extends AHeuristic {
         }
         return h;
     }
+
+    @Override
+    public String toString() {
+        return "manhattan";
+    }
 }

@@ -20,6 +20,7 @@ The following keys are accepted together with their accepted values:
 * message_policy
     - broadcast
     - manhattan-nearby(x)
+    - public-actions
 
 Note that x in manhattan-nearby must be a positive integer.
 

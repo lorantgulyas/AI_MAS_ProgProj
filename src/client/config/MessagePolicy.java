@@ -2,6 +2,7 @@ package client.config;
 
 import client.definitions.AMessagePolicy;
 import client.policies.ManhattanNearbyPolicy;
+import client.policies.PublicActionsPolicy;
 import client.state.State;
 import client.policies.BroadcastPolicy;
 
@@ -13,6 +14,10 @@ public class MessagePolicy {
     public static AMessagePolicy parseMessagePolicy(String policy, State initialState) throws UnknownMessagePolicyException {
         if (policy.equals("broadcast")) {
             return new BroadcastPolicy(initialState);
+        }
+
+        if (policy.equals("public-actions")) {
+            return new PublicActionsPolicy(initialState);
         }
 
         Pattern manhattanNearby = Pattern.compile("manhattan-nearby\\((\\d+)\\)");

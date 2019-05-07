@@ -33,7 +33,13 @@ public class MultiAgentAStar extends AStrategy {
             try {
                 agent.join();
             } catch (InterruptedException exc) {
-                String errorMessage = "Error! Agent + " + agent.getAgentID() + " + got interrupted.";
+                String errorMessage = "Agent + " + agent.getAgentID() + " + got interrupted.";
+                System.err.println(errorMessage);
+            } catch (OutOfMemoryError exc) {
+                String errorMessage = "Maximum memory usage exceeded at agent " + agent.getAgentID() + ".";
+                System.err.println(errorMessage);
+            } catch (Exception exc) {
+                String errorMessage = "Unknown error at agent " + agent.getAgentID() + ": " + exc.getMessage();
                 System.err.println(errorMessage);
             }
         }
@@ -118,6 +124,11 @@ public class MultiAgentAStar extends AStrategy {
         }
 
         return new PerformanceStats(memoryUsed, messagesSent, nodesExplored, nodesGenerated, planLength, timeSpent);
+    }
+
+    @Override
+    public String toString() {
+        return "Multi-Agent A*";
     }
 }
 

@@ -106,4 +106,9 @@ public class SingleTaskerShortestPath extends AHeuristic {
         }
         return h;
     }
+
+    @Override
+    public String toString() {
+        return "single-tasker-shortest-path";
+    }
 }

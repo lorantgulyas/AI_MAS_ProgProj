@@ -35,6 +35,7 @@ public class ThreadedAgent extends Thread {
             AMessagePolicy policy,
             client.state.State initialState
     ) {
+        super();
         this.agentID = agentID;
         this.heuristic = heuristic;
         this.policy = policy;
