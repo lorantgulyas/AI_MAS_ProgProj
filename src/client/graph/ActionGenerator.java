@@ -120,13 +120,13 @@ public class ActionGenerator {
         return children;
     }
 
-    private static boolean canMoveBox(State currentState, Position from, Position to, Agent agent) {
+    public static boolean canMoveBox(State currentState, Position from, Position to, Agent agent) {
         return currentState.boxAt(from)
                 && currentState.isFree(to)
                 && currentState.getBoxAt(from).getColor() == agent.getColor();
     }
 
-    private static boolean canMoveBoxConstrained(State currentState, Set<Position> constraints, Position from, Position to, Agent agent) {
+    public static boolean canMoveBoxConstrained(State currentState, Set<Position> constraints, Position from, Position to, Agent agent) {
         return currentState.boxAt(from)
                 && currentState.isFree(to)
                 && !constraints.contains(from)

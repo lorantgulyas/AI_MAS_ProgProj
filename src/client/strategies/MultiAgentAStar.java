@@ -7,13 +7,16 @@ import client.definitions.AMessagePolicy;
 import client.definitions.AStrategy;
 import client.graph.Action;
 import client.graph.Command;
+import client.graph.StateGenerator;
 import client.state.Agent;
 import client.state.State;
 import client.strategies.multi_agent_astar.Result;
 import client.strategies.multi_agent_astar.Terminator;
 import client.strategies.multi_agent_astar.ThreadedAgent;
+import client.utils.ConflictDetector;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class MultiAgentAStar extends AStrategy {
 
@@ -57,7 +60,7 @@ public class MultiAgentAStar extends AStrategy {
             }
         }
 
-        Command[][] plan = actions == null ? new Command[0][0] : this.actions2plan(actions, agents.size());
+        Command[][] plan = actions == null ? new Command[0][0] : this.actions2plan(initialState, actions, agents.size());
         PerformanceStats stats = this.getPerformanceStats(results, plan.length, startTime);
 
         if (actions == null) {
@@ -97,17 +100,74 @@ public class MultiAgentAStar extends AStrategy {
         }
     }
 
-    private Command[][] actions2plan(Action[] actions, int nAgents) {
-        ArrayList<Command[]> jointActions = new ArrayList<>();
-        for (Action action : actions) {
-            Command[] jointAction = new Command[nAgents];
-            for (int i = 0; i < nAgents; i++) {
-                jointAction[i] = Command.NoOp;
+    private Command[][] actions2plan(State initialState, Action[] actions, int nAgents) {
+
+        ArrayList<Command[]> combinedActions = new ArrayList<>();
+        LinkedList[] container = new LinkedList[nAgents];
+
+        for (int i = 0; i < nAgents; i++) {
+            LinkedList<Action> myActions = new LinkedList<>();
+            for (Action action : actions) {
+                if (action.getAgentID() == i) {
+                    myActions.add(action);
+                }
             }
-            jointAction[action.getAgentID()] = action.getCommand();
-            jointActions.add(jointAction);
+            container[i] = myActions;
         }
-        return jointActions.toArray(new Command[0][0]);
+
+        State state = initialState;
+
+        boolean done = false;
+        while (!done) {
+
+            ArrayList<Action> topActions = new ArrayList<>();
+            for (int i = 0; i < container.length; i++) {
+                Action agentAction = (Action) container[i].poll();
+                topActions.add(agentAction);
+            }
+
+            for (int i = nAgents; 0 < i; i--) {
+                ArrayList<Action> remainingActions = new ArrayList<>();
+                for (Action action : actions) {
+                    if (!topActions.contains(action)) {
+                        remainingActions.add(action);
+                    }
+                }
+
+
+            }
+
+
+            boolean merged = detectConflict(state, topActions, remainingActions);
+
+            boolean allActionsAreMerged = true;
+            for (int i = 0; i < container.length; i++) {
+                if (!container[i].isEmpty()) {
+                    allActionsAreMerged = false;
+                    break;
+                }
+            }
+            done = allActionsAreMerged;
+
+        }
+
+        return combinedActions.toArray(new Command[0][0]);
+    }
+
+    private boolean detectConflict(State state, ArrayList<Action> topActions, Iterable<Action> remainingActions) {
+        if (ConflictDetector.conflict(state, topActions) != -1) {
+            return true;
+        }
+
+        state = StateGenerator.generate(state, topActions);
+
+        for (Action action : remainingActions) {
+            if (ConflictDetector.conflict(state, action)) {
+                return true;
+            }
+            state = StateGenerator.generate(state, action);
+        }
+        return false;
     }
 
     private PerformanceStats getPerformanceStats(Result[] results, int planLength, long startTime) {
