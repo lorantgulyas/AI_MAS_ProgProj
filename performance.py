@@ -89,6 +89,11 @@ def run_client(config, level, timeout):
         return fail
     solution_length = int(solution_length_match[1])
 
+    messages_sent_match = re.search('Messages sent: (\\d+)', output)
+    if messages_sent_match is None:
+        return fail
+    messages_sent = int(messages_sent_match[1])
+
     memory_used_match = re.search('Memory used: (\\d+)(,|\\.)(\\d+) MB', output)
     if memory_used_match is None:
         return fail
@@ -105,6 +110,7 @@ def run_client(config, level, timeout):
         "nodes_explored": nodes_explored,
         "nodes_generated": nodes_generated,
         "solution_length": solution_length,
+        "messages_sent": messages_sent,
         "memory_used": memory_used,
         "time_spent": time_spent,
     }
