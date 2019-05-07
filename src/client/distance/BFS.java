@@ -55,16 +55,16 @@ public class BFS{
             BFSNode southNode = new BFSNode(node.distance + 1, south);
             BFSNode westNode = new BFSNode(node.distance + 1, west);
 
-            if (!explored.contains(north) && this.position2vertex.containsKey(north)) {
+            if (!explored.contains(north) && !frontier.contains(northNode) && this.position2vertex.containsKey(north)) {
                 frontier.add(northNode);
             }
-            if (!explored.contains(east) && this.position2vertex.containsKey(east)) {
+            if (!explored.contains(east) && !frontier.contains(eastNode) && this.position2vertex.containsKey(east)) {
                 frontier.add(eastNode);
             }
-            if (!explored.contains(south) && this.position2vertex.containsKey(south)) {
+            if (!explored.contains(south) && !frontier.contains(southNode) && this.position2vertex.containsKey(south)) {
                 frontier.add(southNode);
             }
-            if (!explored.contains(west) && this.position2vertex.containsKey(west)) {
+            if (!explored.contains(west) && !frontier.contains(westNode) && this.position2vertex.containsKey(west)) {
                 frontier.add(westNode);
             }
         }
@@ -85,6 +85,23 @@ public class BFS{
         public BFSNode(int distance, Position position) {
             this.distance = distance;
             this.position = position;
+        }
+
+        @Override
+        public int hashCode() {
+            return this.position.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (obj.getClass() != this.getClass())
+                return false;
+            BFSNode other = (BFSNode) obj;
+            return this.position.equals(other.position);
         }
     }
 }
