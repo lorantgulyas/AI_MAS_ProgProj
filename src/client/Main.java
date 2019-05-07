@@ -12,7 +12,7 @@ public class Main {
         // read state
         ServerIO serverIO = new ServerIO("soulman");
         State initialState = serverIO.readState();
-        //State initialState = ServerIO.readFromFile("src/levels/custom/MAExample.lvl");
+        //State initialState = ServerIO.readFromFile("src/levels/custom/MACorridors1.lvl");
 
         // read config
         String configPath = args.length < 1 ? "src/configs/default.config" : args[0];
