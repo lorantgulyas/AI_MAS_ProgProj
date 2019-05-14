@@ -180,9 +180,9 @@ public class Floodfill implements Comparator<State> {
         Arrays.sort(State.getGoals(), Comparator.comparingInt(Goal::getPriority).reversed());
 
         // print
-        for (Goal goal : State.getGoals()) {
-            System.err.println(goal);
-        }
+//        for (Goal goal : State.getGoals()) {
+//            System.err.println(goal);
+//        }
     }
 
     public Box[] prioritizeBoxes(Box[] boxes) {

@@ -15,6 +15,13 @@ public class Main {
         Box[] prioritizedBoxes = ff.prioritizeBoxes(state.getBoxes());
         state.setBoxes(prioritizedBoxes);
         state = ff.goalDependencies(state);
+        prioritizedBoxes = ff.prioritizeBoxes(state.getBoxes());
+        state.setBoxes(prioritizedBoxes);
+
+        // debug goals
+        for (Goal goal : State.getGoals()) {
+            System.err.println(goal);
+        }
 
         SerializedAStar sas = new SerializedAStar(ff);
         ArrayList<Command> cmds = sas.serializedPlan(state);
