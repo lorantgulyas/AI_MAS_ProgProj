@@ -314,7 +314,7 @@ public class Floodfill implements Comparator<State> {
         HashSet<Position> visited = new HashSet<>();
 
         while (taskMap.size() != 0) {
-            Position minPos = null;
+            ArrayList<Position> minPos = null;
             int minDependents = Integer.MAX_VALUE;
 
             // iterate taskMap
@@ -323,24 +323,23 @@ public class Floodfill implements Comparator<State> {
                 Map.Entry<Position, HashSet<Position>> entry = iter.next();
                 HashSet<Position> val = entry.getValue();
                 val.removeAll(visited);
-                // add goals without dependencies
-                if (val.size() == 0) {
-                    ordered.add(entry.getKey());
-                    visited.add(entry.getKey());
-                    iter.remove();
-                }
                 // find minimum
                 if (val.size() < minDependents) {
                     minDependents = val.size();
-                    minPos = entry.getKey();
+                    minPos = new ArrayList<>();
+                    minPos.add(entry.getKey());
+                } else if (val.size() == minDependents) {
+                    minPos.add(entry.getKey());
                 }
             }
-            // if minimum is not zero dep, fallback here
-            if (taskMap.containsKey(minPos)) {
-                ordered.add(minPos);
-                visited.add(minPos);
-                taskMap.remove(minPos);
-            }
+
+            // add mindependents to ordered
+            minPos.sort(Comparator
+                    .comparingInt(p -> goals[goalMap.get(p)].getPriority())
+                    .reversed());
+            ordered.addAll(minPos);
+            visited.addAll(minPos);
+            taskMap.keySet().removeAll(minPos);
         }
 
         // extend boxes with unused
