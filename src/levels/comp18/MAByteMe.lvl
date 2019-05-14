@@ -1,0 +1,23 @@
+#domain
+hospital
+#levelname
+MAByteMe
+#colors
+red: 0, A
+green: 1, B
+grey: 2, C
+#initial
++++++++++++++++++++++++
++    ++++    B   B    +
++   0BBBB         1   +
++    ++++       CCC   +
++2   BBBB       CAC  C+
++++++++++++++++++++++++
+#goal
++++++++++++++++++++++++
++A C ++++            B+
++                     +
++    ++++            B+
++                     +
++++++++++++++++++++++++
+#end

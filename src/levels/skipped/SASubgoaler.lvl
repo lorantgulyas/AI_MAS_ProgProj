@@ -1,0 +1,27 @@
+#domain
+hospital
+#levelname
+SASubgoaler
+#colors
+blue: 0, A, B, C, D, E, F, G, H, I, J, K, L, M, N
+#initial
+++++++++++++
++ KLJMIHN+ +
++ +      + +
++ ++++++++ +
++    0     +
++ ++++++++ +
++ +      + +
++ +AGBFCED +
+++++++++++++
+#goal
+++++++++++++
++A       +H+
++B+      +I+
++C++++++++J+
++D        K+
++E++++++++L+
++F+      +M+
++G+       N+
+++++++++++++
+#end

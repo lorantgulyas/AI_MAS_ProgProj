@@ -1,0 +1,44 @@
+#domain
+hospital
+#levelname
+MAGreenDots
+#colors
+red: 0, A, B, C
+blue: 1, D, E, F
+cyan: 2, G, H, I
+purple: 3, J, K, L
+#initial
+    +++++
+    +1 3+
+    +0 2+
+    +F L+
+    +E K+
+    +D J+
+    +C I+
+    +B H+
+    +A G+
+++++++ ++++++
++           +
++           +
++ ++ +++ ++ +
++ ++ +++ ++ +
++ ++ +++ ++ +
++++++++++++++
+#goal
+    +++++
+    +   +
+    +   +
+    +   +
+    +   +
+    +   +
+    +   +
+    +   +
+    +   +
+++++++ ++++++
++           +
++           +
++C++F+++I++L+
++B++E+++H++K+
++A++D+++G++J+
++++++++++++++
+#end

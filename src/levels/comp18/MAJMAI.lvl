@@ -1,0 +1,27 @@
+#domain
+hospital
+#levelname
+MAJMAI
+#colors
+red: 0, A
+green: 1, B
+blue: 2, C
+#initial
+          +++
+          +2+
++++++++++++C++++
++0A            +
++++++++ ++++++++
+      +B+
+      +1+
+      +++
+#goal
+          +++
+          + +
++++++++++++ ++++
++           CBA+
++++++++ ++++++++
+      + +
+      + +
+      +++
+#end
