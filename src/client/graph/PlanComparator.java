@@ -2,10 +2,10 @@ package client.graph;
 
 import java.util.Comparator;
 
-public class PlanComparator implements Comparator<Plan> {
+public class PlanComparator implements Comparator<AbstractPlan> {
 
     @Override
-    public int compare(Plan p1, Plan p2) {
+    public int compare(AbstractPlan p1, AbstractPlan p2) {
         return p1.f() - p2.f();
     }
 

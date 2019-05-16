@@ -34,13 +34,20 @@ public class ConflictDetector {
         }
     }
 
-    public static boolean conflict(State state, Iterable<Action> actions) {
-        ArrayList<Set<Position>> cellsUsed = new ArrayList<>();
-        for (Action action : actions) {
-            // check if action can be applied in the given state
+    public static boolean conflict(State state, Iterable<Action> jointAction) {
+        // check if actions can be applied in the given state
+        for (Action action : jointAction) {
             if (ConflictDetector.conflict(state, action)) {
                 return true;
             }
+        }
+
+        return ConflictDetector.conflict(jointAction);
+    }
+
+    public static boolean conflict(Iterable<Action> jointAction) {
+        ArrayList<Set<Position>> cellsUsed = new ArrayList<>();
+        for (Action action : jointAction) {
             cellsUsed.add(action.getCellsUsed());
         }
 

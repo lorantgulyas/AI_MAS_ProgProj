@@ -6,13 +6,10 @@ import client.state.*;
 import java.sql.Time;
 import java.util.*;
 
-public class Plan {
+public class Plan extends AbstractPlan {
 
-    private State state;
-    private Plan parent;
-    private int time;
     private Action action;
-    private int _hash;
+    protected Plan parent;
 
     /**
      * Constructs a root node.
@@ -20,11 +17,9 @@ public class Plan {
      * @param initialState State of the root.
      */
     public Plan(State initialState) {
-        this.state = initialState;
-        this.parent = null;
-        this.time = 0;
+        super(initialState);
         this.action = null;
-        this._hash = this.computeHashCode();
+        this.parent = null;
     }
 
     /**
@@ -36,39 +31,17 @@ public class Plan {
      * @param action The action that was used to generate the node from its parent.
      */
     public Plan(State state, Plan parent, int time, Action action) {
-        this.state = state;
-        this.parent = parent;
-        this.time = time;
+        super(state, time);
         this.action = action;
-        this._hash = this.computeHashCode();
+        this.parent = parent;
     }
 
     public Action getAction() {
         return action;
     }
 
-    public int g() {
-        return this.time;
-    }
-
-    public int f() {
-        return this.time + this.state.h();
-    }
-
-    public int h() {
-        return this.state.h();
-    }
-
-    public int getTime() {
-        return time;
-    }
-
     public Plan getParent() {
         return this.parent;
-    }
-
-    public State getState() {
-        return this.state;
     }
 
     public boolean isInitialState() {
@@ -151,26 +124,5 @@ public class Plan {
         } else {
             return StateGenerator.generate(this.state, previousActions.get(this.time));
         }
-    }
-
-    private int computeHashCode() {
-        return this.state.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (obj.getClass() != this.getClass())
-            return false;
-        Plan other = (Plan) obj;
-        return other.getState().equals(this.state);
-    }
-
-    @Override
-    public int hashCode() {
-        return this._hash;
     }
 }

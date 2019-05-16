@@ -3,12 +3,81 @@ package client.graph;
 import client.state.Agent;
 import client.state.Position;
 import client.state.State;
+import client.utils.ConflictDetector;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
 public class ActionGenerator {
+
+    /**
+     * Generates all the possible joint actions that can be be performed in the given state.
+     *
+     * @param currentState The current state to act int.
+     * @return List of possible joint actions.
+     */
+    public static ArrayList<ArrayList<Action>> children(State currentState) {
+        // find all actions that each agent can perform individually
+        Agent[] agents = currentState.getAgents();
+        ArrayList<ArrayList<Action>> agentsActions = new ArrayList<>(agents.length);
+        for (int i = 0; i < agents.length; i++) {
+            agentsActions.add(ActionGenerator.children(currentState, i));
+        }
+
+        return ActionGenerator.createJointActions(agentsActions);
+    }
+
+    private static ArrayList<ArrayList<Action>> createJointActions(ArrayList<ArrayList<Action>> agentsActions) {
+        int nAgents = agentsActions.size();
+
+        // find total number of jointActions
+        int nJointActions = 1;
+        for (ArrayList<Action> agentActions : agentsActions) {
+            nJointActions *= agentsActions.size();
+        }
+
+        // initialize values used to find which action to pick
+        int[] counts = new int[nAgents];
+        int[] indices = new int[nAgents];
+        int[] updateIndexEvery = new int[nAgents];
+
+        Arrays.fill(counts, 0);
+        Arrays.fill(indices, 0);
+
+        int update = 1;
+        for (int i = nAgents - 1; -1 < i; i--) {
+            updateIndexEvery[i] = update;
+            update *= agentsActions.get(i).size();
+        }
+
+        // make joint actions
+        ArrayList<ArrayList<Action>> jointActions = new ArrayList<>(nJointActions);
+        for (int i = 0; i < nJointActions; i++) {
+            ArrayList<Action> jointAction = new ArrayList<>(nAgents);
+            for (int j = 0; j < nAgents; j++) {
+                int index = indices[j];
+                Action action = agentsActions.get(j).get(index);
+                jointAction.add(action);
+
+                // update values to keep track of which action to pick next for this agent
+                int count = counts[j];
+                int updateEvery = updateIndexEvery[j];
+                int nextCount = count + 1;
+                counts[j] = nextCount;
+                if (nextCount % updateEvery == 0) {
+                    indices[j] = (index + 1) % agentsActions.get(j).size();
+                }
+            }
+            // only add actions without conflicts
+            if (!ConflictDetector.conflict(jointAction)) {
+                jointActions.add(jointAction);
+            }
+        }
+
+        return jointActions;
+    }
 
     /**
      * Generates all the possible actions an agent can perform in the given state.

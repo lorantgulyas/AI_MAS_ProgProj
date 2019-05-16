@@ -1,4 +1,4 @@
-package client.strategies;
+package client.strategies.multi_agent_astar;
 
 import client.PerformanceStats;
 import client.Solution;
