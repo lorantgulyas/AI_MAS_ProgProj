@@ -10,19 +10,21 @@ import client.state.State;
 import client.utils.ConflictDetector;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Collections;
 
+/**
+ * Greedily merges actions.
+ * Assumes that actions contains no NoOps.
+ */
 public class Greedy extends AMerger {
 
     public Command[][] merge(State initialState, Action[] actions) {
         Agent[] agents = initialState.getAgents();
-        ArrayList<LinkedList<Action>> agentsActions = this.splitActionsToAgents(actions, agents);
-        ArrayList<ArrayList<Action>> jointActions = new ArrayList<>();
+        ArrayList<ArrayList<Action>> agentsActions = this.splitActionsToAgents(actions, agents);
         ArrayList<Action> remainingActions = new ArrayList<>();
-        for (Action action : actions) {
-            remainingActions.add(action);
-        }
-        this.createJointActions(initialState, remainingActions, agentsActions, 0, jointActions);
+        Collections.addAll(remainingActions, actions);
+        ArrayList<ArrayList<Action>> jointActions = new ArrayList<>();
+        this.createJointActions(initialState, agentsActions, remainingActions, jointActions);
 
         // extract commands
         int nAgents = agents.length;
@@ -44,81 +46,107 @@ public class Greedy extends AMerger {
 
     private void createJointActions(
             State state,
-            ArrayList<Action> remainingActions,
-            ArrayList<LinkedList<Action>> agentsActions,
-            int jointActionLevel,
+            ArrayList<ArrayList<Action>> agentsActions,
+            ArrayList<Action> actions,
             ArrayList<ArrayList<Action>> jointActions
     ) {
-        if (remainingActions.isEmpty()) {
+        if (actions.isEmpty()) {
             return;
         }
 
         Agent[] agents = state.getAgents();
-        for (int i = agents.length; 0 < i; i--) {
+        int nAgents = agents.length;
+        for (int i = nAgents; 0 < i; i--) {
             // make top action with actions from the first i agents
-            Action firstAction = remainingActions.get(0);
-            ArrayList<Action> jointAction = this.makeJointAction(state, agentsActions, i, jointActionLevel, firstAction);
-            ArrayList<Action> candidateRemainingActions = (ArrayList<Action>) remainingActions.clone();
+            ArrayList<Action> jointAction = this.makeJointAction(state, agentsActions, i);
+            ArrayList<Action> remainingActions = (ArrayList<Action>) actions.clone();
             for (Action action : jointAction) {
-                candidateRemainingActions.remove(action);
+                remainingActions.remove(action);
             }
             // detect if this jointAction will lead to a solution or if there are conflicts
-            boolean conflicts = this.detectMergeConflicts(state, jointAction, candidateRemainingActions);
+            boolean conflicts = this.detectMergeConflicts(state, jointAction, remainingActions);
             if (!conflicts) {
+                // remove joint action from agents actions
+                for (Action action : jointAction) {
+                    agentsActions.get(action.getAgentID()).remove(action);
+                }
                 // add jointAction to jointActions
                 jointActions.add(jointAction);
                 state = StateGenerator.generate(state, jointAction);
                 // call createJointAction again for next layer
                 this.createJointActions(
                         state,
-                        candidateRemainingActions,
                         agentsActions,
-                        jointActionLevel + 1,
+                        remainingActions,
                         jointActions
                 );
+                return;
             }
         }
+
+        // the order of agents did not match the order in the original plan
+        // we solve this by creating a joint action that only contains the first action
+        ArrayList<Action> remainingActions = (ArrayList<Action>) actions.clone();
+        Action action = remainingActions.get(0);
+        remainingActions.remove(action);
+        agentsActions.get(action.getAgentID()).remove(action);
+        ArrayList<Action> jointAction = new ArrayList<>();
+        for (int i = 0; i < nAgents; i++) {
+            Action noOp = this.makeNoOp(agents, i);
+            jointAction.add(noOp);
+        }
+        jointAction.set(action.getAgentID(), action);
+        jointActions.add(jointAction);
+        state = StateGenerator.generate(state, jointAction);
+        this.createJointActions(
+                state,
+                agentsActions,
+                remainingActions,
+                jointActions
+        );
+    }
+
+    private boolean noActionsLeft(ArrayList<ArrayList<Action>> agentsActions) {
+        for (ArrayList<Action> agentActions : agentsActions) {
+            if (!agentActions.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private ArrayList<Action> makeJointAction(
             State state,
-            ArrayList<LinkedList<Action>> agentsActions,
-            int agentsToAdd,
-            int jointActionLevel,
-            Action firstAction
+            ArrayList<ArrayList<Action>> agentsActions,
+            int agentsToAdd
     ) {
         Agent[] agents = state.getAgents();
         ArrayList<Action> jointAction = new ArrayList<>(agents.length);
-        for (int i = 0; i < agents.length; i++) {
-            jointAction.add(null);
-        }
 
-        int firstActionAgentID = firstAction.getAgentID();
-        jointAction.set(firstActionAgentID, firstAction);
-        int agentsAdded = 1;
-
+        int agentsAdded = 0;
         int nAgents = agentsActions.size();
         for (int agentID = 0; agentID < nAgents; agentID++) {
-            if (agentID != firstActionAgentID) {
-                if (agentsToAdd <= agentsAdded ) {
-                    Position[] cellsUsed = new Position[] { agents[agentID].getPosition() };
-                    Action noOpAction = new Action(agentID, Command.NoOp, cellsUsed);
-                    jointAction.set(agentID, noOpAction);
+            if (agentsAdded < agentsToAdd) {
+                ArrayList<Action> agentActions = agentsActions.get(agentID);
+                if (agentActions.size() == 0) {
+                    Action noOpAction = this.makeNoOp(agents, agentID);
+                    jointAction.add(noOpAction);
                 } else {
-                    LinkedList<Action> agentActions = agentsActions.get(agentID);
-                    if (jointActionLevel < agentActions.size()) {
-                        Action agentAction = agentActions.get(jointActionLevel);
-                        jointAction.set(agentID, agentAction);
-                        agentsAdded++;
-                    } else {
-                        Position[] cellsUsed = new Position[] { agents[agentID].getPosition() };
-                        Action noOpAction = new Action(agentID, Command.NoOp, cellsUsed);
-                        jointAction.set(agentID, noOpAction);
-                    }
+                    Action agentAction = agentActions.get(0);
+                    jointAction.add(agentAction);
+                    agentsAdded++;
                 }
+            } else {
+                Action noOpAction = this.makeNoOp(agents, agentID);
+                jointAction.add(noOpAction);
             }
         }
         return jointAction;
+    }
+
+    private Action makeNoOp(Agent[] agents, int agentID) {
+        Position[] cellsUsed = new Position[] { agents[agentID].getPosition() };
+        return new Action(agentID, Command.NoOp, cellsUsed);
     }
 
     private boolean detectMergeConflicts(State state, ArrayList<Action> jointAction, Iterable<Action> remainingActions) {
@@ -135,19 +163,15 @@ public class Greedy extends AMerger {
         return !state.isGoalState();
     }
 
-    private ArrayList<LinkedList<Action>> splitActionsToAgents(Action[] actions, Agent[] agents) {
-        ArrayList<LinkedList<Action>> container = new ArrayList<>(agents.length);
-
+    private ArrayList<ArrayList<Action>> splitActionsToAgents(Action[] actions, Agent[] agents) {
+        ArrayList<ArrayList<Action>> agentsActions = new ArrayList<>(agents.length);
         for (int i = 0; i < agents.length; i++) {
-            LinkedList<Action> myActions = new LinkedList<>();
-            for (Action action : actions) {
-                if (action.getAgentID() == i) {
-                    myActions.add(action);
-                }
-            }
-            container.add(myActions);
+            agentsActions.add(new ArrayList<>());
         }
-        return container;
+        for (Action action : actions) {
+            agentsActions.get(action.getAgentID()).add(action);
+        }
+        return agentsActions;
     }
 
 }

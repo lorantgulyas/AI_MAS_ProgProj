@@ -48,16 +48,19 @@ public class ConflictDetector {
     public static boolean conflict(Iterable<Action> jointAction) {
         ArrayList<Set<Position>> cellsUsed = new ArrayList<>();
         for (Action action : jointAction) {
-            cellsUsed.add(action.getCellsUsed());
+            cellsUsed.add(null);
+        }
+        for (Action action : jointAction) {
+            cellsUsed.set(action.getAgentID(), action.getCellsUsed());
         }
 
         // check that no actions are moving to the same location
         int n = cellsUsed.size();
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n - 1; i++) {
             Set<Position> cells = cellsUsed.get(i);
             for (Position cell : cells) {
-                for (int j = 0; j < n; j++) {
-                    if (i != j && cellsUsed.get(j).contains(cell)) {
+                for (int j = i + 1; j < n; j++) {
+                    if (cellsUsed.get(j).contains(cell)) {
                         return true;
                     }
                 }

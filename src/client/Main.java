@@ -19,7 +19,7 @@ public class Main {
 
         // debug
         //State initialState = ServerIO.readFromFile("src/levels/custom/MAExample.lvl");
-        //String configPath = "src/configs/maa_stsp_n3.config";
+        //String configPath = "src/configs/maa_stsp_n2.config";
 
         String config = ConfigParser.readFile(configPath);
 
