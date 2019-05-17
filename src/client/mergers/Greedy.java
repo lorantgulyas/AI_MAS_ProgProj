@@ -1,5 +1,9 @@
-package client.graph;
+package client.mergers;
 
+import client.definitions.AMerger;
+import client.graph.Action;
+import client.graph.Command;
+import client.graph.StateGenerator;
 import client.state.Agent;
 import client.state.Position;
 import client.state.State;
@@ -8,20 +12,37 @@ import client.utils.ConflictDetector;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-public class ActionMerger {
+public class Greedy extends AMerger {
 
-    public static ArrayList<ArrayList<Action>> merge(State initialState, Action[] actions) {
+    public Command[][] merge(State initialState, Action[] actions) {
         Agent[] agents = initialState.getAgents();
-        ArrayList<LinkedList<Action>> agentsActions = ActionMerger.splitActionsToAgents(actions, agents);
+        ArrayList<LinkedList<Action>> agentsActions = this.splitActionsToAgents(actions, agents);
         ArrayList<ArrayList<Action>> jointActions = new ArrayList<>();
         ArrayList<Action> remainingActions = new ArrayList<>();
         for (Action action : actions) {
             remainingActions.add(action);
         }
-        return ActionMerger.createJointActions(initialState, remainingActions, agentsActions, 0, jointActions);
+        this.createJointActions(initialState, remainingActions, agentsActions, 0, jointActions);
+
+        // extract commands
+        int nAgents = agents.length;
+        int nActions = jointActions.size();
+        Command[][] plan = new Command[nActions][nAgents];
+        for (int i = 0; i < nActions; i++) {
+            ArrayList<Action> jointAction = jointActions.get(i);
+            for (int j = 0; j < nAgents; j++) {
+                plan[i][j] = jointAction.get(j).getCommand();
+            }
+        }
+        return plan;
     }
 
-    private static ArrayList<ArrayList<Action>> createJointActions(
+    @Override
+    public String toString() {
+        return "greedy";
+    }
+
+    private void createJointActions(
             State state,
             ArrayList<Action> remainingActions,
             ArrayList<LinkedList<Action>> agentsActions,
@@ -29,26 +50,26 @@ public class ActionMerger {
             ArrayList<ArrayList<Action>> jointActions
     ) {
         if (remainingActions.isEmpty()) {
-            return jointActions;
+            return;
         }
 
         Agent[] agents = state.getAgents();
         for (int i = agents.length; 0 < i; i--) {
             // make top action with actions from the first i agents
             Action firstAction = remainingActions.get(0);
-            ArrayList<Action> jointAction = ActionMerger.makeJointAction(state, agentsActions, i, jointActionLevel, firstAction);
+            ArrayList<Action> jointAction = this.makeJointAction(state, agentsActions, i, jointActionLevel, firstAction);
             ArrayList<Action> candidateRemainingActions = (ArrayList<Action>) remainingActions.clone();
             for (Action action : jointAction) {
                 candidateRemainingActions.remove(action);
             }
             // detect if this jointAction will lead to a solution or if there are conflicts
-            boolean conflicts = ActionMerger.detectMergeConflicts(state, jointAction, candidateRemainingActions);
+            boolean conflicts = this.detectMergeConflicts(state, jointAction, candidateRemainingActions);
             if (!conflicts) {
                 // add jointAction to jointActions
                 jointActions.add(jointAction);
                 state = StateGenerator.generate(state, jointAction);
                 // call createJointAction again for next layer
-                return ActionMerger.createJointActions(
+                this.createJointActions(
                         state,
                         candidateRemainingActions,
                         agentsActions,
@@ -57,12 +78,9 @@ public class ActionMerger {
                 );
             }
         }
-
-        // this case should not happen
-        return null;
     }
 
-    private static ArrayList<Action> makeJointAction(
+    private ArrayList<Action> makeJointAction(
             State state,
             ArrayList<LinkedList<Action>> agentsActions,
             int agentsToAdd,
@@ -103,7 +121,7 @@ public class ActionMerger {
         return jointAction;
     }
 
-    private static boolean detectMergeConflicts(State state, ArrayList<Action> jointAction, Iterable<Action> remainingActions) {
+    private boolean detectMergeConflicts(State state, ArrayList<Action> jointAction, Iterable<Action> remainingActions) {
         if (ConflictDetector.conflict(state, jointAction)) {
             return true;
         }
@@ -117,7 +135,7 @@ public class ActionMerger {
         return !state.isGoalState();
     }
 
-    private static ArrayList<LinkedList<Action>> splitActionsToAgents(Action[] actions, Agent[] agents) {
+    private ArrayList<LinkedList<Action>> splitActionsToAgents(Action[] actions, Agent[] agents) {
         ArrayList<LinkedList<Action>> container = new ArrayList<>(agents.length);
 
         for (int i = 0; i < agents.length; i++) {

@@ -1,6 +1,7 @@
 package client.config;
 
 import client.definitions.AHeuristic;
+import client.definitions.AMerger;
 import client.definitions.AMessagePolicy;
 import client.definitions.AStrategy;
 import client.state.State;
@@ -13,7 +14,7 @@ public class ConfigParser {
 
     public static Config readConfig(String config, State initialState) throws
             InvalidConfigException,
-            UnknownHeuristicException, UnknownStrategyException, UnknownMessagePolicyException {
+            UnknownHeuristicException, UnknownStrategyException, UnknownMessagePolicyException, UnknownMergerException {
         HashMap<String, String> entries = new HashMap<>();
         // strip all whitespace (except new lines)
         String stripped = config.replaceAll(" ", "");
@@ -30,13 +31,14 @@ public class ConfigParser {
         }
         AHeuristic heuristic = Heuristic.parseHeuristic(entries.get("heuristic"), initialState);
         AMessagePolicy messagePolicy = MessagePolicy.parseMessagePolicy(entries.get("message_policy"), initialState);
-        AStrategy strategy = Strategy.parseStrategy(entries.get("strategy"), heuristic, messagePolicy);
-        return new Config(strategy, heuristic, messagePolicy);
+        AMerger merger = Merger.parseMerger(entries.get("merger"));
+        AStrategy strategy = Strategy.parseStrategy(entries.get("strategy"), heuristic, messagePolicy, merger);
+        return new Config(strategy, heuristic, messagePolicy, merger);
     }
 
     public static Config readConfigFromFile(String path, State initialState) throws
             InvalidConfigException, IOException,
-            UnknownHeuristicException, UnknownStrategyException, UnknownMessagePolicyException {
+            UnknownHeuristicException, UnknownStrategyException, UnknownMessagePolicyException, UnknownMergerException {
         String config = ConfigParser.readFile(path);
         return ConfigParser.readConfig(config, initialState);
     }
@@ -47,7 +49,8 @@ public class ConfigParser {
         StringBuilder sb = new StringBuilder();
         String line;
         while ((line = br.readLine()) != null) {
-            sb.append(line + "\n");
+            sb.append(line);
+            sb.append("\n");
         }
         return sb.toString();
     }

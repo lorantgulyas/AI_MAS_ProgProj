@@ -33,9 +33,10 @@ public class Main {
         }
 
         ClosedRoomRunner first = runners.get(0);
-        serverIO.sendComment("Using strategy: " + first.getStrategy().toString());
-        serverIO.sendComment("Using heuristic: " + first.getHeuristic().toString());
-        serverIO.sendComment("Using message policy: " + first.getMessagePolicy().toString());
+        serverIO.sendComment("strategy: " + first.getStrategy().toString());
+        serverIO.sendComment("heuristic: " + first.getHeuristic().toString());
+        serverIO.sendComment("message policy: " + first.getMessagePolicy().toString());
+        serverIO.sendComment("merger: " + first.getMerger().toString());
 
         // plan each room in parallel
         long startTime = System.currentTimeMillis();

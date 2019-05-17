@@ -23,6 +23,10 @@ The following keys are accepted together with their accepted values:
     - nearby(x)
     - public
     - public-nearby(x)
+* merger
+    - cells-used
+    - greedy
+    - no-merge
 
 Note that x in nearby and public-nearby must be a positive integer.
 
