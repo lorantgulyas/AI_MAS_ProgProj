@@ -24,8 +24,6 @@ public class MultiBodyAStar extends AStrategy {
     }
 
     public Solution plan(State initialState) {
-        long startTime = System.currentTimeMillis();
-
         PlanComparator comparator = new PlanComparator();
         this.explored = new HashSet<>();
         this.frontier = new PriorityQueue<>(comparator);
@@ -62,19 +60,9 @@ public class MultiBodyAStar extends AStrategy {
 
         long explored = this.explored.size();
         long generated = explored + this.frontier.size();
-        double memoryUsed = this.memoryUsed();
-        double timeSpent = this.timeSpent(startTime);
-        long solutionLength = result == null ? 0 : result.size();
-        PerformanceStats stats = new PerformanceStats(
-                memoryUsed,
-                0,
-                explored,
-                generated,
-                solutionLength,
-                timeSpent
-        );
+        PerformanceStats stats = new PerformanceStats( 0,  explored,  generated);
 
-        Command[][] plan = result == null ? null : this.jointActions2commmands(result);
+        Command[][] plan = result == null ? new Command[0][0] : this.jointActions2commmands(result);
         return new Solution(plan, stats);
     }
 

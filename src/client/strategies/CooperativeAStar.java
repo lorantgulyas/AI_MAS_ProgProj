@@ -8,6 +8,8 @@ import client.definitions.AStrategy;
 import client.state.Agent;
 import client.state.Position;
 import client.state.State;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.Math;
 import java.util.*;
@@ -18,7 +20,9 @@ public class CooperativeAStar extends AStrategy {
         super(heuristic);
     }
 
-    private CooperativeAStarResult makePlans(State initialState) {
+    @NotNull
+    @Contract("_ -> new")
+    private CooperativeAStarResult makePlans(@NotNull State initialState) {
         ArrayList<Action[]> plans = new ArrayList<>();
         Agent[] agents = initialState.getAgents();
         ArrayList<Set<Position>> cellsUsed = new ArrayList<>();
@@ -41,7 +45,7 @@ public class CooperativeAStar extends AStrategy {
         return new CooperativeAStarResult(plans, nodesExplored, nodesGenerated);
     }
 
-    private void updateCellsUsed(ArrayList<Set<Position>> cellsUsed, Action[] plan) {
+    private void updateCellsUsed(@NotNull ArrayList<Set<Position>> cellsUsed, @NotNull Action[] plan) {
         // update reserved cells with cells in this plan
         int nCellsUsed = cellsUsed.size();
         int nPlan = plan.length;
@@ -56,7 +60,7 @@ public class CooperativeAStar extends AStrategy {
         }
     }
 
-    private void updatePreviousActions(ArrayList<ArrayList<Action>> previousActions, Action[] plan) {
+    private void updatePreviousActions(@NotNull ArrayList<ArrayList<Action>> previousActions, @NotNull Action[] plan) {
         // update previous actions with actions in this plan
         int nPreviousActions = previousActions.size();
         int nPlan = plan.length;
@@ -71,7 +75,8 @@ public class CooperativeAStar extends AStrategy {
         }
     }
 
-    private int findMaxPlanLength(ArrayList<Action[]> plans) {
+    @Contract(pure = true)
+    private int findMaxPlanLength(@NotNull ArrayList<Action[]> plans) {
         int maxLength = Integer.MIN_VALUE;
         for (Action[] plan : plans) {
             if (maxLength < plan.length) {
@@ -83,6 +88,7 @@ public class CooperativeAStar extends AStrategy {
 
     // TODO: it is actually not correct to just extend with NoOps
     // since the agent may be blocking other agents
+    @NotNull
     private Command[][] extendPlans(ArrayList<Action[]> plans) {
         // extend plans with NoOps
         int maxLength = findMaxPlanLength(plans);
@@ -102,19 +108,9 @@ public class CooperativeAStar extends AStrategy {
     }
 
     public Solution plan(State initialState) {
-        long startTime = System.currentTimeMillis();
         CooperativeAStarResult result = this.makePlans(initialState);
         Command[][] plan = this.extendPlans(result.plan);
-        double memoryUsed = this.memoryUsed();
-        double timeSpent = this.timeSpent(startTime);
-        PerformanceStats stats = new PerformanceStats(
-                memoryUsed,
-                0,
-                result.nodesExplored,
-                result.nodesGenerated,
-                plan.length,
-                timeSpent
-        );
+        PerformanceStats stats = new PerformanceStats(0,  result.nodesExplored,  result.nodesGenerated);
         return new Solution(plan, stats);
     }
 

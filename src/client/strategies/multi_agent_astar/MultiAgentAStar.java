@@ -6,18 +6,11 @@ import client.definitions.AHeuristic;
 import client.definitions.AMessagePolicy;
 import client.definitions.AStrategy;
 import client.graph.Action;
-import client.graph.ActionMerger;
 import client.graph.Command;
-import client.graph.StateGenerator;
 import client.state.Agent;
 import client.state.State;
-import client.strategies.multi_agent_astar.Result;
-import client.strategies.multi_agent_astar.Terminator;
-import client.strategies.multi_agent_astar.ThreadedAgent;
-import client.utils.ConflictDetector;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 public class MultiAgentAStar extends AStrategy {
 
@@ -29,7 +22,6 @@ public class MultiAgentAStar extends AStrategy {
     }
 
     public Solution plan(State initialState) {
-        long startTime = System.currentTimeMillis();
         ArrayList<ThreadedAgent> agents = this.getThreadedAgents(this.heuristic, initialState);
         this.startThreads(agents);
 
@@ -62,7 +54,7 @@ public class MultiAgentAStar extends AStrategy {
         }
 
         Command[][] plan = actions == null ? new Command[0][0] : this.actions2plan(initialState, actions);
-        PerformanceStats stats = this.getPerformanceStats(results, plan.length, startTime);
+        PerformanceStats stats = this.getPerformanceStats(results);
 
         if (actions == null) {
             System.err.println("Error! Multi Agent A* did not find a solution.");
@@ -133,12 +125,10 @@ public class MultiAgentAStar extends AStrategy {
 
 
 
-    private PerformanceStats getPerformanceStats(Result[] results, int planLength, long startTime) {
+    private PerformanceStats getPerformanceStats(Result[] results) {
         long messagesSent = 0;
         long nodesExplored = 0;
         long nodesGenerated = 0;
-        double memoryUsed = this.memoryUsed();
-        double timeSpent = this.timeSpent(startTime);
 
         for (Result result : results) {
             messagesSent += result.messagesSent;
@@ -146,7 +136,7 @@ public class MultiAgentAStar extends AStrategy {
             nodesGenerated += result.nodesGenerated;
         }
 
-        return new PerformanceStats(memoryUsed, messagesSent, nodesExplored, nodesGenerated, planLength, timeSpent);
+        return new PerformanceStats(messagesSent, nodesExplored, nodesGenerated);
     }
 
     @Override

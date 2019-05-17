@@ -5,10 +5,7 @@ import client.state.Position;
 import client.state.State;
 import client.utils.ConflictDetector;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 
 public class ActionGenerator {
 
@@ -35,7 +32,7 @@ public class ActionGenerator {
         // find total number of jointActions
         int nJointActions = 1;
         for (ArrayList<Action> agentActions : agentsActions) {
-            nJointActions *= agentsActions.size();
+            nJointActions *= agentActions.size();
         }
 
         // initialize values used to find which action to pick

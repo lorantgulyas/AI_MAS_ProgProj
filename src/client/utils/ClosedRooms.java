@@ -1,9 +1,6 @@
 package client.utils;
 
-import client.state.Agent;
-import client.state.Level;
-import client.state.Position;
-import client.state.State;
+import client.state.*;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -16,14 +13,12 @@ import java.util.HashSet;
  */
 public class ClosedRooms {
 
+    private State initialState;
     private ArrayList<HashSet<Position>> rooms;
 
     public ClosedRooms(State initialState) {
         Level level = initialState.getLevel();
-        this.rooms = this.findRooms(level);
-    }
-
-    public ClosedRooms(Level level) {
+        this.initialState = initialState;
         this.rooms = this.findRooms(level);
     }
 
@@ -68,6 +63,20 @@ public class ClosedRooms {
                 return true;
         }
         return false;
+    }
+
+    /**
+     * Creates sub-states for each closed room in the main level.
+     *
+     * @return List of states with different levels.
+     */
+    public ArrayList<SubState> getSubStates() {
+        ArrayList<SubState> states = new ArrayList<>();
+        for (HashSet<Position> room : this.rooms) {
+            SubState state = new SubState(this.initialState, room);
+            states.add(state);
+        }
+        return states;
     }
 
     private ArrayList<HashSet<Position>> findRooms(Level level) {

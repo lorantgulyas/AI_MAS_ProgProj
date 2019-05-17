@@ -2,51 +2,47 @@ package client;
 
 public class PerformanceStats {
 
-    private double memoryUsed; // in MB
     private long messagesSent;
     private long nodesExplored;
     private long nodesGenerated;
-    private long solutionLength;
-    private double timeSpent; // in seconds
 
     private String formatString;
 
-    public PerformanceStats(
-            double memoryUsed,
-            long messagesSent,
-            long nodesExplored,
-            long nodesGenerated,
-            long solutionLength,
-            double timeSpent
-    ) {
-        this.memoryUsed = memoryUsed;
+    public PerformanceStats(long messagesSent, long nodesExplored, long nodesGenerated) {
         this.messagesSent = messagesSent;
         this.nodesExplored = nodesExplored;
         this.nodesGenerated = nodesGenerated;
-        this.solutionLength = solutionLength;
-        this.timeSpent = timeSpent;
         this.formatString = this.makeFormatString();
     }
 
     private String makeFormatString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("Memory used: %f MB\n");
-        builder.append("Time spent: %f seconds\n");
-        builder.append("Solution length: %d\n");
         builder.append("Messages sent: %d\n");
         builder.append("Nodes explored: %d\n");
         builder.append("Nodes generated: %d");
         return builder.toString();
     }
 
-    public String getMemoryUsed() {
-        // do not change this since the performance tool expects a specific format
-        return String.format("Memory used: %f MB", this.memoryUsed);
+    public long messagesSent() {
+        return this.messagesSent;
     }
 
-    public String getTimeSpent() {
+    public long nodesExplored() {
+        return this.nodesExplored;
+    }
+
+    public long nodesGenerated() {
+        return this.nodesGenerated;
+    }
+
+    public String getMemoryUsed(double memoryUsed) {
         // do not change this since the performance tool expects a specific format
-        return String.format("Time spent: %f seconds", this.timeSpent);
+        return String.format("Memory used: %f MB", memoryUsed);
+    }
+
+    public String getTimeSpent(double timeSpent) {
+        // do not change this since the performance tool expects a specific format
+        return String.format("Time spent: %f seconds", timeSpent);
     }
 
     public String getMessagesSent() {
@@ -64,18 +60,19 @@ public class PerformanceStats {
         return String.format("Nodes generated: %d", this.nodesGenerated);
     }
 
-    public String getSolutionLength() {
+    public String getSolutionLength(int solutionLength) {
         // do not change this since the performance tool expects a specific format
-        return String.format("Solution length: %d", this.solutionLength);
+        return String.format("Solution length: %d", solutionLength);
+    }
+
+    public static double timeSpent(long startTime) {
+        return (System.currentTimeMillis() - startTime) / 1000f;
     }
 
     @Override
     public String toString() {
         return String.format(
                 this.formatString,
-                this.memoryUsed,
-                this.timeSpent,
-                this.solutionLength,
                 this.messagesSent,
                 this.nodesExplored,
                 this.nodesGenerated

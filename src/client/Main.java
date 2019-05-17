@@ -1,15 +1,16 @@
 package client;
 
-import client.config.Config;
 import client.config.ConfigParser;
-import client.definitions.AHeuristic;
-import client.definitions.AMessagePolicy;
-import client.definitions.AStrategy;
 import client.graph.Command;
 import client.state.State;
+import client.state.SubState;
+import client.utils.ClosedRooms;
+
+import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) throws Exception {
+
         // read state
         ServerIO serverIO = new ServerIO("soulman");
 
@@ -17,43 +18,106 @@ public class Main {
         String configPath = args.length < 1 ? "src/configs/default.config" : args[0];
 
         // debug
-        //State initialState = ServerIO.readFromFile("src/levels/custom/MACorridors1.lvl");
-        //String configPath = "src/configs/maa_stsp_pn3.config";
+        //State initialState = ServerIO.readFromFile("src/levels/custom/MAExample.lvl");
+        //String configPath = "src/configs/maa_stsp_n3.config";
 
-        Config config = ConfigParser.readConfigFromFile(configPath, initialState);
+        String config = ConfigParser.readFile(configPath);
 
-        AHeuristic heuristic = config.getHeuristic();
-        AStrategy strategy = config.getStrategy();
-        AMessagePolicy messagePolicy = config.getMessagePolicy();
+        // split state into potentially different closed rooms
+        ClosedRooms rooms = new ClosedRooms(initialState);
+        ArrayList<SubState> states = rooms.getSubStates();
+        ArrayList<ClosedRoomRunner> runners = new ArrayList<>();
+        for (SubState state : states) {
+            ClosedRoomRunner runner = new ClosedRoomRunner(config, state.getState());
+            runners.add(runner);
+        }
 
-        serverIO.sendComment("Using strategy: " + strategy.toString());
-        serverIO.sendComment("Using heuristic: " + heuristic.toString());
-        serverIO.sendComment("Using message policy: " + messagePolicy.toString());
+        ClosedRoomRunner first = runners.get(0);
+        serverIO.sendComment("Using strategy: " + first.getStrategy().toString());
+        serverIO.sendComment("Using heuristic: " + first.getHeuristic().toString());
+        serverIO.sendComment("Using message policy: " + first.getMessagePolicy().toString());
 
-        // find plan
-        int h = heuristic.h(initialState);
-        initialState.setH(h);
-        Solution solution;
-        try {
-            solution = strategy.plan(initialState);
-        } catch (OutOfMemoryError exc) {
-            // do not change this since the performance tool expects a specific format
-            System.err.println("Maximum memory usage exceeded.");
-            return;
+        // plan each room in parallel
+        long startTime = System.currentTimeMillis();
+        for (ClosedRoomRunner runner : runners) {
+            runner.start();
+        }
+
+        // wait for each room to finish planning
+        for (ClosedRoomRunner runner : runners) {
+            try {
+                runner.join();
+            } catch (InterruptedException exc) {
+                String errorMessage = "Interrupted.";
+                System.err.println(errorMessage);
+            } catch (OutOfMemoryError exc) {
+                String errorMessage = "Maximum memory usage exceeded.";
+                System.err.println(errorMessage);
+            } catch (Exception exc) {
+                String errorMessage = "Unknown error.";
+                System.err.println(errorMessage);
+            }
+        }
+
+        // merge stats
+        long explored = 0;
+        long generated = 0;
+        long messages = 0;
+        for (ClosedRoomRunner runner : runners) {
+            PerformanceStats stats = runner.getSolution().getStats();
+            explored += stats.nodesExplored();
+            generated += stats.nodesGenerated();
+            messages += stats.messagesSent();
+        }
+
+        // find longest plan
+        int solutionLength = 0;
+        ArrayList<Command[][]> plans = new ArrayList<>();
+        for (ClosedRoomRunner runner : runners) {
+            Command[][] plan = runner.getSolution().getPlan();
+            plans.add(plan);
+            solutionLength = Math.max(solutionLength, plan.length);
+        }
+
+        // merge plans
+        int nAgents = initialState.getAgents().length;
+        int nRooms = runners.size();
+        Command[][] solution = new Command[solutionLength][nAgents];
+        for (int i = 0; i < nRooms; i++) {
+            SubState state = states.get(i);
+            Command[][] plan = plans.get(i);
+            int nSubAgents = state.getState().getAgents().length;
+            for (int j = 0; j < plan.length; j++) {
+                Command[] jointAction = plan[j];
+                for (int k = 0; k < nSubAgents; k++) {
+                    int agentID = state.getOriginalAgentID(k);
+                    solution[j][agentID] = jointAction[k];
+                }
+            }
+            // fill remaining cells with NoOps
+            for (int j = plan.length; j < solutionLength; j++) {
+                for (int k = 0; k < nSubAgents; k++) {
+                    int agentID = state.getOriginalAgentID(k);
+                    solution[j][agentID] = Command.NoOp;
+                }
+            }
         }
 
         // print performance stats
-        PerformanceStats stats = solution.getStats();
+        PerformanceStats stats = new PerformanceStats(messages, explored, generated);
+        double memoryUsed = Memory.used();
+        double timeSpent = PerformanceStats.timeSpent(startTime);
+
         // do not change this since the performance tool expects a specific format
-        serverIO.sendComment(stats.getMemoryUsed());
-        serverIO.sendComment(stats.getTimeSpent());
-        serverIO.sendComment(stats.getSolutionLength());
+        serverIO.sendComment(stats.getMemoryUsed(memoryUsed));
+        serverIO.sendComment(stats.getTimeSpent(timeSpent));
+        serverIO.sendComment(stats.getSolutionLength(solutionLength));
         serverIO.sendComment(stats.getMessagesSent());
         serverIO.sendComment(stats.getNodesExplored());
         serverIO.sendComment(stats.getNodesGenerated());
 
         // send joint actions to server
-        for (Command[] jointAction : solution.getPlan()) {
+        for (Command[] jointAction : solution) {
             boolean[] jointActionResponse = serverIO.sendJointAction(jointAction);
             for (boolean actionResponse : jointActionResponse) {
                 if (!actionResponse) {

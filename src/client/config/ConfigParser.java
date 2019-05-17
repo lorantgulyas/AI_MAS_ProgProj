@@ -37,6 +37,11 @@ public class ConfigParser {
     public static Config readConfigFromFile(String path, State initialState) throws
             InvalidConfigException, IOException,
             UnknownHeuristicException, UnknownStrategyException, UnknownMessagePolicyException {
+        String config = ConfigParser.readFile(path);
+        return ConfigParser.readConfig(config, initialState);
+    }
+
+    public static String readFile(String path) throws IOException {
         FileReader fr = new FileReader(path);
         BufferedReader br = new BufferedReader(fr);
         StringBuilder sb = new StringBuilder();
@@ -44,7 +49,7 @@ public class ConfigParser {
         while ((line = br.readLine()) != null) {
             sb.append(line + "\n");
         }
-        String config = sb.toString();
-        return ConfigParser.readConfig(config, initialState);
+        return sb.toString();
     }
+
 }
