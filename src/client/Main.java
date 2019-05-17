@@ -2,6 +2,8 @@ package client;
 
 import client.config.ConfigParser;
 import client.graph.Command;
+import client.state.Agent;
+import client.state.Position;
 import client.state.State;
 import client.state.SubState;
 import client.utils.ClosedRooms;
@@ -18,8 +20,8 @@ public class Main {
         String configPath = args.length < 1 ? "src/configs/default.config" : args[0];
 
         // debug
-        //State initialState = ServerIO.readFromFile("src/levels/custom/MAExample.lvl");
-        //String configPath = "src/configs/maa_stsp_n2.config";
+        //State initialState = ServerIO.readFromFile("src/levels/comp18/MACyBot.lvl");
+        //String configPath = "src/configs/maa_stsp_n2_g.config";
 
         String config = ConfigParser.readFile(configPath);
 
@@ -81,7 +83,8 @@ public class Main {
         }
 
         // merge plans
-        int nAgents = initialState.getAgents().length;
+        Agent[] agents = initialState.getAgents();
+        int nAgents = agents.length;
         int nRooms = runners.size();
         Command[][] solution = new Command[solutionLength][nAgents];
         for (int i = 0; i < nRooms; i++) {

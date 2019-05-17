@@ -108,6 +108,20 @@ public class ServerIO {
             }
         }
 
+        // some agents may have been specified but not actually used in the level
+        // we fix this by removing those agents
+        ArrayList<Agent> usedAgents = new ArrayList<>();
+        int agentID = 0;
+        for (int i = 0; i < agents.length; i++) {
+            Agent agent = agents[i];
+            if (agent != null) {
+                Agent usedAgent = new Agent(agentID, agent.getColor(), agent.getPosition());
+                usedAgents.add(usedAgent);
+                agentID++;
+            }
+        }
+        agents = usedAgents.toArray(new Agent[0]);
+
         // parse goal state
         line = reader.readLine();
         rawLevel = new ArrayList<>();

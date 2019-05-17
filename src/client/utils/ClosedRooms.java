@@ -86,7 +86,9 @@ public class ClosedRooms {
         while (!nonWallPositions.isEmpty()) {
             Position exploreFrom = nonWallPositions.get(0);
             HashSet<Position> room = this.exploreRoom(nonWallPositions, nonWallSet, exploreFrom);
-            rooms.add(room);
+            if (this.roomContainsGoals(room, level)) {
+                rooms.add(room);
+            }
         }
         return rooms;
     }
@@ -95,9 +97,9 @@ public class ClosedRooms {
         ArrayList<Position> nonWallPositions = new ArrayList<>();
         boolean[][] walls = level.getWalls();
         for (int i = 0; i < walls.length; i++) {
-            boolean[] row = walls[i];
-            for (int j = 0; j < row.length; j++) {
-                if (!row[j]) {
+            boolean[] col = walls[i];
+            for (int j = 0; j < col.length; j++) {
+                if (!col[j]) {
                     Position position = new Position(i, j);
                     nonWallPositions.add(position);
                 }
@@ -108,10 +110,13 @@ public class ClosedRooms {
 
     private HashSet<Position> exploreRoom(ArrayList<Position> nonWallPositions, HashSet<Position> nonWallSet, Position exploreFrom) {
         ArrayDeque<Position> frontier = new ArrayDeque<>();
+        HashSet<Position> frontierSet = new HashSet<>();
         HashSet<Position> explored = new HashSet<>();
         frontier.add(exploreFrom);
-        while (!frontier.isEmpty()) {
+        frontierSet.add(exploreFrom);
+        while (!frontierSet.isEmpty()) {
             Position pos = frontier.pop();
+            frontierSet.remove(pos);
             explored.add(pos);
 
             nonWallPositions.remove(pos);
@@ -122,20 +127,38 @@ public class ClosedRooms {
             Position south = pos.south();
             Position west = pos.west();
 
-            if (!explored.contains(north) && !frontier.contains(north) && nonWallSet.contains(north))
+            if (!explored.contains(north) && !frontierSet.contains(north) && nonWallSet.contains(north)) {
                 frontier.add(north);
+                frontierSet.add(north);
+            }
 
-            if (!explored.contains(east) && !frontier.contains(east) && nonWallSet.contains(east))
+            if (!explored.contains(east) && !frontierSet.contains(east) && nonWallSet.contains(east)) {
                 frontier.add(east);
+                frontierSet.add(east);
+            }
 
-            if (!explored.contains(south) && !frontier.contains(south) && nonWallSet.contains(south))
+            if (!explored.contains(south) && !frontierSet.contains(south) && nonWallSet.contains(south)) {
                 frontier.add(south);
+                frontierSet.add(south);
+            }
 
-            if (!explored.contains(west) && !frontier.contains(west) && nonWallSet.contains(west))
+            if (!explored.contains(west) && !frontierSet.contains(west) && nonWallSet.contains(west)) {
                 frontier.add(west);
+                frontierSet.add(west);
+            }
         }
 
         return explored;
+    }
+
+    private boolean roomContainsGoals(HashSet<Position> room, Level level) {
+        Goal[] goals = level.getGoals();
+        for (Goal goal : goals) {
+            if (room.contains(goal.getPosition())) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
