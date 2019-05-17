@@ -8,9 +8,10 @@ import client.definitions.AStrategy;
 import client.graph.Action;
 import client.graph.Command;
 import client.state.Agent;
+import client.state.Position;
 import client.state.State;
 
-import java.util.ArrayList;
+import java.util.*;
 
 public class MultiAgentAStar extends AStrategy {
 
@@ -53,7 +54,7 @@ public class MultiAgentAStar extends AStrategy {
             }
         }
 
-        Command[][] plan = actions == null ? new Command[0][0] : this.actions2plan(initialState, actions);
+        Command[][] plan = actions == null ? new Command[0][0] : this.actions2plan(actions, agents.size());
         PerformanceStats stats = this.getPerformanceStats(results);
 
         if (actions == null) {
@@ -93,9 +94,9 @@ public class MultiAgentAStar extends AStrategy {
         }
     }
 
-    private Command[][] actions2plan(State initialState, Action[] actions) {
-        int nAgents = initialState.getAgents().length;
-        ArrayList<Command[]> jointActions = new ArrayList<>();
+    private Command[][] actions2plan(Action[] actions, int nAgents) {
+        /*ArrayList<Command[]> jointActions = new ArrayList<>();
+>>>>>>> ee1f20293f96be4a781d6c10e59e6428e4b21b8f:src/client/strategies/MultiAgentAStar.java
         for (Action action : actions) {
             Command[] jointAction = new Command[nAgents];
             for (int i = 0; i < nAgents; i++) {
@@ -103,8 +104,83 @@ public class MultiAgentAStar extends AStrategy {
             }
             jointAction[action.getAgentID()] = action.getCommand();
             jointActions.add(jointAction);
+        }*/
+
+        ArrayList<Command[]> combinedActions = new ArrayList<>();
+        LinkedList[] container = new LinkedList[nAgents];
+
+        for (int i = 0; i < nAgents; i++) {
+            LinkedList<Action> myActions = new LinkedList<>();
+            for (Action action : actions) {
+                if (action.getAgentID() == i) {
+                    myActions.add(action);
+                }
+            }
+            container[i] = myActions;
         }
-        return jointActions.toArray(new Command[0][0]);
+
+        boolean done = false;
+        while (!done) {
+
+            Boolean[] agentActionCanBeMerged = new Boolean[nAgents];
+            Arrays.fill(agentActionCanBeMerged, Boolean.TRUE);
+
+            for (int i = 0; i < container.length; i++) {
+                if (!container[i].isEmpty() && i != container.length - 1) {
+                    thisAgent:
+                    for (Position position : ((Action) container[i].getFirst()).getCellsUsed()) {
+                        for (int j = 1; j < nAgents; j++) {
+                            if (i + j < container.length) {
+                                for (int k = 0; k < container[i + j].size(); k++) {
+                                    Action otherAgentAction = (Action) container[i + j].get(k);
+                                    if (otherAgentAction.getCellsUsed().contains(position)) {
+                                        //The two actions from agent i and agent i+j interferes on cellsUsed
+                                        //Therefore for now, agent i cannot be used
+                                        agentActionCanBeMerged[i] = false;
+                                        break thisAgent;
+                                    } else if (otherAgentAction.getCellsUsed().contains(new Position(position.getCol() - 1, position.getRow()))) {
+                                        agentActionCanBeMerged[i] = false;
+                                        break thisAgent;
+                                    } else if (otherAgentAction.getCellsUsed().contains(new Position(position.getCol() + 1, position.getRow()))) {
+                                        agentActionCanBeMerged[i] = false;
+                                        break thisAgent;
+                                    } else if (otherAgentAction.getCellsUsed().contains(new Position(position.getCol(), position.getRow() - 1))) {
+                                        agentActionCanBeMerged[i] = false;
+                                        break thisAgent;
+                                    } else if (otherAgentAction.getCellsUsed().contains(new Position(position.getCol(), position.getRow() + 1))) {
+                                        agentActionCanBeMerged[i] = false;
+                                        break thisAgent;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Command[] combinedAction = new Command[nAgents];
+
+            for (int i = 0; i < nAgents; i++) {
+                if (agentActionCanBeMerged[i] && container[i].size() != 0) {
+                    Action agentAction = (Action) container[i].poll();
+                    combinedAction[i] = agentAction.getCommand();
+                } else {
+                    combinedAction[i] = Command.NoOp;
+                }
+            }
+
+            combinedActions.add(combinedAction);
+
+            boolean allActionsAreMerged = true;
+            for (int i = 0; i < container.length; i++) {
+                if (!container[i].isEmpty()) {
+                    allActionsAreMerged = false;
+                    break;
+                }
+            }
+
+            done = allActionsAreMerged;
+        }
         /*
         ArrayList<ArrayList<Action>> jointActions = ActionMerger.merge(initialState, actions);
         Command[][] plan = new Command[jointActions.size()][];
@@ -121,9 +197,8 @@ public class MultiAgentAStar extends AStrategy {
         }
         return plan;
         */
+        return combinedActions.toArray(new Command[0][0]);
     }
-
-
 
     private PerformanceStats getPerformanceStats(Result[] results) {
         long messagesSent = 0;
