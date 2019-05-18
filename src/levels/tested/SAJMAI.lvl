@@ -1,0 +1,25 @@
+#domain
+hospital
+#levelname
+SAJMAI
+#colors
+blue: 0, A, B, C
+#initial
++++++++++
++ +   A0+
++ +   A +
++ +   A +
++ + + C +
++   + B +
++   + B +
++++++++++
+#goal
++++++++++
++A+     +
++C+     +
++B+     +
++A+ +   +
++BA +   +
++   +   +
++++++++++
+#end

@@ -1,21 +1,14 @@
-package client.state;
+package subgoaler;
 
 public class Goal {
-
-    private Color color;
     private char letter;
     private Position position;
     private int priority;
 
-    public Goal(char letter, Position position, Color color) {
-        this.color = color;
+    public Goal(char letter, Position position) {
         this.letter = letter;
         this.position = position;
         this.priority = 0;
-    }
-
-    public Color getColor() {
-        return this.color;
     }
 
     public char getLetter() {
@@ -49,11 +42,12 @@ public class Goal {
             return false;
         Goal other = (Goal) obj;
         return this.letter == other.letter
+                && this.priority == other.priority
                 && this.position.equals(other.position);
     }
 
     @Override
     public int hashCode() {
-        return this.position.hashCode() + this.letter;
+        return this.position.hashCode() + this.letter + this.priority;
     }
 }

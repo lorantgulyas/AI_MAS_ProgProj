@@ -1,9 +1,6 @@
 package client.heuristics;
 
-import client.NotImplementedException;
-import client.state.Level;
-import client.state.Position;
-import client.state.State;
+import client.state.*;
 import client.definitions.AHeuristic;
 
 import java.util.ArrayDeque;
@@ -11,16 +8,21 @@ import java.util.Arrays;
 
 public class Floodfill extends AHeuristic {
     private int[][][][] matrix;
+    private boolean[][] rooms;
     public static final int UNDISCOVERED = -1;
 
+    private boolean[][] walls;
     private int rowCount;
     private int colCount;
+    private Goal[] goals;
 
     public Floodfill(State initialState) {
         super(initialState);
         Level level = initialState.getLevel();
         this.rowCount = level.getRowCount();
         this.colCount = level.getColCount();
+        this.walls = level.getWalls();
+        this.goals = level.getGoals();
 
         // matrix starts with goal coordinates, in order to make the memory layout nicer
         this.matrix = new int[this.colCount][this.rowCount][this.colCount][this.rowCount];
@@ -29,9 +31,6 @@ public class Floodfill extends AHeuristic {
                 fillSubMatrix(goalX, goalY, initialState);
             }
         }
-
-        // for debug purposes
-        printMatrix(25, 25);
     }
 
     private void fillSubMatrix(int goalX, int goalY, State initialState) {
@@ -75,6 +74,67 @@ public class Floodfill extends AHeuristic {
         }
     }
 
+    public void findRooms() {
+        // return if already preprocessed
+        if (rooms != null) return;
+
+        boolean[][] walls = this.walls;
+        // TODO: add goal positions!!!
+        // TODO: fallback on storages, when there are no rooms (half plus on map)
+        rooms = new boolean[this.colCount][this.rowCount];
+        // prefill
+        for (int y = 0; y < this.rowCount; y++)
+            for (int x = 0; x < this.colCount; x++)
+                rooms[x][y] = false;
+        // detect rooms
+        for (int y = 1; y < this.rowCount - 2; y++) {
+            for (int x = 1; x < this.colCount - 2; x++) {
+                // 2x2 window
+                if (!(walls[x][y] || walls[x + 1][y] || walls[x][y + 1] || walls[x + 1][y + 1])) {
+                    rooms[x][y] = rooms[x + 1][y] = rooms[x][y + 1] = rooms[x + 1][y + 1] = true;
+                }
+            }
+        }
+
+        // print
+        //StringBuilder s = new StringBuilder();
+        //for (int y = 0; y < this.rowCount; y++) {
+        //    for (int x = 0; x < this.colCount; x++) {
+        //        if (rooms[x][y]) {
+        //            s.append("O");
+        //        } else if (walls[x][y]) {
+        //            s.append("X");
+        //        } else {
+        //            s.append(" ");
+        //        }
+        //    }
+        //    s.append("\n");
+        //}
+        //System.err.println(s.toString());
+    }
+
+    public void prioritizeGoals() {
+        for (Goal goal : this.goals) {
+            Position pos = goal.getPosition();
+            int priority = Integer.MAX_VALUE;
+            for (int y = 0; y < this.rowCount; y++) {
+                for (int x = 0; x < this.colCount; x++) {
+                    if (rooms[x][y] && (matrix[pos.getCol()][pos.getRow()][x][y] < priority)) {
+                        priority = matrix[pos.getCol()][pos.getRow()][x][y];
+                    }
+                }
+            }
+            if (priority != Integer.MAX_VALUE) {
+                goal.setPriority(priority);
+            }
+        }
+
+        // print
+        //for (Goal goal : this.goals) {
+        //    System.err.println(goal);
+        //}
+    }
+
     public void printMatrix(int goalX, int goalY) {
         StringBuilder s = new StringBuilder();
 
@@ -101,7 +161,20 @@ public class Floodfill extends AHeuristic {
 
     @Override
     public int h(State state) {
-        throw new NotImplementedException();
+        int h = 0;
+        Agent[] agents = state.getAgents();
+        Box[] boxes = state.getBoxes();
+        for (Goal goal : this.goals) {
+            for (Agent agent : agents) {
+                h += this.distance(goal.getPosition(), agent.getPosition());
+            }
+        }
+        for (Box box : boxes) {
+            for (Agent agent : agents) {
+                h += this.distance(box.getPosition(), agent.getPosition());
+            }
+        }
+        return h;
     }
 
     @Override

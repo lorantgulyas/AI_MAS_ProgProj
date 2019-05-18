@@ -8,6 +8,7 @@ public class State {
     private Agent[] agents;
     private Box[] boxes;
     private Level level;
+
     private HashMap<Position, Agent> agentMap;
     private HashMap<Position, Box> boxMap;
     private int h;
@@ -25,6 +26,7 @@ public class State {
         this.boxes = boxes;
         this.level = level;
         this.agentMap = new HashMap<>();
+
         for (Agent agent : agents) {
             this.agentMap.put(agent.getPosition(), agent);
         }
