@@ -17,9 +17,8 @@ public class ClosedRooms {
     private ArrayList<HashSet<Position>> rooms;
 
     public ClosedRooms(State initialState) {
-        Level level = initialState.getLevel();
         this.initialState = initialState;
-        this.rooms = this.findRooms(level);
+        this.rooms = this.findRooms(initialState);
     }
 
     /**
@@ -96,14 +95,16 @@ public class ClosedRooms {
         return this.rooms.get(room).size();
     }
 
-    private ArrayList<HashSet<Position>> findRooms(Level level) {
+    private ArrayList<HashSet<Position>> findRooms(State state) {
+        Level level = state.getLevel();
+        Agent[] agents = state.getAgents();
         ArrayList<HashSet<Position>> rooms = new ArrayList<>();
         ArrayList<Position> nonWallPositions = this.findNonWallPositions(level);
         HashSet<Position> nonWallSet = new HashSet<>(nonWallPositions);
         while (!nonWallPositions.isEmpty()) {
             Position exploreFrom = nonWallPositions.get(0);
             HashSet<Position> room = this.exploreRoom(nonWallPositions, nonWallSet, exploreFrom);
-            if (this.roomContainsGoals(room, level)) {
+            if (this.roomContainsGoals(room, level) || this.roomContainsAgents(room, agents)) {
                 rooms.add(room);
             }
         }
@@ -172,6 +173,15 @@ public class ClosedRooms {
         Goal[] goals = level.getGoals();
         for (Goal goal : goals) {
             if (room.contains(goal.getPosition())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean roomContainsAgents(HashSet<Position> room, Agent[] agents) {
+        for (Agent agent : agents) {
+            if (room.contains(agent.getPosition())) {
                 return true;
             }
         }

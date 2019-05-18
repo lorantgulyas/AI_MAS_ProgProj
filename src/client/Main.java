@@ -3,7 +3,6 @@ package client;
 import client.config.ConfigParser;
 import client.graph.Command;
 import client.state.Agent;
-import client.state.Position;
 import client.state.State;
 import client.state.SubState;
 import client.utils.ClosedRooms;
@@ -20,8 +19,8 @@ public class Main {
         String configPath = args.length < 1 ? "src/configs/default.config" : args[0];
 
         // debug
-        //State initialState = ServerIO.readFromFile("src/levels/comp18/MACyBot.lvl");
-        //String configPath = "src/configs/maa_stsp_n2_g.config";
+        //State initialState = ServerIO.readFromFile("src/levels/comp18/MAora.lvl");
+        //String configPath = "src/configs/maa_st_sp_n2_g.config";
 
         String config = ConfigParser.readFile(configPath);
 
