@@ -1,9 +1,6 @@
 package client.config;
 
-import client.definitions.AHeuristic;
-import client.definitions.AMerger;
-import client.definitions.AMessagePolicy;
-import client.definitions.AStrategy;
+import client.definitions.*;
 import client.state.State;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -14,7 +11,8 @@ public class ConfigParser {
 
     public static Config readConfig(String config, State initialState) throws
             InvalidConfigException,
-            UnknownHeuristicException, UnknownStrategyException, UnknownMessagePolicyException, UnknownMergerException {
+            UnknownHeuristicException, UnknownStrategyException, UnknownMessagePolicyException,
+            UnknownMergerException, UnknownDistanceException {
         HashMap<String, String> entries = new HashMap<>();
         // strip all whitespace (except new lines)
         String stripped = config.replaceAll(" ", "");
@@ -29,16 +27,18 @@ public class ConfigParser {
             String value = keyValues[1];
             entries.put(key, value);
         }
-        AHeuristic heuristic = Heuristic.parseHeuristic(entries.get("heuristic"), initialState);
-        AMessagePolicy messagePolicy = MessagePolicy.parseMessagePolicy(entries.get("message_policy"), initialState);
+        ADistance distance = Distance.parseDistamce(entries.get("distance"), initialState);
+        AHeuristic heuristic = Heuristic.parseHeuristic(entries.get("heuristic"), initialState, distance);
+        AMessagePolicy messagePolicy = MessagePolicy.parseMessagePolicy(entries.get("message_policy"), initialState, distance);
         AMerger merger = Merger.parseMerger(entries.get("merger"));
         AStrategy strategy = Strategy.parseStrategy(entries.get("strategy"), heuristic, messagePolicy, merger);
-        return new Config(strategy, heuristic, messagePolicy, merger);
+        return new Config(strategy, heuristic, messagePolicy, merger, distance);
     }
 
     public static Config readConfigFromFile(String path, State initialState) throws
             InvalidConfigException, IOException,
-            UnknownHeuristicException, UnknownStrategyException, UnknownMessagePolicyException, UnknownMergerException {
+            UnknownHeuristicException, UnknownStrategyException, UnknownMessagePolicyException,
+            UnknownMergerException, UnknownDistanceException {
         String config = ConfigParser.readFile(path);
         return ConfigParser.readConfig(config, initialState);
     }

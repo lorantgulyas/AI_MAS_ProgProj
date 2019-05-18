@@ -29,6 +29,11 @@ public class LazyShortestPath extends ADistance {
         return this.bfs.getV();
     }
 
+    @Override
+    public String toString() {
+        return "shortest-path";
+    }
+
     class PositionPair {
         public Position p1;
         public Position p2;

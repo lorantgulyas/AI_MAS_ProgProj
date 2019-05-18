@@ -36,11 +36,14 @@ public class BFS{
 
     public int search(Position start, Position end) {
         ArrayDeque<BFSNode> frontier = new ArrayDeque<>();
+        HashSet<Position> frontierSet = new HashSet<>();
         HashSet<Position> explored = new HashSet<>();
         frontier.add(new BFSNode(0, start));
-        while (!frontier.isEmpty()) {
+        frontierSet.add(start);
+        while (!frontierSet.isEmpty()) {
             BFSNode node = frontier.pop();
             Position pos = node.position;
+            frontierSet.remove(pos);
             explored.add(pos);
             if (pos.equals(end)) {
                 return node.distance;
@@ -55,17 +58,21 @@ public class BFS{
             BFSNode southNode = new BFSNode(node.distance + 1, south);
             BFSNode westNode = new BFSNode(node.distance + 1, west);
 
-            if (!explored.contains(north) && !frontier.contains(northNode) && this.position2vertex.containsKey(north)) {
+            if (!explored.contains(north) && !frontierSet.contains(north) && this.position2vertex.containsKey(north)) {
                 frontier.add(northNode);
+                frontierSet.add(north);
             }
-            if (!explored.contains(east) && !frontier.contains(eastNode) && this.position2vertex.containsKey(east)) {
+            if (!explored.contains(east) && !frontierSet.contains(east) && this.position2vertex.containsKey(east)) {
                 frontier.add(eastNode);
+                frontierSet.add(east);
             }
-            if (!explored.contains(south) && !frontier.contains(southNode) && this.position2vertex.containsKey(south)) {
+            if (!explored.contains(south) && !frontierSet.contains(south) && this.position2vertex.containsKey(south)) {
                 frontier.add(southNode);
+                frontierSet.add(south);
             }
-            if (!explored.contains(west) && !frontier.contains(westNode) && this.position2vertex.containsKey(west)) {
+            if (!explored.contains(west) && !frontierSet.contains(west) && this.position2vertex.containsKey(west)) {
                 frontier.add(westNode);
+                frontierSet.add(west);
             }
         }
 

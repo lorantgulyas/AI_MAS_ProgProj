@@ -1,5 +1,6 @@
 package client.policies;
 
+import client.definitions.ADistance;
 import client.distance.LazyManhattan;
 import client.graph.Plan;
 import client.state.*;
@@ -15,8 +16,8 @@ public class NearbyPolicy extends AbstractGoalChangedOrNearby {
 
     private BroadcastPolicy broadcast;
 
-    public NearbyPolicy(State initialState, int maxDistance) {
-        super(initialState, maxDistance);
+    public NearbyPolicy(State initialState, int maxDistance, ADistance measurer) {
+        super(initialState, maxDistance, measurer);
         this.broadcast = new BroadcastPolicy(initialState);
     }
 

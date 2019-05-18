@@ -2,13 +2,11 @@ package client;
 
 import client.config.Config;
 import client.config.ConfigParser;
-import client.definitions.AHeuristic;
-import client.definitions.AMerger;
-import client.definitions.AMessagePolicy;
-import client.definitions.AStrategy;
+import client.definitions.*;
 
 public class ClosedRoomRunner extends Thread{
 
+    private ADistance distance;
     private AHeuristic heuristic;
     private AStrategy strategy;
     private AMessagePolicy messagePolicy;
@@ -18,11 +16,16 @@ public class ClosedRoomRunner extends Thread{
 
     public ClosedRoomRunner(String unparsedConfig, client.state.State state) throws Exception  {
         Config config = ConfigParser.readConfig(unparsedConfig, state);
+        this.distance = config.getDistance();
         this.heuristic = config.getHeuristic();
         this.strategy = config.getStrategy();
         this.messagePolicy = config.getMessagePolicy();
         this.merger = config.getMerger();
         this.state = state;
+    }
+
+    public ADistance getDistance() {
+        return this.distance;
     }
 
     public AHeuristic getHeuristic() {

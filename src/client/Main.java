@@ -39,6 +39,7 @@ public class Main {
         serverIO.sendComment("heuristic: " + first.getHeuristic().toString());
         serverIO.sendComment("message policy: " + first.getMessagePolicy().toString());
         serverIO.sendComment("merger: " + first.getMerger().toString());
+        serverIO.sendComment("distance: " + first.getDistance().toString());
 
         // plan each room in parallel
         long startTime = System.currentTimeMillis();

@@ -9,4 +9,9 @@ public class LazyManhattan extends ADistance {
         return Math.abs(p1.getRow() - p2.getRow()) + Math.abs(p1.getCol() - p2.getCol());
     }
 
+    @Override
+    public String toString() {
+        return "manhattan";
+    }
+
 }

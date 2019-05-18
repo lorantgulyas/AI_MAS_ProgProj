@@ -1,6 +1,7 @@
 package client;
 
-import client.heuristics.SingleTaskerShortestPath;
+import client.distance.LazyShortestPath;
+import client.heuristics.SingleTasker;
 import client.state.State;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -28,8 +29,10 @@ public class SingleTaskerTest {
         // # boxes = 1
         // box to goal distance = 2
         // agent to goal-box distance = 1
+        LazyShortestPath measurer = new LazyShortestPath(this.singleAgent);
+        SingleTasker heuristic = new SingleTasker(this.singleAgent, measurer);
         int expected = 2 + 1 + 1 * 5;
-        int actual = new SingleTaskerShortestPath(this.singleAgent).h(this.singleAgent);
+        int actual = heuristic.h(this.singleAgent);
         Assertions.assertEquals(expected, actual);
     }
 
@@ -42,15 +45,19 @@ public class SingleTaskerTest {
         // box B to goal distance = 1
         // agent 0 to goal-box distance = 1
         // agent 1 to goal-box distance = 7
+        LazyShortestPath measurer = new LazyShortestPath(this.multiAgent);
+        SingleTasker heuristic = new SingleTasker(this.multiAgent, measurer);
         int expected = (6 + 1 + 1 * 16) + (1 + 7 + 1 * 16);
-        int actual = new SingleTaskerShortestPath(this.multiAgent).h(this.multiAgent);
+        int actual = heuristic.h(this.multiAgent);
         Assertions.assertEquals(expected, actual);
     }
 
     @Test
     public void computesZeroForASolvedLevel() {
+        LazyShortestPath measurer = new LazyShortestPath(this.solved);
+        SingleTasker heuristic = new SingleTasker(this.solved, measurer);
         int expected = 0;
-        int actual = new SingleTaskerShortestPath(this.solved).h(this.solved);
+        int actual = heuristic.h(this.solved);
         Assertions.assertEquals(expected, actual);
     }
 

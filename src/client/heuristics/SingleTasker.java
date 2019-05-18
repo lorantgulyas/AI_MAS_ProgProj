@@ -11,10 +11,10 @@ import java.util.ArrayList;
  * one box into a goal at a time. Variations of this heuristic should
  * be created by subclassing and using different distance measures.
  */
-abstract class AbstractSingleTasker extends AHeuristic {
+public class SingleTasker extends AHeuristic {
     private ADistance measurer;
 
-    public AbstractSingleTasker(State initialState, ADistance measurer) {
+    public SingleTasker(State initialState, ADistance measurer) {
         super(initialState);
         this.measurer = measurer;
     }
@@ -110,5 +110,10 @@ abstract class AbstractSingleTasker extends AHeuristic {
             h += this.agentHeuristic(goals, boxes, agent);
         }
         return h;
+    }
+
+    @Override
+    public String toString() {
+        return "single-tasker";
     }
 }

@@ -1,5 +1,6 @@
 package client.policies;
 
+import client.definitions.ADistance;
 import client.graph.Plan;
 import client.state.Agent;
 import client.state.State;
@@ -17,8 +18,8 @@ public class PublicNearbyPolicy extends AbstractGoalChangedOrNearby {
     private BroadcastPolicy broadcast;
     private ArrayList<Agent[]> agentMapping;
 
-    public PublicNearbyPolicy(State initialState, int maxDistance) {
-        super(initialState, maxDistance);
+    public PublicNearbyPolicy(State initialState, int maxDistance, ADistance measurer) {
+        super(initialState, maxDistance, measurer);
         ClosedRooms rooms = new ClosedRooms(initialState);
         this.broadcast = new BroadcastPolicy(initialState);
 

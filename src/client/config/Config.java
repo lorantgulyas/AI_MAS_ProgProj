@@ -1,9 +1,6 @@
 package client.config;
 
-import client.definitions.AHeuristic;
-import client.definitions.AMerger;
-import client.definitions.AMessagePolicy;
-import client.definitions.AStrategy;
+import client.definitions.*;
 
 public class Config {
 
@@ -11,17 +8,20 @@ public class Config {
     private AStrategy strategy;
     private AMessagePolicy messagePolicy;
     private AMerger merger;
+    private ADistance distance;
 
     public Config(
             AStrategy strategy,
             AHeuristic heuristic,
             AMessagePolicy messagePolicy,
-            AMerger merger
+            AMerger merger,
+            ADistance distance
     ) {
         this.heuristic = heuristic;
         this.strategy = strategy;
         this.messagePolicy = messagePolicy;
         this.merger = merger;
+        this.distance = distance;
     }
 
     public AHeuristic getHeuristic() {
@@ -38,5 +38,9 @@ public class Config {
 
     public AMerger getMerger() {
         return this.merger;
+    }
+
+    public ADistance getDistance() {
+        return distance;
     }
 }

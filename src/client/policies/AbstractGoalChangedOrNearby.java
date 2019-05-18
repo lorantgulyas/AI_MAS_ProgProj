@@ -1,5 +1,6 @@
 package client.policies;
 
+import client.definitions.ADistance;
 import client.distance.LazyManhattan;
 import client.state.Agent;
 import client.state.Position;
@@ -13,14 +14,14 @@ import java.util.ArrayList;
  */
 abstract class AbstractGoalChangedOrNearby extends AbstractGoalChanged {
 
-    private LazyManhattan manhattan;
+    private ADistance measurer;
 
     int maxDistance;
 
-    AbstractGoalChangedOrNearby(State initialState, int maxDistance) {
+    AbstractGoalChangedOrNearby(State initialState, int maxDistance, ADistance measurer) {
         super(initialState);
         this.maxDistance = maxDistance;
-        this.manhattan = new LazyManhattan();
+        this.measurer = measurer;
     }
 
     Iterable<Integer> getNearby(Agent[] agents, Agent sender) {
@@ -29,7 +30,7 @@ abstract class AbstractGoalChangedOrNearby extends AbstractGoalChanged {
         ArrayList<Integer> receivers = new ArrayList<>();
         for (Agent agent : agents) {
             int id = agent.getId();
-            if (id != senderID && this.manhattan.distance(senderPos, agent.getPosition()) < this.maxDistance) {
+            if (id != senderID && this.measurer.distance(senderPos, agent.getPosition()) < this.maxDistance) {
                 receivers.add(id);
             }
         }

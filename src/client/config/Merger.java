@@ -1,15 +1,9 @@
 package client.config;
 
-import client.definitions.AHeuristic;
 import client.definitions.AMerger;
-import client.heuristics.Floodfill;
-import client.heuristics.Manhattan;
-import client.heuristics.SingleTaskerManhattan;
-import client.heuristics.SingleTaskerShortestPath;
 import client.mergers.CellsUsed;
 import client.mergers.Greedy;
 import client.mergers.NoMerge;
-import client.state.State;
 
 public class Merger {
 
