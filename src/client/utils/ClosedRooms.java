@@ -79,6 +79,23 @@ public class ClosedRooms {
         return states;
     }
 
+    /**
+     * Finds number of rooms.
+     * @return Number of rooms.
+     */
+    public int size() {
+        return this.rooms.size();
+    }
+
+    /**
+     * Finds the size of a room.
+     * @param room Index of the room.
+     * @return Size of the given room.
+     */
+    public int size(int room) {
+        return this.rooms.get(room).size();
+    }
+
     private ArrayList<HashSet<Position>> findRooms(Level level) {
         ArrayList<HashSet<Position>> rooms = new ArrayList<>();
         ArrayList<Position> nonWallPositions = this.findNonWallPositions(level);

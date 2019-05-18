@@ -13,10 +13,12 @@ import java.util.ArrayList;
  */
 public class SingleTasker extends AHeuristic {
     private ADistance measurer;
+    private int stateSize;
 
-    public SingleTasker(State initialState, ADistance measurer) {
+    public SingleTasker(State initialState, ADistance measurer, int stateSize) {
         super(initialState);
         this.measurer = measurer;
+        this.stateSize = stateSize;
     }
 
     private Box getClosestBoxToGoal(ArrayList<Box> boxes, Goal goal) {
@@ -94,8 +96,8 @@ public class SingleTasker extends AHeuristic {
             }
         }
         return minAgent2BoxDistance == Integer.MAX_VALUE
-                ? sum + nGoals * 100
-                : minAgent2BoxDistance + sum + nGoals * 100;
+                ? sum + nGoals * this.stateSize
+                : minAgent2BoxDistance + sum + nGoals * this.stateSize;
     }
 
     public int h(State n) {

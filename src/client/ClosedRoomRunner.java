@@ -14,8 +14,16 @@ public class ClosedRoomRunner extends Thread{
     private client.state.State state;
     private Solution solution;
 
-    public ClosedRoomRunner(String unparsedConfig, client.state.State state) throws Exception  {
-        Config config = ConfigParser.readConfig(unparsedConfig, state);
+    /**
+     * Class that plans in a thread.
+     *
+     * @param unparsedConfig Config as loaded from file.
+     * @param state The partitioned substate.
+     * @param roomSize Number of non-wall cells in the substate.
+     * @throws Exception
+     */
+    public ClosedRoomRunner(String unparsedConfig, client.state.State state, int roomSize) throws Exception  {
+        Config config = ConfigParser.readConfig(unparsedConfig, state, roomSize);
         this.distance = config.getDistance();
         this.heuristic = config.getHeuristic();
         this.strategy = config.getStrategy();

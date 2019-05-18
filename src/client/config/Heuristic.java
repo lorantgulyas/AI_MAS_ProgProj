@@ -7,7 +7,7 @@ import client.state.State;
 
 public class Heuristic {
 
-    public static AHeuristic parseHeuristic(String heuristic, State initialState, ADistance distance)
+    public static AHeuristic parseHeuristic(String heuristic, State initialState, ADistance distance, int stateSize)
             throws UnknownHeuristicException {
         switch (heuristic) {
             case "floodfill":
@@ -15,7 +15,7 @@ public class Heuristic {
             case "manhattan":
                 return new Manhattan(initialState);
             case "single-tasker":
-                return new SingleTasker(initialState, distance);
+                return new SingleTasker(initialState, distance, stateSize);
             default:
                 throw new UnknownHeuristicException();
         }

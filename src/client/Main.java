@@ -29,8 +29,11 @@ public class Main {
         ClosedRooms rooms = new ClosedRooms(initialState);
         ArrayList<SubState> states = rooms.getSubStates();
         ArrayList<ClosedRoomRunner> runners = new ArrayList<>();
-        for (SubState state : states) {
-            ClosedRoomRunner runner = new ClosedRoomRunner(config, state.getState());
+        int nRooms = rooms.size();
+        for (int i = 0; i < nRooms; i++) {
+            State state = states.get(i).getState();
+            int roomSize = rooms.size(i);
+            ClosedRoomRunner runner = new ClosedRoomRunner(config, state, roomSize);
             runners.add(runner);
         }
 
@@ -86,7 +89,6 @@ public class Main {
         // merge plans
         Agent[] agents = initialState.getAgents();
         int nAgents = agents.length;
-        int nRooms = runners.size();
         Command[][] solution = new Command[solutionLength][nAgents];
         for (int i = 0; i < nRooms; i++) {
             SubState state = states.get(i);

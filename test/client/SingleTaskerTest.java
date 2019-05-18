@@ -29,9 +29,11 @@ public class SingleTaskerTest {
         // # boxes = 1
         // box to goal distance = 2
         // agent to goal-box distance = 1
+        int stateSize = 5;
+        int unmatchedGoals = 1;
         LazyShortestPath measurer = new LazyShortestPath(this.singleAgent);
-        SingleTasker heuristic = new SingleTasker(this.singleAgent, measurer);
-        int expected = 2 + 1 + 1 * 5;
+        SingleTasker heuristic = new SingleTasker(this.singleAgent, measurer, stateSize);
+        int expected = 2 + 1 + unmatchedGoals * stateSize;
         int actual = heuristic.h(this.singleAgent);
         Assertions.assertEquals(expected, actual);
     }
@@ -45,17 +47,20 @@ public class SingleTaskerTest {
         // box B to goal distance = 1
         // agent 0 to goal-box distance = 1
         // agent 1 to goal-box distance = 7
+        int stateSize = 16;
+        int unmatchedGoals = 1;
         LazyShortestPath measurer = new LazyShortestPath(this.multiAgent);
-        SingleTasker heuristic = new SingleTasker(this.multiAgent, measurer);
-        int expected = (6 + 1 + 1 * 16) + (1 + 7 + 1 * 16);
+        SingleTasker heuristic = new SingleTasker(this.multiAgent, measurer, stateSize);
+        int expected = (6 + 1 + unmatchedGoals * stateSize) + (1 + 7 + unmatchedGoals * stateSize);
         int actual = heuristic.h(this.multiAgent);
         Assertions.assertEquals(expected, actual);
     }
 
     @Test
     public void computesZeroForASolvedLevel() {
+        int stateSize = 25;
         LazyShortestPath measurer = new LazyShortestPath(this.solved);
-        SingleTasker heuristic = new SingleTasker(this.solved, measurer);
+        SingleTasker heuristic = new SingleTasker(this.solved, measurer, stateSize);
         int expected = 0;
         int actual = heuristic.h(this.solved);
         Assertions.assertEquals(expected, actual);
