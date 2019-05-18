@@ -1,10 +1,8 @@
 package subgoaler;
 
 import java.io.PipedOutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.PriorityQueue;
+import java.lang.reflect.Array;
+import java.util.*;
 
 public class SerializedAStar {
     Floodfill ff;
@@ -19,22 +17,79 @@ public class SerializedAStar {
         ArrayList<Command> cmds = new ArrayList<>();
         subresult = init;
         for (int i = 0; i < allGoals.length; i++) {
-//        for (int i = 0; i < 7; i++) {
+//        for (int i = 0; i < 1; i++) {
 //            if (i == 59) {
 //                System.err.println("kek");
 //            }
             State.setGoals(Arrays.copyOfRange(allGoals, 0, i + 1));
             System.err.println("--- task: " + i + ", goal: " + allGoals[i]);
-            ArrayList<Command> subCmds = plan(subresult);
+
+            ArrayList<Command> subCmds;
+
+            try {
+                subCmds = plan(subresult);
+            } catch (BlockedException e) {
+                System.err.println("freeing path for " + allGoals[i]);
+                ArrayList<Position> path = ff.findPath(allGoals[i].getPosition(),
+                        subresult.getBoxes()[i].getPosition());
+                // path does not contain goal itself we have to add it manually
+                path.add(allGoals[i].getPosition());
+                subCmds = freePath(subresult, path);
+                try {
+                    subCmds.addAll(plan(subresult));
+                } catch (BlockedException ex) {
+                    System.err.println("trying again: " + allGoals[i]);
+                    System.err.println("we failed big times");
+                }
+            }
+
             cmds.addAll(subCmds);
-//            for (Command cmd : subCmds) {
+
+            //            for (Command cmd : subCmds) {
 //                System.err.println(cmd);
 //            }
         }
         return cmds;
     }
 
-    public ArrayList<Command> plan(State init) {
+    public ArrayList<Command> freePath(State init, ArrayList<Position> path) {
+        Comparator<State> comp = (s1, s2) ->
+                s1.g() + ff.hPath(s1, path) - s2.g() - ff.hPath(s2, path);
+        AStar strategy = new AStar(comp);
+        strategy.addToFrontier(init);
+
+        int iterations = 0;
+        while (true) {
+            if (iterations % 10000 == 0) {
+                System.err.println("i: " + iterations + ", " + strategy.searchStatus());
+            }
+
+            if (strategy.frontierIsEmpty()) {
+                return null;
+            }
+
+            State leafState = strategy.getAndRemoveLeaf();
+
+            // isGoalState
+            if (ff.hPath(leafState, path) == 0) {
+                ArrayList<Command> res = leafState.extractPlan();
+                subresult = leafState;
+                subresult.parent = null;
+                subresult.cmd = null;
+                return res;
+            }
+
+            strategy.addToExplored(leafState);
+            for (State n : leafState.getExpandedStates()) { // The list of expanded states is shuffled randomly; see State.java.
+                if (!strategy.isExplored(n) && !strategy.inFrontier(n)) {
+                    strategy.addToFrontier(n);
+                }
+            }
+            iterations++;
+        }
+    }
+
+    public ArrayList<Command> plan(State init) throws BlockedException {
         AStar strategy = new AStar(ff);
         strategy.addToFrontier(init);
 
@@ -42,6 +97,9 @@ public class SerializedAStar {
         while (true) {
             if (iterations % 10000 == 0) {
                 System.err.println("i: " + iterations + ", " + strategy.searchStatus());
+                if (iterations == 40000) {
+                    throw new BlockedException();
+                }
             }
 
             if (strategy.frontierIsEmpty()) {
@@ -76,15 +134,13 @@ public class SerializedAStar {
     }
 
     public class AStar {
-        private Floodfill ff;
         private PriorityQueue<State> frontier;
         private HashSet<State> frontierSet;
         private HashSet<State> explored;
         private final long startTime;
 
-        public AStar(Floodfill ff) {
-            this.ff = ff;
-            frontier = new PriorityQueue<>(100, ff);
+        public AStar(Comparator<State> comp) {
+            frontier = new PriorityQueue<>(100, comp);
             frontierSet = new HashSet<>();
             explored = new HashSet<>();
             this.startTime = System.currentTimeMillis();
@@ -133,5 +189,7 @@ public class SerializedAStar {
             return frontierSet.contains(n);
         }
     }
+
+    class BlockedException extends Exception { }
 }
 

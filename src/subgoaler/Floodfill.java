@@ -1,6 +1,7 @@
 package subgoaler;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Floodfill implements Comparator<State> {
     private int[][][][] matrix;
@@ -178,7 +179,8 @@ public class Floodfill implements Comparator<State> {
         }
 
         Arrays.sort(State.getGoals(), Comparator.comparingInt(Goal::getPriority).reversed());
-
+        // workaround for mutation :(
+        State.setGoals(State.getGoals());
         // print
 //        for (Goal goal : State.getGoals()) {
 //            System.err.println(goal);
@@ -213,13 +215,68 @@ public class Floodfill implements Comparator<State> {
         return boxList.toArray(Box[]::new);
     }
 
+    public ArrayList<Position> findPath(Position goalPos, Position boxPos) {
+        HashMap<Position, Integer> goalMap = State.getGoalMap();
+        // miniAstar!
+        Position[] moves = {
+                new Position(0, -1),
+                new Position(1, 0),
+                new Position(0, 1),
+                new Position(-1, 0)
+        };
+        ArrayList<Step> path = new ArrayList<>();
+        boolean[][] walls = State.getWalls();
+        Step init = new Step(boxPos, 0,
+                distance(boxPos, goalPos), null);
+        PriorityQueue<Step> frontier = new PriorityQueue<>(100, init);
+        HashSet<Position> frontierSet = new HashSet<>();
+        HashSet<Position> explored = new HashSet<>();
+        frontier.add(init);
+        frontierSet.add(init.position);
+
+        while (!frontier.isEmpty()) {
+            Step leaf = frontier.poll();
+            frontierSet.remove(leaf.position);
+
+            // found our goal
+            if (leaf.position.equals(goalPos)) {
+                while (leaf.parent != null) {
+                    path.add(leaf.parent); // don't add the goal pos itself
+                    leaf = leaf.parent;
+                }
+                break;
+            }
+
+            // expand our states
+            explored.add(leaf.position);
+            for (Position move : moves) {
+                Position newPos = leaf.position.add(move);
+                // if neither wall nor explored
+                if (!explored.contains(newPos) && !frontierSet.contains(newPos) &&
+                        !walls[newPos.getY()][newPos.getX()]) {
+                    int stepCost = goalMap.containsKey(newPos) ? 10 : 1;
+                    if (newPos.equals(goalPos)) {
+                        stepCost = 0;
+                    }
+                    Step newStep = new Step(newPos, leaf.g + stepCost,
+                            distance(newPos, goalPos), leaf);
+                    frontier.add(newStep);
+                    frontierSet.add(newPos);
+                }
+            }
+        }
+
+         return path.stream()
+                 .map(s -> s.position)
+                 .collect(Collectors.toCollection(ArrayList::new));
+    }
+
     public State goalDependencies(State state) {
         Box[] boxes = state.getBoxes();
         Goal[] goals = State.getGoals();
-        HashMap<Position, Integer> goalMap = new HashMap<>();
+        HashMap<Position, Integer> goalMap = State.getGoalMap();
         HashMap<Position, HashSet<Position>> taskMap = new HashMap<>();
         for (int i = 0; i < goals.length; i++) {
-            goalMap.put(goals[i].getPosition(), i);
             taskMap.put(goals[i].getPosition(), new HashSet<>());
         }
 
@@ -230,72 +287,16 @@ public class Floodfill implements Comparator<State> {
             // find the closest box
             // it has the same index in the boxes array, if it already has local priority
             Box box = boxes[i];
-//            int minDistance = Integer.MAX_VALUE;
-//            Box minBox = null;
-//            for (Box box : boxSet) {
-//                int currDistance = distance(box.getPosition(), goal.getPosition());
-//                if (currDistance < minDistance && box.getLetter() == goal.getLetter()) {
-//                    minDistance = currDistance;
-//                    minBox = box;
-//                }
-//            }
 
             // find a path from box to goal (possibly shortest, but avoiding goals)
-            // miniAstar!
-            Position[] moves = {
-                    new Position(0, -1),
-                    new Position(1, 0),
-                    new Position(0, 1),
-                    new Position(-1, 0)
-            };
-            ArrayList<Step> path = new ArrayList<>();
-            boolean[][] walls = State.getWalls();
-            Step init = new Step(box.getPosition(), 0,
-                    distance(box.getPosition(), goal.getPosition()), null);
-            PriorityQueue<Step> frontier = new PriorityQueue<>(100, init);
-            HashSet<Position> frontierSet = new HashSet<>();
-            HashSet<Position> explored = new HashSet<>();
-            frontier.add(init);
-            frontierSet.add(init.position);
-
-            while (!frontier.isEmpty()) {
-                Step leaf = frontier.poll();
-                frontierSet.remove(leaf.position);
-
-                // found our goal
-                if (leaf.position.equals(goal.getPosition())) {
-                    while (leaf.parent != null) {
-                        path.add(leaf.parent); // don't add the goal pos itself
-                        leaf = leaf.parent;
-                    }
-                    break;
-                }
-
-                // expand our states
-                explored.add(leaf.position);
-                for (Position move : moves) {
-                    Position newPos = leaf.position.add(move);
-                    // if neither wall nor explored
-                    if (!explored.contains(newPos) && !frontierSet.contains(newPos) &&
-                            !walls[newPos.getY()][newPos.getX()]) {
-                        int stepCost = goalMap.containsKey(newPos) ? 10 : 1;
-                        if (newPos.equals(goal.getPosition())) {
-                            stepCost = 0;
-                        }
-                        Step newStep = new Step(newPos, leaf.g + stepCost,
-                                distance(newPos, goal.getPosition()), leaf);
-                        frontier.add(newStep);
-                        frontierSet.add(newPos);
-                    }
-                }
-            }
+            ArrayList<Position> path = findPath(goal.getPosition(), box.getPosition());
 
             // check if path has goals on it, then add it to those goals as dependency
-            for (Step step : path) {
-                if (goalMap.containsKey(step.position)) {
-                    HashSet<Position> posSet = taskMap.getOrDefault(step.position, new HashSet<>());
+            for (Position pos : path) {
+                if (goalMap.containsKey(pos)) {
+                    HashSet<Position> posSet = taskMap.getOrDefault(pos, new HashSet<>());
                     posSet.add(goal.getPosition());
-                    taskMap.put(step.position, posSet);
+                    taskMap.put(pos, posSet);
                 }
             }
         } // end of goal iteration
@@ -430,6 +431,17 @@ public class Floodfill implements Comparator<State> {
         }
 
         h += distance(boxes[goals.length - 1].getPosition(), agents[0].getPosition());
+        return h;
+    }
+
+    public int hPath(State state, ArrayList<Position> positions) {
+        int h = 0;
+        Position agentPos = state.getAgents()[0].getPosition();
+        for (Position pos : positions) {
+            if (state.getBox(pos) != null) {
+                h += 10 + distance(pos, agentPos);
+            }
+        }
         return h;
     }
 }

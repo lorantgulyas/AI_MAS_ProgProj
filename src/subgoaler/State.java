@@ -22,6 +22,7 @@ public class State {
 
     //private HashMap<Position, Integer> agentMap;
     private HashMap<Position, Integer> boxMap;
+    private static HashMap<Position, Integer> goalMap;
     private int _hash = 0;
 
     public static void setLevel(boolean[][] initWalls, int xMax, int yMax,
@@ -29,11 +30,19 @@ public class State {
         walls = initWalls;
         X_MAX = xMax;
         Y_MAX = yMax;
-        goals = initGoals;
+        setGoals(initGoals);
     }
 
     public static void setGoals(Goal[] goals) {
         State.goals = goals;
+        goalMap = new HashMap<>();
+        for (int i = 0; i < goals.length; i++) {
+            goalMap.put(goals[i].getPosition(), i);
+        }
+    }
+
+    public static HashMap<Position, Integer> getGoalMap() {
+        return goalMap;
     }
 
     public State(Agent[] agents, Box[] boxes) {
