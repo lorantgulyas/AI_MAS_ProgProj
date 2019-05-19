@@ -1,16 +1,28 @@
-package subgoaler;
+package client.strategies.serialized_astar;
+
+import client.definitions.AHeuristic;
+import client.graph.Plan;
+import client.state.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Floodfill implements Comparator<State> {
+public class Floodfill extends AHeuristic implements Comparator<Plan> {
+
     private int[][][][] matrix;
     private boolean[][] rooms;
+
+    private Level level;
+    private int yMax;
+    private int xMax;
+
     public static final int UNDISCOVERED = Integer.MAX_VALUE;
 
     public Floodfill(State initialState) {
-        int xMax = State.getXmax();
-        int yMax = State.getYmax();
+        super(initialState);
+        this.level = initialState.getLevel();
+        this.xMax = level.getColCount();
+        this.yMax = level.getRowCount();
 
         // matrix starts with goal coordinates, in order to make the memory layout nicer
         matrix = new int[yMax][xMax][yMax][xMax];
@@ -21,15 +33,23 @@ public class Floodfill implements Comparator<State> {
         }
     }
 
+    private int getX(Position pos) {
+        return pos.getCol();
+    }
+
+    private int getY(Position pos) {
+        return pos.getRow();
+    }
+
     private void fillSubMatrix(int goalY, int goalX) {
-        boolean[][] walls = State.getWalls();
+        boolean[][] walls = level.getWalls();
 
         // preemptively fill all values with -1
         for (int[] rowTo : matrix[goalY][goalX])
             Arrays.fill(rowTo, UNDISCOVERED);
 
         // if goal position is not wall
-        if (!walls[goalY][goalX]) {
+        if (!walls[goalX][goalY]) {
             int currentDistance = 0;
             matrix[goalY][goalX][goalY][goalX] = currentDistance;
             ArrayDeque<Position> toExplore = new ArrayDeque<>();
@@ -37,23 +57,23 @@ public class Floodfill implements Comparator<State> {
             toExplore.add(pos);
             while (!toExplore.isEmpty()) {
                 pos = toExplore.pop();
-                int x = pos.getX(), y = pos.getY();
+                int x = getX(pos), y = getY(pos);
                 currentDistance = matrix[goalY][goalX][y][x] + 1;
 
                 // ugly shit
-                if (!walls[y - 1][x] && matrix[goalY][goalX][y - 1][x] == UNDISCOVERED) {
+                if (!walls[x][y - 1] && matrix[goalY][goalX][y - 1][x] == UNDISCOVERED) {
                     matrix[goalY][goalX][y - 1][x] = currentDistance;
                     toExplore.add(new Position(x, y - 1));
                 }
-                if (!walls[y + 1][x] && matrix[goalY][goalX][y + 1][x] == UNDISCOVERED) {
+                if (!walls[x][y + 1] && matrix[goalY][goalX][y + 1][x] == UNDISCOVERED) {
                     matrix[goalY][goalX][y + 1][x] = currentDistance;
                     toExplore.add(new Position(x, y + 1));
                 }
-                if (!walls[y][x - 1] && matrix[goalY][goalX][y][x - 1] == UNDISCOVERED) {
+                if (!walls[x - 1][y] && matrix[goalY][goalX][y][x - 1] == UNDISCOVERED) {
                     matrix[goalY][goalX][y][x - 1] = currentDistance;
                     toExplore.add(new Position(x - 1, y));
                 }
-                if (!walls[y][x + 1] && matrix[goalY][goalX][y][x + 1] == UNDISCOVERED) {
+                if (!walls[x + 1][y] && matrix[goalY][goalX][y][x + 1] == UNDISCOVERED) {
                     matrix[goalY][goalX][y][x + 1] = currentDistance;
                     toExplore.add(new Position(x + 1, y));
                 }
@@ -65,27 +85,27 @@ public class Floodfill implements Comparator<State> {
         // return if already preprocessed
         if (rooms != null) return;
 
-        boolean[][] walls = State.getWalls();
+        boolean[][] walls = level.getWalls();
         // TODO: fallback on storages, when there are no rooms (half plus on map)
-        rooms = new boolean[State.getYmax()][State.getXmax()];
+        rooms = new boolean[this.yMax][this.xMax];
         // prefill
-        for (int y = 0; y < State.getYmax(); y++)
-            for (int x = 0; x < State.getXmax(); x++)
+        for (int y = 0; y < this.yMax; y++)
+            for (int x = 0; x < this.xMax; x++)
                 rooms[y][x] = false;
 
 
         // detect rooms that can't have goal positions
-        Goal[] goals = State.getGoals();
+        Goal[] goals = level.getGoals();
         HashMap<Position, Goal> goalMap = new HashMap<>();
         for (Goal goal : goals) {
             goalMap.put(goal.getPosition(), goal);
         }
-        for (int y = 1; y < State.getYmax() - 2; y++) {
-            for (int x = 1; x < State.getXmax() - 2; x++) {
+        for (int y = 1; y < this.yMax - 2; y++) {
+            for (int x = 1; x < this.xMax - 2; x++) {
                 // 2x2 window
                 // XX
                 // XX
-                if (!(walls[y][x] || walls[y][x + 1] || walls[y + 1][x] || walls[y + 1][x + 1])) {
+                if (!(walls[x][y] || walls[x + 1][y] || walls[x][y + 1] || walls[x + 1][y + 1])) {
                     if (!(goalMap.containsKey(new Position(x, y)) ||
                             goalMap.containsKey(new Position(x + 1, y)) ||
                             goalMap.containsKey(new Position(x, y + 1)) ||
@@ -99,10 +119,10 @@ public class Floodfill implements Comparator<State> {
         // fallback 1 - detect rooms that have goal positions
         if (!hasRooms(rooms)) {
             System.err.println("Fallback 1 rooms");
-            for (int y = 1; y < State.getYmax() - 2; y++) {
-                for (int x = 1; x < State.getXmax() - 2; x++) {
+            for (int y = 1; y < this.yMax - 2; y++) {
+                for (int x = 1; x < this.xMax - 2; x++) {
                     // 2x2 window
-                    if (!(walls[y][x] || walls[y][x + 1] || walls[y + 1][x] || walls[y + 1][x + 1])) {
+                    if (!(walls[x][y] || walls[x + 1][y] || walls[x][y + 1] || walls[x + 1][y + 1])) {
                         rooms[y][x] = rooms[y][x + 1] = rooms[y + 1][x] = rooms[y + 1][x + 1] = true;
                     }
                 }
@@ -112,21 +132,21 @@ public class Floodfill implements Comparator<State> {
         // fallback 2 - corners
         if (!hasRooms(rooms)) {
             System.err.println("Fallback 2 rooms");
-            for (int y = 1; y < State.getYmax() - 1; y++) {
-                for (int x = 1; x < State.getXmax() - 1; x++) {
+            for (int y = 1; y < this.yMax - 1; y++) {
+                for (int x = 1; x < this.xMax - 1; x++) {
                     // corner 3 out of 1
                     //  0
                     // 0X0
                     //  0
                     int freeNeighbors = 0;
-                    if (!walls[y][x] && !goalMap.containsKey(new Position(x, y))) {
-                        if (!walls[y - 1][x] && !goalMap.containsKey(new Position(x, y - 1)))
+                    if (!walls[x][y] && !goalMap.containsKey(new Position(x, y))) {
+                        if (!walls[x][y - 1] && !goalMap.containsKey(new Position(x, y - 1)))
                             freeNeighbors++;
-                        if (!walls[y + 1][x] && !goalMap.containsKey(new Position(x, y + 1)))
+                        if (!walls[x][y + 1] && !goalMap.containsKey(new Position(x, y + 1)))
                             freeNeighbors++;
-                        if (!walls[y][x - 1] && !goalMap.containsKey(new Position(x - 1, y)))
+                        if (!walls[x - 1][y] && !goalMap.containsKey(new Position(x - 1, y)))
                             freeNeighbors++;
-                        if (!walls[y][x + 1] && !goalMap.containsKey(new Position(x + 1, y)))
+                        if (!walls[x + 1][y] && !goalMap.containsKey(new Position(x + 1, y)))
                             freeNeighbors++;
                         if (freeNeighbors > 2)
                             rooms[y][x] = true;
@@ -137,11 +157,11 @@ public class Floodfill implements Comparator<State> {
 
         // print
         StringBuilder s = new StringBuilder();
-        for (int y = 0; y < State.getYmax(); y++) {
-            for (int x = 0; x < State.getXmax(); x++) {
+        for (int y = 0; y < this.yMax; y++) {
+            for (int x = 0; x < this.xMax; x++) {
                 if (rooms[y][x]) {
                     s.append("O");
-                } else if (walls[y][x]) {
+                } else if (walls[x][y]) {
                     s.append("X");
                 } else {
                     s.append(" ");
@@ -151,7 +171,6 @@ public class Floodfill implements Comparator<State> {
         }
         System.err.println(s.toString());
     }
-
 
     boolean hasRooms(boolean[][] rooms) {
         for (boolean[] col : rooms) {
@@ -163,13 +182,13 @@ public class Floodfill implements Comparator<State> {
     }
 
     public void prioritizeGoals() {
-        for (Goal goal : State.getGoals()) {
+        for (Goal goal : level.getGoals()) {
             Position pos = goal.getPosition();
             int priority = Integer.MAX_VALUE;
-            for (int y = 0; y < State.getYmax(); y++) {
-                for (int x = 0; x < State.getXmax(); x++) {
-                    if (rooms[y][x] && (matrix[pos.getY()][pos.getX()][y][x] < priority)) {
-                        priority = matrix[pos.getY()][pos.getX()][y][x];
+            for (int y = 0; y < this.yMax; y++) {
+                for (int x = 0; x < this.xMax; x++) {
+                    if (rooms[y][x] && (matrix[getY(pos)][getX(pos)][y][x] < priority)) {
+                        priority = matrix[getY(pos)][getX(pos)][y][x];
                     }
                 }
             }
@@ -178,9 +197,9 @@ public class Floodfill implements Comparator<State> {
             }
         }
 
-        Arrays.sort(State.getGoals(), Comparator.comparingInt(Goal::getPriority).reversed());
+        Arrays.sort(level.getGoals(), Comparator.comparingInt(Goal::getPriority).reversed());
         // workaround for mutation :(
-        State.setGoals(State.getGoals());
+        level.setGoals(level.getGoals());
         // print
 //        for (Goal goal : State.getGoals()) {
 //            System.err.println(goal);
@@ -189,7 +208,7 @@ public class Floodfill implements Comparator<State> {
 
     public Box[] prioritizeBoxes(Box[] boxes) {
         // TODO: this works only for initial preprocessing, make it work for each subgoal
-        Goal[] goals = State.getGoals();
+        Goal[] goals = level.getGoals();
         HashSet<Box> boxSet = new HashSet<>(Arrays.asList(boxes));
         ArrayList<Box> boxList = new ArrayList<>();
 
@@ -216,7 +235,7 @@ public class Floodfill implements Comparator<State> {
     }
 
     public ArrayList<Position> findPath(Position goalPos, Position boxPos) {
-        HashMap<Position, Integer> goalMap = State.getGoalMap();
+        HashMap<Position, Integer> goalMap = level.getGoalIndexMap();
         // miniAstar!
         Position[] moves = {
                 new Position(0, -1),
@@ -225,7 +244,7 @@ public class Floodfill implements Comparator<State> {
                 new Position(-1, 0)
         };
         ArrayList<Step> path = new ArrayList<>();
-        boolean[][] walls = State.getWalls();
+        boolean[][] walls = level.getWalls();
         Step init = new Step(boxPos, 0,
                 distance(boxPos, goalPos), null);
         PriorityQueue<Step> frontier = new PriorityQueue<>(100, init);
@@ -253,7 +272,7 @@ public class Floodfill implements Comparator<State> {
                 Position newPos = leaf.position.add(move);
                 // if neither wall nor explored
                 if (!explored.contains(newPos) && !frontierSet.contains(newPos) &&
-                        !walls[newPos.getY()][newPos.getX()]) {
+                        !walls[getX(newPos)][getY(newPos)]) {
                     int stepCost = goalMap.containsKey(newPos) ? 10 : 1;
                     if (newPos.equals(goalPos)) {
                         stepCost = 0;
@@ -273,8 +292,8 @@ public class Floodfill implements Comparator<State> {
 
     public State goalDependencies(State state) {
         Box[] boxes = state.getBoxes();
-        Goal[] goals = State.getGoals();
-        HashMap<Position, Integer> goalMap = State.getGoalMap();
+        Goal[] goals = level.getGoals();
+        HashMap<Position, Integer> goalMap = level.getGoalIndexMap();
         HashMap<Position, HashSet<Position>> taskMap = new HashMap<>();
         for (int i = 0; i < goals.length; i++) {
             taskMap.put(goals[i].getPosition(), new HashSet<>());
@@ -356,7 +375,7 @@ public class Floodfill implements Comparator<State> {
         newBoxes.addAll(allBoxes);
         Box[] unusedBoxes = newBoxes.toArray(Box[]::new);
 
-        State.setGoals(newGoals);
+        level.setGoals(newGoals);
         state.setBoxes(unusedBoxes);
         return state;
     }
@@ -383,8 +402,8 @@ public class Floodfill implements Comparator<State> {
     public void printMatrix(int goalX, int goalY) {
         StringBuilder s = new StringBuilder();
 
-        for (int y = 0; y < State.getYmax(); y++) {
-            for (int x = 0; x < State.getXmax(); x++) {
+        for (int y = 0; y < this.yMax; y++) {
+            for (int x = 0; x < this.xMax; x++) {
                 if (matrix[goalY][goalX][y][x] == -1) {
                     s.append("///");
                 } else {
@@ -401,21 +420,21 @@ public class Floodfill implements Comparator<State> {
     }
 
     public int distance(Position from, Position to) {
-        return matrix[to.getY()][to.getX()][from.getY()][from.getX()];
+        return matrix[getY(to)][getX(to)][getY(from)][getX(from)];
     }
 
     @Override
-    public int compare(State n1, State n2) {
+    public int compare(Plan n1, Plan n2) {
         // greedy
 //        return h(n1) - h(n2);
         // A*
-        return n1.g() + h(n1) - n2.g() - h(n2);
+        return n1.g() + h(n1.getState()) - n2.g() - h(n2.getState());
     }
 
     public int h(State state) {
         int h = 0;
         Agent[] agents = state.getAgents();
-        Goal[] goals = State.getGoals();
+        Goal[] goals = level.getGoals();
         Box[] boxes = state.getBoxes();
 
         // admissible
@@ -438,7 +457,7 @@ public class Floodfill implements Comparator<State> {
         int h = 0;
         Position agentPos = state.getAgents()[0].getPosition();
         for (Position pos : positions) {
-            if (state.getBox(pos) != null) {
+            if (state.getBoxAt(pos) != null) {
                 h += 10 + distance(pos, agentPos);
             }
         }

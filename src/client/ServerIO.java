@@ -75,11 +75,8 @@ public class ServerIO {
         int rowCount = rawLevel.size();
 
         int maxColCount = 0;
-        for (int y = 0; y < rowCount; y++) {
-            int colCount = rawLevel.get(y).length();
-            if (maxColCount < colCount) {
-                maxColCount = colCount;
-            }
+        for (String row : rawLevel) {
+            maxColCount = Math.max(maxColCount, row.length());
         }
 
         boolean[][] walls = new boolean[maxColCount][rowCount];

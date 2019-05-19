@@ -23,18 +23,13 @@ public class State {
      */
     public State(Level level, Agent[] agents, Box[] boxes) {
         this.agents = agents;
-        this.boxes = boxes;
         this.level = level;
         this.agentMap = new HashMap<>();
 
         for (Agent agent : agents) {
             this.agentMap.put(agent.getPosition(), agent);
         }
-        this.boxMap = new HashMap<>();
-        for (Box box : boxes) {
-            this.boxMap.put(box.getPosition(), box);
-        }
-        this._hash = this.computeHashCode();
+        this.setBoxes(boxes);
     }
 
     public Level getLevel() {
@@ -118,6 +113,19 @@ public class State {
 
     public boolean boxAt(Position position) {
         return this.boxMap.containsKey(position);
+    }
+
+    /**
+     * WARNING: Do not use this method in a multi-agent setting!
+     * @param boxes
+     */
+    public void setBoxes(Box[] boxes) {
+        this.boxes = boxes;
+        this.boxMap = new HashMap<>();
+        for (Box box : boxes) {
+            this.boxMap.put(box.getPosition(), box);
+        }
+        this._hash = this.computeHashCode();
     }
 
     @Override

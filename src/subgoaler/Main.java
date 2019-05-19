@@ -1,7 +1,9 @@
 package subgoaler;
 
+import subgoaler.Floodfill;
+import subgoaler.SerializedAStar;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Main {
     public static void main(String[] args) throws Exception {

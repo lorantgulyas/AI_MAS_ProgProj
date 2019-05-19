@@ -6,7 +6,7 @@ import client.state.*;
 import java.sql.Time;
 import java.util.*;
 
-abstract class AbstractPlan {
+public abstract class AbstractPlan {
 
     protected State state;
 

@@ -192,4 +192,3 @@ public class SerializedAStar {
 
     class BlockedException extends Exception { }
 }
-

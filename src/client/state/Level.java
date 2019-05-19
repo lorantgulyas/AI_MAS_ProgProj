@@ -1,7 +1,5 @@
 package client.state;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class Level {
@@ -11,16 +9,13 @@ public class Level {
     private Goal[] goals;
     private HashMap<Position, Goal> goalMap;
     private Goal[][] agentsGoals;
+    private HashMap<Position, Integer> goalIndexMap;
 
     public Level(boolean[][] walls, int rowCount, int colCount, Goal[] goals) {
         this.walls = walls;
         this.rowCount = rowCount;
         this.colCount = colCount;
-        this.goals = goals;
-        this.goalMap = new HashMap<>();
-        for (Goal goal : goals) {
-            this.goalMap.put(goal.getPosition(), goal);
-        }
+        this.setGoals(goals);
     }
 
     /**
@@ -46,7 +41,11 @@ public class Level {
     }
 
     public Goal[] getGoals() {
-        return goals;
+        return this.goals;
+    }
+
+    public HashMap<Position, Integer> getGoalIndexMap() {
+        return this.goalIndexMap;
     }
 
     public boolean goalAt(Position position) {
@@ -63,6 +62,22 @@ public class Level {
 
     public boolean wallAt(Position position) {
         return this.walls[position.getCol()][position.getRow()];
+    }
+
+    /**
+     * WARNING: Do not use this method in a multi-agent setting!
+     * @param goals
+     */
+    public void setGoals(Goal[] goals) {
+        this.goals = goals;
+        this.goalMap = new HashMap<>();
+        for (Goal goal : goals) {
+            this.goalMap.put(goal.getPosition(), goal);
+        }
+        this.goalIndexMap = new HashMap<>();
+        for (int i = 0; i < goals.length; i++) {
+            this.goalIndexMap.put(goals[i].getPosition(), i);
+        }
     }
 
 }

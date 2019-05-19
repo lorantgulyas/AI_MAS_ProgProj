@@ -33,6 +33,10 @@ public class Position {
         }
     }
 
+    public Position add(Position pos) {
+        return new Position(this.col + pos.getCol(), row + pos.getRow());
+    }
+
     public Position north() {
         return new Position(this.col, this.row - 1);
     }

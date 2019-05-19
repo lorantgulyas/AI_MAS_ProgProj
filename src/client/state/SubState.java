@@ -34,9 +34,9 @@ public class SubState {
         int agentID = 0;
         int boxID = 0;
         for (int x = 1; x < cols - 1; x++) {
-            int col = minCol + x;
+            int col = minCol + x - 1;
             for (int y = 1; y < rows - 1; y++) {
-                int row = minRow + y;
+                int row = minRow + y - 1;
                 Position mainPosition = new Position(col, row);
                 boolean contained = room.contains(mainPosition);
                 walls[x][y] = !contained || mainLevel.wallAt(mainPosition);
@@ -104,7 +104,7 @@ public class SubState {
     }
 
     private int getMinRow(HashSet<Position> room) {
-        int minRow = 0;
+        int minRow = Integer.MAX_VALUE;
         for (Position position : room) {
             minRow = Math.min(minRow, position.getRow());
         }
@@ -112,15 +112,15 @@ public class SubState {
     }
 
     private int getMinCol(HashSet<Position> room) {
-        int minCol = 0;
+        int minCol = Integer.MAX_VALUE;
         for (Position position : room) {
-            minCol= Math.min(minCol, position.getCol());
+            minCol = Math.min(minCol, position.getCol());
         }
         return minCol;
     }
 
     private int getMaxRow(HashSet<Position> room) {
-        int maxRow = 0;
+        int maxRow = Integer.MIN_VALUE;
         for (Position position : room) {
             maxRow = Math.max(maxRow, position.getRow());
         }
@@ -128,9 +128,9 @@ public class SubState {
     }
 
     private int getMaxCol(HashSet<Position> room) {
-        int maxCol = 0;
+        int maxCol = Integer.MIN_VALUE;
         for (Position position : room) {
-            maxCol= Math.max(maxCol, position.getCol());
+            maxCol = Math.max(maxCol, position.getCol());
         }
         return maxCol;
     }

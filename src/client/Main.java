@@ -19,7 +19,7 @@ public class Main {
         String configPath = args.length < 1 ? "src/configs/default.config" : args[0];
 
         // debug
-        //State initialState = ServerIO.readFromFile("src/levels/comp18/MAora.lvl");
+        //State initialState = ServerIO.readFromFile("src/levels/comp18/SANotHard.lvl");
         //String configPath = "src/configs/maa_st_sp_n2_g.config";
 
         String config = ConfigParser.readFile(configPath);
