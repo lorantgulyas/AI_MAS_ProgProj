@@ -95,9 +95,7 @@ public class SerializedAStar {
             // isGoalState
             if (ff.hPath(leafState.getState(), path) == 0) {
                 Action[] res = leafState.extract();
-                subresult = leafState;
-                //subresult.parent = null;
-                //subresult.cmd = null;
+                subresult = leafState.makeRoot();
 
                 ArrayList<Command> commands = new ArrayList<>(res.length);
                 for (Action action : res) {
@@ -147,9 +145,7 @@ public class SerializedAStar {
 
             if (leafState.getState().isGoalState()) {
                 Action[] res = leafState.extract();
-                subresult = leafState;
-                //subresult.parent = null;
-                //subresult.cmd = null;
+                subresult = leafState.makeRoot();
 
                 ArrayList<Command> commands = new ArrayList<>(res.length);
                 for (Action action : res) {

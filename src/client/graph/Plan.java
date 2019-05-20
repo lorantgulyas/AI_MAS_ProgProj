@@ -47,6 +47,10 @@ public class Plan extends AbstractPlan {
         return this.parent == null;
     }
 
+    public Plan makeRoot() {
+        return new Plan(this.state, null, this.time, null);
+    }
+
     /**
      * Extracts all the parent nodes on the path from the root to this node.
      * @return List of nodes on path from this node to the root
