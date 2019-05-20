@@ -9,13 +9,11 @@ public class Main {
         State state = client.init();
         System.err.println(state);
 
+        // preproc
         Floodfill ff = new Floodfill(state);
         ff.findRooms();
         ff.prioritizeGoals();
         Box[] prioritizedBoxes = ff.prioritizeBoxes(state.getBoxes());
-        state.setBoxes(prioritizedBoxes);
-        state = ff.goalDependencies(state);
-        prioritizedBoxes = ff.prioritizeBoxes(state.getBoxes());
         state.setBoxes(prioritizedBoxes);
 
         // debug goals

@@ -3,6 +3,7 @@ package subgoaler;
 import java.io.PipedOutputStream;
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SerializedAStar {
     Floodfill ff;
@@ -13,16 +14,40 @@ public class SerializedAStar {
     }
 
     public ArrayList<Command> serializedPlan(State init) {
-        Goal[] allGoals = State.getGoals();
         ArrayList<Command> cmds = new ArrayList<>();
         subresult = init;
+        Goal[] allGoals = State.getGoals();
+
         for (int i = 0; i < allGoals.length; i++) {
-//        for (int i = 0; i < 1; i++) {
-//            if (i == 59) {
-//                System.err.println("kek");
-//            }
+//        for (int i = 0; i < 13; i++) {
+            Box[] allBoxes = subresult.getBoxes();
+            Goal[] goalsDone = Arrays.copyOfRange(allGoals, 0, i);
+            Box[] boxesDone = Arrays.copyOfRange(allBoxes, 0, i);
+            Goal[] goalsTodo = Arrays.copyOfRange(allGoals, i, allGoals.length);
+            Box[] boxesTodo = Arrays.copyOfRange(allBoxes, i, allBoxes.length);
+
+            // reprio
+            State.setGoals(goalsTodo);
+            subresult.setBoxes(boxesTodo);
+            subresult = ff.goalDependencies(subresult);
+            Box[] prioritizedBoxes = ff.prioritizeBoxes(subresult.getBoxes());
+
+
+            allGoals = new Goal[allGoals.length];
+            System.arraycopy(goalsDone, 0, allGoals, 0, goalsDone.length);
+            System.arraycopy(State.getGoals(), 0, allGoals, goalsDone.length, goalsTodo.length);
+
+            allBoxes = new Box[allBoxes.length];
+            System.arraycopy(boxesDone, 0, allBoxes, 0, boxesDone.length);
+            System.arraycopy(prioritizedBoxes, 0, allBoxes, boxesDone.length, boxesTodo.length);
+
+            // old stuff
             State.setGoals(Arrays.copyOfRange(allGoals, 0, i + 1));
+            subresult.setBoxes(allBoxes);
             System.err.println("--- task: " + i + ", goal: " + allGoals[i]);
+
+            Goal[] debugGoals = State.getGoals();
+            Box[] debugBoxes = subresult.getBoxes();
 
             ArrayList<Command> subCmds;
 
@@ -30,24 +55,31 @@ public class SerializedAStar {
                 subCmds = plan(subresult);
             } catch (BlockedException e) {
                 System.err.println("freeing path for " + allGoals[i]);
-                ArrayList<Position> path = ff.findPath(allGoals[i].getPosition(),
-                        subresult.getBoxes()[i].getPosition());
+                HashSet<Position> path = new HashSet<>();
+
+                path.addAll(
+                        ff.findPath(allGoals[i].getPosition(),
+                        subresult.getBoxes()[i].getPosition())
+                );
                 // path does not contain goal itself we have to add it manually
                 path.add(allGoals[i].getPosition());
-                subCmds = freePath(subresult, path);
+
+                // test out agent-box stuff
+                path.addAll(
+                        ff.findPath(subresult.getBoxes()[i].getPosition(),
+                                subresult.getAgents()[0].getPosition())
+                );
+
+                subCmds = freePath(subresult, new ArrayList<>(path));
                 try {
+                    System.err.println("trying again: " + allGoals[i]);
                     subCmds.addAll(plan(subresult));
                 } catch (BlockedException ex) {
-                    System.err.println("trying again: " + allGoals[i]);
                     System.err.println("we failed big times");
                 }
             }
 
             cmds.addAll(subCmds);
-
-            //            for (Command cmd : subCmds) {
-//                System.err.println(cmd);
-//            }
         }
         return cmds;
     }
@@ -97,7 +129,7 @@ public class SerializedAStar {
         while (true) {
             if (iterations % 10000 == 0) {
                 System.err.println("i: " + iterations + ", " + strategy.searchStatus());
-                if (iterations == 40000) {
+                if (iterations == 20000) {
                     throw new BlockedException();
                 }
             }
