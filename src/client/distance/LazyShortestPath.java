@@ -19,9 +19,14 @@ public class LazyShortestPath extends ADistance {
         PositionPair pair = new PositionPair(p1, p2);
         int distance = this.D.getOrDefault(pair, -1);
         if (distance == -1) {
-            distance = this.bfs.search(p1, p2);
-            this.D.put(pair, distance);
+            distance = this.search(p1, p2, pair);
         }
+        return distance;
+    }
+
+    private synchronized int search(Position p1, Position p2, PositionPair pair) {
+        int distance = this.bfs.search(p1, p2);
+        this.D.put(pair, distance);
         return distance;
     }
 
