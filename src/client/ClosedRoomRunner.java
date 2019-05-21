@@ -7,6 +7,7 @@ import client.graph.Command;
 import client.state.Box;
 import client.strategies.serialized_astar.Floodfill;
 import client.strategies.serialized_astar.SerializedAStar;
+import subgoaler.Converter;
 
 import java.util.ArrayList;
 
@@ -74,27 +75,25 @@ public class ClosedRoomRunner extends Thread{
     }
 
     private Solution singleAgent() {
-        Floodfill ff = new Floodfill(state);
+        System.err.println(state);
+
+        subgoaler.State SAstate = Converter.convert(state);
+
+        subgoaler.Floodfill ff = new subgoaler.Floodfill(SAstate);
         ff.findRooms();
         ff.prioritizeGoals();
-        Box[] prioritizedBoxes = ff.prioritizeBoxes(this.state.getBoxes());
-        this.state.setBoxes(prioritizedBoxes);
-        this.state = ff.goalDependencies(state);
-        prioritizedBoxes = ff.prioritizeBoxes(state.getBoxes());
-        this.state.setBoxes(prioritizedBoxes);
-        SerializedAStar sas = new SerializedAStar(ff);
-        ArrayList<Command> cmds = sas.serializedPlan(state);
+        subgoaler.Box[] prioritizedBoxes = ff.prioritizeBoxes(SAstate.getBoxes());
+        SAstate.setBoxes(prioritizedBoxes);
+
+        subgoaler.SerializedAStar sas = new subgoaler.SerializedAStar(ff);
+        ArrayList<subgoaler.Command> cmds = sas.serializedPlan(SAstate);
+        Command[][] clientCmds = Converter.convertSolution(cmds);
 
         long explored = sas.nodesExplored();
         long generated = sas.nodesGenerated();
         PerformanceStats stats = new PerformanceStats(0, explored, generated);
 
-        Command[][] plan = new Command[cmds.size()][1];
-        for (int i = 0; i < cmds.size(); i++) {
-            plan[i][0] = cmds.get(i);
-        }
-
-        return new Solution(plan, stats);
+        return new Solution(clientCmds, stats);
     }
 
 }

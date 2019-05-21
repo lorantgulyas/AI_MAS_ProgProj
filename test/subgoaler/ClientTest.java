@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import java.io.*;
+import java.util.ArrayList;
 import subgoaler.Floodfill;
 
 public class ClientTest {
@@ -48,6 +49,7 @@ public class ClientTest {
 //        }
 
         SerializedAStar sas = new SerializedAStar(ff);
+
         ArrayList<Command> cmds = sas.serializedPlan(state);
 
 //        for (Command cmd : cmds) {

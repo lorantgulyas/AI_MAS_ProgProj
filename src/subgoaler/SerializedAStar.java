@@ -9,8 +9,19 @@ public class SerializedAStar {
     Floodfill ff;
     private State subresult;
 
+    private int explored;
+    private int generated;
+
     public SerializedAStar(Floodfill ff) {
         this.ff = ff;
+    }
+
+    public int nodesGenerated() {
+        return this.generated;
+    }
+
+    public int nodesExplored() {
+        return this.explored;
     }
 
     public ArrayList<Command> serializedPlan(State init) {
@@ -92,6 +103,8 @@ public class SerializedAStar {
 
         int iterations = 0;
         while (true) {
+            explored++;
+
             if (iterations % 10000 == 0) {
                 System.err.println("i: " + iterations + ", " + strategy.searchStatus());
             }
@@ -115,6 +128,7 @@ public class SerializedAStar {
             for (State n : leafState.getExpandedStates()) { // The list of expanded states is shuffled randomly; see State.java.
                 if (!strategy.isExplored(n) && !strategy.inFrontier(n)) {
                     strategy.addToFrontier(n);
+                    generated++;
                 }
             }
             iterations++;
@@ -127,6 +141,7 @@ public class SerializedAStar {
 
         int iterations = 0;
         while (true) {
+            explored++;
             if (iterations % 10000 == 0) {
                 System.err.println("i: " + iterations + ", " + strategy.searchStatus());
                 if (iterations == 20000) {
@@ -159,6 +174,7 @@ public class SerializedAStar {
             for (State n : leafState.getExpandedStates()) { // The list of expanded states is shuffled randomly; see State.java.
                 if (!strategy.isExplored(n) && !strategy.inFrontier(n)) {
                     strategy.addToFrontier(n);
+                    generated++;
                 }
             }
             iterations++;
