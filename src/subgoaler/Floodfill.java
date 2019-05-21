@@ -439,7 +439,8 @@ public class Floodfill implements Comparator<State> {
         Position agentPos = state.getAgents()[0].getPosition();
         for (Position pos : positions) {
             if (state.getBox(pos) != null) {
-                h += 10 + distance(pos, agentPos);
+                // magic number
+                h += 100 + distance(pos, agentPos);
             }
         }
         return h;

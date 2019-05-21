@@ -11,7 +11,7 @@ public class ClientTest {
 
     @BeforeAll
     static void setUp() throws FileNotFoundException {
-        in = new FileReader("src/levels/comp18/SACybot.lvl");
+        in = new FileReader("src/levels/comp18/SAAiAiCap.lvl");
     }
 
     @AfterAll
@@ -29,16 +29,16 @@ public class ClientTest {
         ff.prioritizeGoals();
         Box[] prioritizedBoxes = ff.prioritizeBoxes(state.getBoxes());
         state.setBoxes(prioritizedBoxes);
-        state = ff.goalDependencies(state);
+//        state = ff.goalDependencies(state);
 
-        Goal[] goals = State.getGoals();
-        Box[] boxes = state.getBoxes();
-        System.err.println();
-        for (int i = 0; i < goals.length; i++) {
-            System.err.println(goals[i]);
-            System.err.println(boxes[i]);
-            System.err.println();
-        }
+//        Goal[] goals = State.getGoals();
+//        Box[] boxes = state.getBoxes();
+//        System.err.println();
+//        for (int i = 0; i < goals.length; i++) {
+//            System.err.println(goals[i]);
+//            System.err.println(boxes[i]);
+//            System.err.println();
+//        }
         // temp debug shiet
 //        System.err.println("solution: ");
 //        for (Task task : tasks) {
@@ -47,8 +47,8 @@ public class ClientTest {
 //            System.err.println();
 //        }
 
-//        SerializedAStar sas = new SerializedAStar(ff);
-//        ArrayList<Command> cmds = sas.serializedPlan(state);
+        SerializedAStar sas = new SerializedAStar(ff);
+        ArrayList<Command> cmds = sas.serializedPlan(state);
 
 //        for (Command cmd : cmds) {
 //            System.err.println(cmd);
