@@ -18,11 +18,17 @@ public class MultiAgentAStar extends AStrategy {
 
     private AMessagePolicy policy;
     private AMerger merger;
+    private int[] agentIDMap;
 
-    public MultiAgentAStar(AHeuristic heuristic, AMessagePolicy policy, AMerger merger) {
+    public MultiAgentAStar(AHeuristic heuristic, AMessagePolicy policy, AMerger merger, int[] agentIDMap) {
         super(heuristic);
         this.policy = policy;
         this.merger = merger;
+        this.agentIDMap = agentIDMap;
+    }
+
+    private int getAgentPrintID(ThreadedAgent agent) {
+        return this.agentIDMap[agent.getAgentID()];
     }
 
     public Solution plan(State initialState) {
@@ -33,13 +39,13 @@ public class MultiAgentAStar extends AStrategy {
             try {
                 agent.join();
             } catch (InterruptedException exc) {
-                String errorMessage = "Agent + " + agent.getAgentID() + " + got interrupted.";
+                String errorMessage = "Agent + " + this.getAgentPrintID(agent) + " + got interrupted.";
                 System.err.println(errorMessage);
             } catch (OutOfMemoryError exc) {
-                String errorMessage = "Maximum memory usage exceeded at agent " + agent.getAgentID() + ".";
+                String errorMessage = "Maximum memory usage exceeded at agent " + this.getAgentPrintID(agent) + ".";
                 System.err.println(errorMessage);
             } catch (Exception exc) {
-                String errorMessage = "Unknown error at agent " + agent.getAgentID() + ": " + exc.getMessage();
+                String errorMessage = "Unknown error at agent " + this.getAgentPrintID(agent) + ": " + exc.getMessage();
                 System.err.println(errorMessage);
             }
         }
@@ -73,6 +79,7 @@ public class MultiAgentAStar extends AStrategy {
         ArrayList<ThreadedAgent> threadedAgents = new ArrayList<>();
         for (Agent agent : agents) {
             ThreadedAgent threadedAgent = new ThreadedAgent(
+                    this.agentIDMap,
                     agent.getId(),
                     terminator,
                     heuristic,

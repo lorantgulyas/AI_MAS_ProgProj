@@ -5,6 +5,7 @@ import client.config.ConfigParser;
 import client.definitions.*;
 import client.graph.Command;
 import client.state.Box;
+import client.state.SubState;
 import client.strategies.serialized_astar.Floodfill;
 import client.strategies.serialized_astar.SerializedAStar;
 
@@ -28,14 +29,14 @@ public class ClosedRoomRunner extends Thread{
      * @param roomSize Number of non-wall cells in the substate.
      * @throws Exception
      */
-    public ClosedRoomRunner(String unparsedConfig, client.state.State state, int roomSize) throws Exception  {
-        Config config = ConfigParser.readConfig(unparsedConfig, state, roomSize);
+    public ClosedRoomRunner(String unparsedConfig, SubState state, int roomSize) throws Exception  {
+        Config config = ConfigParser.readConfig(unparsedConfig, state.getState(), roomSize, state.getAgentIDMap());
         this.distance = config.getDistance();
         this.heuristic = config.getHeuristic();
         this.strategy = config.getStrategy();
         this.messagePolicy = config.getMessagePolicy();
         this.merger = config.getMerger();
-        this.state = state;
+        this.state = state.getState();
     }
 
     public ADistance getDistance() {

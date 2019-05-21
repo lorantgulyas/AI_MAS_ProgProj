@@ -11,6 +11,7 @@ import java.util.*;
 
 public class ThreadedAgent extends Thread {
 
+    private int[] agentIDMap;
     private int agentID;
     private AHeuristic heuristic;
     private AMessagePolicy policy;
@@ -29,6 +30,7 @@ public class ThreadedAgent extends Thread {
     private Result result;
 
     public ThreadedAgent(
+            int[] agentIDMap,
             int agentID,
             Terminator terminator,
             AHeuristic heuristic,
@@ -36,6 +38,7 @@ public class ThreadedAgent extends Thread {
             client.state.State initialState
     ) {
         super();
+        this.agentIDMap = agentIDMap;
         this.agentID = agentID;
         this.heuristic = heuristic;
         this.policy = policy;
@@ -123,8 +126,8 @@ public class ThreadedAgent extends Thread {
     public void run() {
         long i = 0;
         while (this.terminator.isAlive()) {
-            if (i % 50000 == 0) {
-                System.err.println("Agent " + this.agentID + ": " + i);
+            if (i % 10000 == 0) {
+                System.err.println("Agent " + this.agentIDMap[this.agentID] + ": " + i);
             }
             this.processMessages();
             boolean frontierIsEmpty = this.frontierIsEmpty();
@@ -222,7 +225,7 @@ public class ThreadedAgent extends Thread {
         // all responses have been received and all frontiers are empty
         this.setResult(null);
         this.terminator.foundNoSolution();
-        System.err.println("Agent " + this.agentID + ": No solution found.");
+        System.err.println("Agent " + this.agentIDMap[this.agentID] + ": No solution found.");
     }
 
     private void expand() {
@@ -286,7 +289,7 @@ public class ThreadedAgent extends Thread {
         if (node.getState().isGoalState()) {
             this.setResult(node.extract());
             this.terminator.foundSolution();
-            System.err.println("Agent " + this.agentID + ": Is goal state.");
+            System.err.println("Agent " + this.agentIDMap[this.agentID] + ": Is goal state.");
             return true;
         }
         return false;

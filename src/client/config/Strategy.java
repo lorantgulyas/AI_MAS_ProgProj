@@ -14,13 +14,14 @@ public class Strategy {
             String strategy,
             AHeuristic heuristic,
             AMessagePolicy messagePolicy,
-            AMerger merger
+            AMerger merger,
+            int[] agentIDMap
     ) throws UnknownStrategyException {
         switch (strategy) {
             case "cooperative_astar":
                 return new CooperativeAStar(heuristic);
             case "multi-agent_astar":
-                return new MultiAgentAStar(heuristic, messagePolicy, merger);
+                return new MultiAgentAStar(heuristic, messagePolicy, merger, agentIDMap);
             case "multi-body_astar":
                 return new MultiBodyAStar(heuristic);
             default:

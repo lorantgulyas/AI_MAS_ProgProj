@@ -30,7 +30,7 @@ public class Main {
         ArrayList<ClosedRoomRunner> runners = new ArrayList<>();
         int nRooms = rooms.size();
         for (int i = 0; i < nRooms; i++) {
-            State state = states.get(i).getState();
+            SubState state = states.get(i);
             int roomSize = rooms.size(i);
             ClosedRoomRunner runner = new ClosedRoomRunner(config, state, roomSize);
             runners.add(runner);

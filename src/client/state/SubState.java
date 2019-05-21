@@ -94,6 +94,10 @@ public class SubState {
         return state;
     }
 
+    public int[] getAgentIDMap() {
+        return this.agentIDMap;
+    }
+
     /**
      * Maps agent IDs in the substate to their ID in the main state.
      * @param id ID of the agent in the substate.

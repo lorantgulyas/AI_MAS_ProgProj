@@ -9,7 +9,7 @@ import java.util.HashMap;
 
 public class ConfigParser {
 
-    public static Config readConfig(String config, State initialState, int stateSize) throws
+    public static Config readConfig(String config, State initialState, int stateSize, int[] agentIDMap) throws
             InvalidConfigException,
             UnknownHeuristicException, UnknownStrategyException, UnknownMessagePolicyException,
             UnknownMergerException, UnknownDistanceException {
@@ -31,16 +31,16 @@ public class ConfigParser {
         AHeuristic heuristic = Heuristic.parseHeuristic(entries.get("heuristic"), initialState, distance, stateSize);
         AMessagePolicy messagePolicy = MessagePolicy.parseMessagePolicy(entries.get("message_policy"), initialState, distance);
         AMerger merger = Merger.parseMerger(entries.get("merger"));
-        AStrategy strategy = Strategy.parseStrategy(entries.get("strategy"), heuristic, messagePolicy, merger);
+        AStrategy strategy = Strategy.parseStrategy(entries.get("strategy"), heuristic, messagePolicy, merger, agentIDMap);
         return new Config(strategy, heuristic, messagePolicy, merger, distance);
     }
 
-    public static Config readConfigFromFile(String path, State initialState, int stateSize) throws
+    public static Config readConfigFromFile(String path, State initialState, int stateSize, int[] agentIDMap) throws
             InvalidConfigException, IOException,
             UnknownHeuristicException, UnknownStrategyException, UnknownMessagePolicyException,
             UnknownMergerException, UnknownDistanceException {
         String config = ConfigParser.readFile(path);
-        return ConfigParser.readConfig(config, initialState, stateSize);
+        return ConfigParser.readConfig(config, initialState, stateSize, agentIDMap);
     }
 
     public static String readFile(String path) throws IOException {
