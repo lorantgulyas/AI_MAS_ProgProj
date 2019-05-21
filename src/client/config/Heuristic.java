@@ -3,6 +3,7 @@ package client.config;
 import client.definitions.ADistance;
 import client.definitions.AHeuristic;
 import client.heuristics.*;
+import client.heuristics.unblocker.Unblocker;
 import client.state.State;
 
 public class Heuristic {
@@ -16,6 +17,8 @@ public class Heuristic {
                 return new Manhattan(initialState);
             case "single-tasker":
                 return new SingleTasker(initialState, distance, stateSize);
+            case "unblocker":
+                return new Unblocker(initialState, distance, stateSize);
             default:
                 throw new UnknownHeuristicException();
         }
