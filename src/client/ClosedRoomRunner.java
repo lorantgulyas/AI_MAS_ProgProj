@@ -5,8 +5,8 @@ import client.config.ConfigParser;
 import client.definitions.*;
 import client.graph.Command;
 import client.state.Box;
-import client.strategies.serialized_astar.Floodfill;
-import client.strategies.serialized_astar.SerializedAStar;
+//import client.strategies.serialized_astar.Floodfill;
+//import client.strategies.serialized_astar.SerializedAStar;
 import subgoaler.Converter;
 
 import java.util.ArrayList;
@@ -80,10 +80,9 @@ public class ClosedRoomRunner extends Thread{
         subgoaler.State SAstate = Converter.convert(state);
 
         subgoaler.Floodfill ff = new subgoaler.Floodfill(SAstate);
-        ff.findRooms();
-        ff.prioritizeGoals();
-        subgoaler.Box[] prioritizedBoxes = ff.prioritizeBoxes(SAstate.getBoxes());
-        SAstate.setBoxes(prioritizedBoxes);
+        ff.findRooms(SAstate);
+        ff.prioritizeGoals(SAstate);
+        ff.prioritizeBoxes(SAstate);
 
         subgoaler.SerializedAStar sas = new subgoaler.SerializedAStar(ff);
         ArrayList<subgoaler.Command> cmds = sas.serializedPlan(SAstate);

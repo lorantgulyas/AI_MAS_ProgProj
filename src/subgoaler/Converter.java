@@ -53,8 +53,7 @@ public class Converter {
                 })
                 .toArray(Box[]::new);
 
-        State.setLevel(walls, walls[0].length, walls.length, goals);
-        return new State(agents, boxes);
+        return new State(agents, boxes, goals, walls);
     }
 
 

@@ -27,7 +27,7 @@ public class SerializedAStar {
     public ArrayList<Command> serializedPlan(State init) {
         ArrayList<Command> cmds = new ArrayList<>();
         subresult = init;
-        Goal[] allGoals = State.getGoals();
+        Goal[] allGoals = subresult.getGoals();
 
         for (int i = 0; i < allGoals.length; i++) {
 //        for (int i = 0; i < 13; i++) {
@@ -38,27 +38,24 @@ public class SerializedAStar {
             Box[] boxesTodo = Arrays.copyOfRange(allBoxes, i, allBoxes.length);
 
             // reprio
-            State.setGoals(goalsTodo);
+            subresult.setGoals(goalsTodo);
             subresult.setBoxes(boxesTodo);
-            subresult = ff.goalDependencies(subresult);
-            Box[] prioritizedBoxes = ff.prioritizeBoxes(subresult.getBoxes());
+            ff.goalDependencies(subresult);
+            ff.prioritizeBoxes(subresult);
 
 
             allGoals = new Goal[allGoals.length];
             System.arraycopy(goalsDone, 0, allGoals, 0, goalsDone.length);
-            System.arraycopy(State.getGoals(), 0, allGoals, goalsDone.length, goalsTodo.length);
+            System.arraycopy(subresult.getGoals(), 0, allGoals, goalsDone.length, goalsTodo.length);
 
             allBoxes = new Box[allBoxes.length];
             System.arraycopy(boxesDone, 0, allBoxes, 0, boxesDone.length);
-            System.arraycopy(prioritizedBoxes, 0, allBoxes, boxesDone.length, boxesTodo.length);
+            System.arraycopy(subresult.getBoxes(), 0, allBoxes, boxesDone.length, boxesTodo.length);
 
             // old stuff
-            State.setGoals(Arrays.copyOfRange(allGoals, 0, i + 1));
+            subresult.setGoals(Arrays.copyOfRange(allGoals, 0, i + 1));
             subresult.setBoxes(allBoxes);
             System.err.println("--- task: " + i + ", goal: " + allGoals[i]);
-
-            Goal[] debugGoals = State.getGoals();
-            Box[] debugBoxes = subresult.getBoxes();
 
             ArrayList<Command> subCmds;
 
@@ -70,7 +67,7 @@ public class SerializedAStar {
 
                 path.addAll(
                         ff.findPath(allGoals[i].getPosition(),
-                        subresult.getBoxes()[i].getPosition())
+                        subresult.getBoxes()[i].getPosition(), subresult)
                 );
                 // path does not contain goal itself we have to add it manually
                 path.add(allGoals[i].getPosition());
@@ -78,7 +75,7 @@ public class SerializedAStar {
                 // test out agent-box stuff
                 path.addAll(
                         ff.findPath(subresult.getBoxes()[i].getPosition(),
-                                subresult.getAgents()[0].getPosition())
+                                subresult.getAgents()[0].getPosition(), subresult)
                 );
 
                 subCmds = freePath(subresult, new ArrayList<>(path));

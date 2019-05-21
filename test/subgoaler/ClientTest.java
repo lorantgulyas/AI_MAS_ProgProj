@@ -26,10 +26,9 @@ public class ClientTest {
         State state = Client.parseState(br);
         System.err.println(state);
         Floodfill ff = new Floodfill(state);
-        ff.findRooms();
-        ff.prioritizeGoals();
-        Box[] prioritizedBoxes = ff.prioritizeBoxes(state.getBoxes());
-        state.setBoxes(prioritizedBoxes);
+        ff.findRooms(state);
+        ff.prioritizeGoals(state);
+        ff.prioritizeBoxes(state);
 //        state = ff.goalDependencies(state);
 
 //        Goal[] goals = State.getGoals();

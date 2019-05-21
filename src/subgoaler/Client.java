@@ -104,8 +104,7 @@ public class Client {
             }
         }
 
-        State.setLevel(walls, colCount, rowCount, goals.toArray(Goal[]::new));
-        return new State(agents, boxes.toArray(Box[]::new));
+        return new State(agents, boxes.toArray(Box[]::new), goals.toArray(Goal[]::new), walls);
     }
 
     public boolean[] sendCommands(Command[] cmds) throws Exception {

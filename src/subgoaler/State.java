@@ -9,61 +9,30 @@ import java.util.Random;
 public class State {
     private static final Random RNG = new Random(1);
 
-    private static boolean[][] walls;
-    private static int X_MAX;
-    private static int Y_MAX;
-    private static Goal[] goals;
-
+    private boolean[][] walls;
+    private Goal[] goals;
     private Agent[] agents;
     private Box[] boxes;
     public State parent;
     public Command cmd;
     private int g = 0;
-
-    //private HashMap<Position, Integer> agentMap;
     private HashMap<Position, Integer> boxMap;
-    private static HashMap<Position, Integer> goalMap;
+    private HashMap<Position, Integer> goalMap;
     private int _hash = 0;
 
-    public static void setLevel(boolean[][] initWalls, int xMax, int yMax,
-                                Goal[] initGoals) {
-        walls = initWalls;
-        X_MAX = xMax;
-        Y_MAX = yMax;
-        setGoals(initGoals);
-    }
-
-    public static void setGoals(Goal[] goals) {
-        State.goals = goals;
-        goalMap = new HashMap<>();
-        for (int i = 0; i < goals.length; i++) {
-            goalMap.put(goals[i].getPosition(), i);
-        }
-    }
-
-    public static HashMap<Position, Integer> getGoalMap() {
-        return goalMap;
-    }
-
-    public State(Agent[] agents, Box[] boxes) {
+    public  State(Agent[] agents, Box[] boxes, Goal[] goals, boolean[][] walls){
         this.agents = agents;
-//        agentMap = new HashMap<>();
-//        for (Agent agent : agents) {
-//            agentMap.put(agent.getPosition(), agent);
-//        }
         setBoxes(boxes);
+        setGoals(goals);
+        this.walls = walls;
     }
 
-    public Agent[] getAgents() {
-        return agents;
-    }
-
-    public Box[] getBoxes() {
-        return boxes;
-    }
-
-    public static Goal[] getGoals() {
-        return goals;
+    public State(Agent[] agents, Box[] boxes, State parent) {
+        this.agents = agents;
+        setBoxes(boxes);
+        this.goals = parent.goals;
+        this.goalMap = parent.goalMap;
+        this.walls = parent.walls;
     }
 
     public void setBoxes(Box[] boxes) {
@@ -74,16 +43,40 @@ public class State {
         }
     }
 
-    public static boolean[][] getWalls() {
+    public  void setGoals(Goal[] goals) {
+        this.goals = goals;
+        goalMap = new HashMap<>();
+        for (int i = 0; i < goals.length; i++) {
+            goalMap.put(goals[i].getPosition(), i);
+        }
+    }
+
+    public HashMap<Position, Integer> getGoalMap() {
+        return goalMap;
+    }
+
+    public Agent[] getAgents() {
+        return agents;
+    }
+
+    public Box[] getBoxes() {
+        return boxes;
+    }
+
+    public Goal[] getGoals() {
+        return goals;
+    }
+
+    public boolean[][] getWalls() {
         return walls;
     }
 
-    public static int getXmax() {
-        return X_MAX;
+    public int getXmax() {
+        return walls[0].length;
     }
 
-    public static int getYmax() {
-        return Y_MAX;
+    public int getYmax() {
+        return walls.length;
     }
 
     public Command getCommand() {
@@ -173,7 +166,7 @@ public class State {
         for (int i = 0; i < boxes.length; i++) {
             newBoxes[i] = boxes[i].copy();
         }
-        State copy = new State(newAgents, newBoxes);
+        State copy = new State(newAgents, newBoxes, this);
         copy.cmd = cmd;
         copy.parent = this;
         copy.g = g + 1;
@@ -238,6 +231,8 @@ public class State {
 
     @Override
     public String toString() {
+        int Y_MAX = getYmax();
+        int X_MAX = getXmax();
         StringBuilder s = new StringBuilder();
         char[][] level = new char[Y_MAX][X_MAX];
         for (int y = 0; y < Y_MAX; y++) {
