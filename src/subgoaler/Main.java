@@ -11,19 +11,16 @@ public class Main {
         State state = client.init();
         System.err.println(state);
 
+        // preproc
         Floodfill ff = new Floodfill(state);
-        ff.findRooms();
-        ff.prioritizeGoals();
-        Box[] prioritizedBoxes = ff.prioritizeBoxes(state.getBoxes());
-        state.setBoxes(prioritizedBoxes);
-        state = ff.goalDependencies(state);
-        prioritizedBoxes = ff.prioritizeBoxes(state.getBoxes());
-        state.setBoxes(prioritizedBoxes);
+        ff.findRooms(state);
+        ff.prioritizeGoals(state);
+        ff.prioritizeBoxes(state);
 
         // debug goals
-        for (Goal goal : State.getGoals()) {
-            System.err.println(goal);
-        }
+//        for (Goal goal : State.getGoals()) {
+//            System.err.println(goal);
+//        }
 
         SerializedAStar sas = new SerializedAStar(ff);
         ArrayList<Command> cmds = sas.serializedPlan(state);
