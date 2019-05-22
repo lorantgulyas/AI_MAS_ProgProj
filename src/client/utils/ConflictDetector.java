@@ -24,11 +24,11 @@ public class ConflictDetector {
             case Pull:
                 Position pullFrom = agentPos.go(command.dir2);
                 Position pullTo = agentPos.go(command.dir1);
-                return !ActionGenerator.canMoveBox(state, pullFrom, pullTo, agent);
+                return ConflictDetector.boxConflict(state, pullFrom, pullTo, agent);
             case Push:
                 Position pushFrom = agentPos.go(command.dir1);
                 Position pushTo = pushFrom.go(command.dir2);
-                return !ActionGenerator.canMoveBox(state, pushFrom, pushTo, agent);
+                return ConflictDetector.boxConflict(state, pushFrom, pushTo, agent);
             default:
                 return false;
         }
@@ -66,7 +66,42 @@ public class ConflictDetector {
                 }
             }
         }
-
         return false;
+    }
+
+    public static boolean constrainedConflict(State state, Set<Position> constraints, Action action) {
+        Command command = action.getCommand();
+        int agentID = action.getAgentID();
+        Agent agent = state.getAgents()[agentID];
+        Position agentPos = agent.getPosition();
+        switch (command.actionType) {
+            case Move:
+                Position moveTo = agentPos.go(command.dir1);
+                return !state.isFree(moveTo);
+            case Pull:
+                Position pullFrom = agentPos.go(command.dir2);
+                Position pullTo = agentPos.go(command.dir1);
+                return ConflictDetector.boxConflictConstrained(state, constraints, pullFrom, pullTo, agent);
+            case Push:
+                Position pushFrom = agentPos.go(command.dir1);
+                Position pushTo = pushFrom.go(command.dir2);
+                return ConflictDetector.boxConflictConstrained(state, constraints, pushFrom, pushTo, agent);
+            default:
+                return false;
+        }
+    }
+
+    public static boolean boxConflict(State currentState, Position from, Position to, Agent agent) {
+        return !currentState.boxAt(from)
+                || !currentState.isFree(to)
+                || currentState.getBoxAt(from).getColor() != agent.getColor();
+    }
+
+    public static boolean boxConflictConstrained(State currentState, Set<Position> constraints, Position from, Position to, Agent agent) {
+        return !currentState.boxAt(from)
+                || !currentState.isFree(to)
+                || constraints.contains(from)
+                || !constraints.contains(to)
+                || currentState.getBoxAt(from).getColor() != agent.getColor();
     }
 }

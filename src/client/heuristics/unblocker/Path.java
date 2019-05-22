@@ -11,7 +11,7 @@ public class Path {
     private boolean[][] walls;
     private ArrayList<Position> path;
 
-    public Path(State initialState, int stateSize, Goal goal, Box box, Agent agent) {
+    public Path(State initialState, Goal goal, Box box, Agent agent) {
         this.walls = initialState.getLevel().getWalls();
         ArrayList<Position> agentPath = this.bfs(agent.getPosition(), box.getPosition());
         ArrayList<Position> goalPath = this.bfs(box.getPosition(), goal.getPosition());

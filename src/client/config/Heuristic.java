@@ -18,7 +18,7 @@ public class Heuristic {
             case "single-tasker":
                 return new SingleTasker(initialState, distance, stateSize);
             case "unblocker":
-                return new Unblocker(initialState, distance, stateSize);
+                return new Unblocker(initialState, distance);
             default:
                 throw new UnknownHeuristicException();
         }

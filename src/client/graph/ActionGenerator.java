@@ -23,10 +23,10 @@ public class ActionGenerator {
             agentsActions.add(ActionGenerator.children(currentState, i));
         }
 
-        return ActionGenerator.createJointActions(agentsActions);
+        return ActionGenerator.createJointActions(currentState, agentsActions);
     }
 
-    private static ArrayList<ArrayList<Action>> createJointActions(ArrayList<ArrayList<Action>> agentsActions) {
+    private static ArrayList<ArrayList<Action>> createJointActions(State state, ArrayList<ArrayList<Action>> agentsActions) {
         int nAgents = agentsActions.size();
 
         // find total number of jointActions
@@ -68,7 +68,7 @@ public class ActionGenerator {
                 }
             }
             // only add actions without conflicts
-            if (!ConflictDetector.conflict(jointAction)) {
+            if (!ConflictDetector.conflict(state, jointAction)) {
                 jointActions.add(jointAction);
             }
         }
@@ -88,41 +88,32 @@ public class ActionGenerator {
         Agent agent = currentState.getAgents()[agentID];
         Position agentPos = agent.getPosition();
         for (Command command : Command.EVERY) {
+            Action action;
             switch (command.actionType) {
-                case NoOp:
-                    Position[] noOpCells = new Position[] { agentPos };
-                    Action noOpAction = new Action(agentID, Command.NoOp, noOpCells);
-                    children.add(noOpAction);
-                    break;
                 case Move:
                     Position moveTo = agentPos.go(command.dir1);
-                    if (currentState.isFree(moveTo)) {
-                        Position[] moveCells = new Position[] { moveTo };
-                        //Position[] moveCells = new Position[] { agentPos, moveTo };
-                        Action moveAction = new Action(agentID, command, moveCells);
-                        children.add(moveAction);
-                    }
+                    Position[] moveCells = new Position[] { agentPos, moveTo };
+                    action = new Action(agentID, command, moveCells);
                     break;
                 case Pull:
                     Position pullFrom = agentPos.go(command.dir2);
                     Position pullTo = agentPos.go(command.dir1);
-                    if (ActionGenerator.canMoveBox(currentState, pullFrom, pullTo, agent)) {
-                        Position[] pullCells = new Position[] { agentPos, pullTo };
-                        //Position[] pullCells = new Position[] { agentPos, pullFrom, pullTo };
-                        Action pullAction = new Action(agentID, command, pullCells);
-                        children.add(pullAction);
-                    }
+                    Position[] pullCells = new Position[] { agentPos, pullFrom, pullTo };
+                    action = new Action(agentID, command, pullCells);
                     break;
                 case Push:
                     Position pushFrom = agentPos.go(command.dir1);
                     Position pushTo = pushFrom.go(command.dir2);
-                    if (ActionGenerator.canMoveBox(currentState, pushFrom, pushTo, agent)) {
-                        Position[] pushCells = new Position[] { pushFrom, pushTo };
-                        //Position[] pushCells = new Position[] { agentPos, pushFrom, pushTo };
-                        Action pushAction = new Action(agentID, command, pushCells);
-                        children.add(pushAction);
-                    }
+                    Position[] pushCells = new Position[] { agentPos, pushFrom, pushTo };
+                    action = new Action(agentID, command, pushCells);
                     break;
+                default:
+                    Position[] noOpCells = new Position[] { agentPos };
+                    action = new Action(agentID, Command.NoOp, noOpCells);
+                    break;
+            }
+            if (!ConflictDetector.conflict(currentState, action)) {
+                children.add(action);
             }
         }
         Collections.shuffle(children);
@@ -142,62 +133,38 @@ public class ActionGenerator {
         Agent agent = currentState.getAgents()[agentID];
         Position agentPos = agent.getPosition();
         for (Command command : Command.EVERY) {
+            Action action;
             switch (command.actionType) {
-                case NoOp:
-                    if (!constraints.contains(agentPos)) {
-                        Position[] noOpCells = new Position[] { agentPos };
-                        Action noOpAction = new Action(agentID, Command.NoOp, noOpCells);
-                        children.add(noOpAction);
-                    }
-                    break;
                 case Move:
                     Position moveTo = agentPos.go(command.dir1);
-                    if (currentState.isFree(moveTo) && !constraints.contains(moveTo)) {
-                        Position[] moveCells = new Position[] { moveTo };
-                        //Position[] moveCells = new Position[] { agentPos, moveTo };
-                        Action moveAction = new Action(agentID, command, moveCells);
-                        children.add(moveAction);
-                    }
+                    Position[] moveCells = new Position[] { agentPos, moveTo };
+                    action = new Action(agentID, command, moveCells);
                     break;
                 case Pull:
                     Position pullFrom = agentPos.go(command.dir2);
                     Position pullTo = agentPos.go(command.dir1);
-                    if (ActionGenerator.canMoveBoxConstrained(currentState, constraints, pullFrom, pullTo, agent)) {
-                        Position[] pullCells = new Position[] { agentPos, pullTo };
-                        //Position[] pullCells = new Position[] { agentPos, pullFrom, pullTo };
-                        Action pullAction = new Action(agentID, command, pullCells);
-                        children.add(pullAction);
-                    }
+                    Position[] pullCells = new Position[] { agentPos, pullFrom, pullTo };
+                    action = new Action(agentID, command, pullCells);
                     break;
                 case Push:
                     Position pushFrom = agentPos.go(command.dir1);
                     Position pushTo = pushFrom.go(command.dir2);
-                    if (ActionGenerator.canMoveBoxConstrained(currentState, constraints, pushFrom, pushTo, agent)) {
-                        Position[] pushCells = new Position[] { pushFrom, pushTo };
-                        //Position[] pushCells = new Position[] { agentPos, pushFrom, pushTo };
-                        Action pushAction = new Action(agentID, command, pushCells);
-                        children.add(pushAction);
-                    }
+                    Position[] pushCells = new Position[] { agentPos, pushFrom, pushTo };
+                    action = new Action(agentID, command, pushCells);
                     break;
+                default:
+                    // NoOp
+                    Position[] noOpCells = new Position[] { agentPos };
+                    action = new Action(agentID, Command.NoOp, noOpCells);
+                    break;
+            }
+            if (!ConflictDetector.constrainedConflict(currentState, constraints, action)) {
+                children.add(action);
             }
         }
 
         Collections.shuffle(children);
         return children;
-    }
-
-    public static boolean canMoveBox(State currentState, Position from, Position to, Agent agent) {
-        return currentState.boxAt(from)
-                && currentState.isFree(to)
-                && currentState.getBoxAt(from).getColor() == agent.getColor();
-    }
-
-    public static boolean canMoveBoxConstrained(State currentState, Set<Position> constraints, Position from, Position to, Agent agent) {
-        return currentState.boxAt(from)
-                && currentState.isFree(to)
-                && !constraints.contains(from)
-                && !constraints.contains(to)
-                && currentState.getBoxAt(from).getColor() == agent.getColor();
     }
 
 }

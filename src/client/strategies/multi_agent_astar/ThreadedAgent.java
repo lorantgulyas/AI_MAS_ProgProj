@@ -111,9 +111,7 @@ public class ThreadedAgent extends Thread {
     private void replaceInFrontier(Plan previous, Plan next) {
         this.frontier.remove(previous);
         this.frontier.add(next);
-        //this.frontierSet.replace(previous, next);
-        this.frontierSet.remove(previous);
-        this.frontierSet.put(next, next);
+        this.frontierSet.replace(previous, next);
     }
 
     private void removeFromExplored(Plan node) {

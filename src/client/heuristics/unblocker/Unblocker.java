@@ -10,26 +10,53 @@ public class Unblocker extends AHeuristic {
 
     private BlockedFinder[] blockFinders;
     private ADistance measurer;
-    private int stateSize;
     private Level level;
 
     private HashMap<Goal, Integer> goalBoxMap;
 
-    public Unblocker(State initialState, ADistance measurer, int stateSize) {
+    public Unblocker(State initialState, ADistance measurer) {
         super(initialState);
         this.measurer = measurer;
-        this.stateSize = stateSize;
         this.level = initialState.getLevel();
         this.goalBoxMap = this.getGoalBoxMap(initialState);
         this.blockFinders = this.getBlockFinders(initialState);
     }
 
     public int h(State state) {
-        int h = 0;
+        int hBlocks = this.sumOfBlocks(state);
+        int hGoals = this.sumOfGoals(state);
+
+        /*
+        // DEBUG
         HashSet<Block> blocks = this.getBlocks(state);
-        h += this.sumOfBlocks(blocks);
-        h += this.sumOfGoals(state);
-        return h;
+        Agent[] agents = state.getAgents();
+        ArrayList<String> as = new ArrayList<>();
+        for (Agent agent : agents) {
+            as.add("(" + agent.getId() + "," + agent.getPosition());
+        }
+        Box[] boxes = state.getBoxes();
+        ArrayList<String> bos = new ArrayList<>();
+        for (Box box : boxes) {
+            bos.add("(" + box.getId() + "," + box.getLetter() + "," + box.getPosition());
+        }
+        ArrayList<String> bs = new ArrayList<>();
+        for (Block block : blocks) {
+            bs.add(block.toString(this.measurer));
+        }
+        ArrayList<String> gs = new ArrayList<>();
+        for (Goal goal : this.level.getGoals()) {
+            gs.add("(" + this.goalBoxMap.get(goal) + "," + goal.getLetter() + "," + goal.getPosition() + ")");
+        }
+        gs.sort(Comparator.naturalOrder());
+        System.err.println("Agents: " + as);
+        System.err.println("Boxes: " + bos);
+        System.err.println("Goals: " + gs);
+        System.err.println("Blocks: " + bs);
+        System.err.println("h_blocks = " + hBlocks + ", h_goals = " + hGoals);
+        System.err.println("---------");
+        */
+
+        return hBlocks + hGoals;
     }
 
     @Override
@@ -43,7 +70,7 @@ public class Unblocker extends AHeuristic {
         for (int i = 0; i < goals.length; i++) {
             Goal goal = goals[i];
             int boxID = this.goalBoxMap.get(goal);
-            blockFinders[i] =  new BlockedFinder(initialState, this.stateSize, this.measurer, goal, boxID);
+            blockFinders[i] =  new BlockedFinder(initialState, this.measurer, goal, boxID);
         }
         return blockFinders;
     }
@@ -71,7 +98,8 @@ public class Unblocker extends AHeuristic {
         return blocks;
     }
 
-    private int sumOfBlocks(HashSet<Block> blocks) {
+    private int sumOfBlocks(State state) {
+        HashSet<Block> blocks = this.getBlocks(state);
         int h = 0;
         for (Block block : blocks) {
             h += block.h(this.measurer);
@@ -84,17 +112,15 @@ public class Unblocker extends AHeuristic {
         Agent[] agents = state.getAgents();
         Box[] boxes = state.getBoxes();
         Goal[] goals = this.level.getGoals();
-        boolean[] used = new boolean[agents.length];
-        Arrays.fill(used, false);
         for (Goal goal : goals) {
             int boxID = this.goalBoxMap.get(goal);
             Box box = boxes[boxID];
             if (!box.getPosition().equals(goal.getPosition())) {
-                h += this.measurer.distance(goal.getPosition(), box.getPosition());
-                Agent agent = this.findClosestAgentToBox(agents, box, used);
+                // important to multiply to make it more "profitable" to reach a goal than to be close to a box
+                h += 2 * this.measurer.distance(goal.getPosition(), box.getPosition());
+                Agent agent = this.findClosestAgentToBox(agents, box);
                 if (agent != null) {
                     h += this.measurer.distance(box.getPosition(), agent.getPosition());
-                    used[agent.getId()] = true;
                 }
             }
         }
@@ -131,11 +157,11 @@ public class Unblocker extends AHeuristic {
         return closestBox;
     }
 
-    private Agent findClosestAgentToBox(Agent[] agents, Box box, boolean[] used) {
+    private Agent findClosestAgentToBox(Agent[] agents, Box box) {
         Agent closestAgent = null;
         int minDistance = Integer.MAX_VALUE;
         for (Agent agent : agents) {
-            if (!used[agent.getId()] && agent.getColor() == box.getColor()) {
+            if (agent.getColor() == box.getColor()) {
                 int distance = this.measurer.distance(agent.getPosition(), box.getPosition());
                 if (closestAgent == null || distance < minDistance) {
                     closestAgent = agent;

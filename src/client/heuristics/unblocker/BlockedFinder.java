@@ -12,14 +12,12 @@ public class BlockedFinder {
     private ADistance measurer;
     private int boxID;
     private ArrayList<Integer> goalAgentIDs;
-    private int stateSize;
 
-    public BlockedFinder(State initialState, int stateSize, ADistance measurer, Goal goal, int boxID) {
+    public BlockedFinder(State initialState, ADistance measurer, Goal goal, int boxID) {
         this.measurer = measurer;
         this.goal = goal;
         this.boxID = boxID;
         this.goalAgentIDs = this.getGoalAgentIDs(initialState);
-        this.stateSize = stateSize;
     }
 
     public HashSet<Block> getBlocks(State state) {
@@ -52,15 +50,17 @@ public class BlockedFinder {
         Box box = boxes[this.boxID];
         for (int agentID : this.goalAgentIDs) {
             Agent agent = agents[agentID];
-            Path pathHelper = new Path(state, this.stateSize, this.goal, box, agent);
+            Path pathHelper = new Path(state, this.goal, box, agent);
             ArrayList<Position> path = pathHelper.getPath();
             int n = path.size();
             for (int i = 1; i < n - 1; i++) {
                 Position position = path.get(i);
-                boolean hasAgent = state.agentAt(position) && state.getAgentAt(position).getId() != agent.getId();
+                // there is probably no need to consider an agent many steps ahead from the current agent
+                // since this agent is likely to move out of the way anyway
+                boolean hasAgent = i == 1 && state.agentAt(position);
                 boolean hasBox = state.boxAt(position) && state.getBoxAt(position).getColor() != agent.getColor();
                 if (hasAgent || hasBox) {
-                    boolean blocked = pathHelper.blocked(state, agent, path.get(i - 1), path.get(i + 1), 7);
+                    boolean blocked = pathHelper.blocked(state, agent, path.get(i - 1), path.get(i + 1), 4);
                     if (blocked) {
                         if (hasAgent) {
                             Agent blockingAgent = state.getAgentAt(position);

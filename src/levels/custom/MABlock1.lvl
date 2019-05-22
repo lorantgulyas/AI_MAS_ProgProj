@@ -1,0 +1,20 @@
+#domain
+hospital
+#levelname
+MABlock1
+#colors
+red: 0, A
+green: 1, B
+#initial
++++++++++
++0++++1 +
++AB     +
++++++++ +
++++++++++
+#goal
++++++++++
++ ++++  +
++       +
++++++++A+
++++++++++
+#end

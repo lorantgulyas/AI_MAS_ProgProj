@@ -39,7 +39,8 @@ public class Block {
     public int h(ADistance measurer) {
         int h = this.value;
         if (this.responsible != null && this.box != null) {
-            h += measurer.distance(this.responsible.getPosition(), this.box.getPosition());
+            // important to multiply to ensure that an agent will unblock before anything else
+            h += this.value * measurer.distance(this.responsible.getPosition(), this.box.getPosition());
         }
         return h;
     }
@@ -74,6 +75,20 @@ public class Block {
     @Override
     public int hashCode() {
         return this._hash;
+    }
+
+    @Override
+    public String toString() {
+        String box = this.box == null ? "-" : "(" + this.box.getId() + "," + this.box.getPosition().toString() + ")";
+        String responsible = this.responsible == null ? "-" : "(" + this.responsible.getId() + "," + this.responsible.getPosition().toString() + ")";
+        return "(" + box + "," + responsible + "," + this.value + ")";
+    }
+
+    public String toString(ADistance measurer) {
+        String box = this.box == null ? "-" : "(" + this.box.getId() + "," + this.box.getPosition().toString() + ")";
+        String responsible = this.responsible == null ? "-" : "(" + this.responsible.getId() + "," + this.responsible.getPosition().toString() + ")";
+        int h = this.h(measurer);
+        return "(" + box + "," + responsible + "," + this.value + "," + h + ")";
     }
 
 }
