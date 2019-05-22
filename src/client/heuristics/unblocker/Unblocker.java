@@ -4,10 +4,7 @@ import client.definitions.ADistance;
 import client.definitions.AHeuristic;
 import client.state.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Unblocker extends AHeuristic {
 
@@ -25,16 +22,11 @@ public class Unblocker extends AHeuristic {
         this.level = initialState.getLevel();
         this.goalBoxMap = this.getGoalBoxMap(initialState);
         this.blockFinders = this.getBlockFinders(initialState);
-
-        //Box[] boxes = initialState.getBoxes();
-        //for (Map.Entry<Goal, Integer> entry : this.goalBoxMap.entrySet()) {
-        //    System.err.println("goal (" + entry.getKey().getLetter() + ") : " + boxes[entry.getValue()].getLetter());
-        //}
     }
 
     public int h(State state) {
         int h = 0;
-        ArrayList<Block> blocks = this.getBlocks(state);
+        HashSet<Block> blocks = this.getBlocks(state);
         h += this.sumOfBlocks(blocks);
         h += this.sumOfGoals(state);
         return h;
@@ -70,25 +62,19 @@ public class Unblocker extends AHeuristic {
         return map;
     }
 
-    private ArrayList<Block> getBlocks(State state) {
-        ArrayList<Block> blocks = new ArrayList<>();
+    private HashSet<Block> getBlocks(State state) {
+        HashSet<Block> blocks = new HashSet<>();
         for (BlockedFinder blockFinder : this.blockFinders) {
-            ArrayList<Block> goalBlocks = blockFinder.getBlocks(state);
+            HashSet<Block> goalBlocks = blockFinder.getBlocks(state);
             blocks.addAll(goalBlocks);
         }
         return blocks;
     }
 
-    private int sumOfBlocks(ArrayList<Block> blocks) {
+    private int sumOfBlocks(HashSet<Block> blocks) {
         int h = 0;
         for (Block block : blocks) {
-            Agent agent = block.getResponsible();
-            Box boxToMove = block.getBox();
-            if (boxToMove == null) {
-                h += block.getValue();
-            } else {
-                h += this.measurer.distance(agent.getPosition(), boxToMove.getPosition()) + block.getValue();
-            }
+            h += block.h(this.measurer);
         }
         return h;
     }

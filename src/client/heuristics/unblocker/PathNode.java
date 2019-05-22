@@ -35,16 +35,14 @@ public class PathNode {
         return this.parent == null;
     }
 
-    public ArrayList<Position> getPath(boolean reverse) {
+    public ArrayList<Position> getPath() {
         ArrayList<Position> path = new ArrayList<>();
         PathNode node = this;
         while (node != null) {
             path.add(node.getPosition());
             node = node.parent;
         }
-        if (reverse) {
-            Collections.reverse(path);
-        }
+        Collections.reverse(path);
         return path;
     }
 

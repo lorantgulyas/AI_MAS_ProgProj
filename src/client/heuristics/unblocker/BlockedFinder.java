@@ -4,18 +4,17 @@ import client.definitions.ADistance;
 import client.state.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class BlockedFinder {
 
     private Goal goal;
     private ADistance measurer;
-    private Level level;
     private int boxID;
     private ArrayList<Integer> goalAgentIDs;
     private int stateSize;
 
     public BlockedFinder(State initialState, int stateSize, ADistance measurer, Goal goal, int boxID) {
-        this.level = initialState.getLevel();
         this.measurer = measurer;
         this.goal = goal;
         this.boxID = boxID;
@@ -23,13 +22,9 @@ public class BlockedFinder {
         this.stateSize = stateSize;
     }
 
-    public ArrayList<Block> getBlocks(State state) {
-        // 1. check if goal is fulfilled and return empty array if it is fulfilled
-        // 2. check if it is possible to fulfill this goal
-        //   a. if not: find where the block is and add it
-        //   b. value of block should be the amount of moves to make it unblocked
+    public HashSet<Block> getBlocks(State state) {
         if (this.goalIsFulfilled(state)) {
-            return new ArrayList<>();
+            return new HashSet<>();
         }
         return this.findBlocksForGoal(state);
     }
@@ -50,21 +45,8 @@ public class BlockedFinder {
         return box != null && box.getLetter() == this.goal.getLetter();
     }
 
-    //private boolean goalCanBeFulfilled(State state) {
-    //    boolean[][] walls = this.level.getWalls();
-    //    Agent[] agents = state.getAgents();
-    //    for (Agent agent : agents) {
-    //        if (agent.getColor() == this.goal.getColor()) {
-    //            ArrayList<Position> path = Path.bfs(walls, goal.getPosition(), agent.getPosition());
-    //            if (path.size() != 0) {
-    //                return true;
-    //            }
-    //        }
-    //    }
-    //}
-
-    private ArrayList<Block> findBlocksForGoal(State state) {
-        ArrayList<Block> blocks = new ArrayList<>();
+    private HashSet<Block> findBlocksForGoal(State state) {
+        HashSet<Block> blocks = new HashSet<>();
         Agent[] agents = state.getAgents();
         Box[] boxes = state.getBoxes();
         Box box = boxes[this.boxID];
@@ -75,8 +57,8 @@ public class BlockedFinder {
             int n = path.size();
             for (int i = 1; i < n - 1; i++) {
                 Position position = path.get(i);
-                boolean hasAgent = state.agentAt(position);
-                boolean hasBox = state.boxAt(position);
+                boolean hasAgent = state.agentAt(position) && state.getAgentAt(position).getId() != agent.getId();
+                boolean hasBox = state.boxAt(position) && state.getBoxAt(position).getColor() != agent.getColor();
                 if (hasAgent || hasBox) {
                     boolean blocked = pathHelper.blocked(state, agent, path.get(i - 1), path.get(i + 1), 7);
                     if (blocked) {
@@ -86,11 +68,9 @@ public class BlockedFinder {
                             blocks.add(block);
                         } else {
                             Box blockingBox = state.getBoxAt(position);
-                            if (blockingBox.getColor() != agent.getColor()) {
-                                Agent responsibleAgent = this.findClosestAgentToBox(agents, blockingBox);
-                                Block block = new Block(blockingBox, responsibleAgent, i);
-                                blocks.add(block);
-                            }
+                            Agent responsibleAgent = this.findClosestAgentToBox(agents, blockingBox);
+                            Block block = new Block(blockingBox, responsibleAgent, i);
+                            blocks.add(block);
                         }
                     }
                 }

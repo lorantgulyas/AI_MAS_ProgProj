@@ -111,7 +111,9 @@ public class ThreadedAgent extends Thread {
     private void replaceInFrontier(Plan previous, Plan next) {
         this.frontier.remove(previous);
         this.frontier.add(next);
-        this.frontierSet.replace(previous, next);
+        //this.frontierSet.replace(previous, next);
+        this.frontierSet.remove(previous);
+        this.frontierSet.put(next, next);
     }
 
     private void removeFromExplored(Plan node) {
@@ -164,11 +166,11 @@ public class ThreadedAgent extends Thread {
         Plan fromExplored = this.explored.get(message);
         if (fromFrontier == null && fromExplored == null) {
             this.addToFrontier(message);
-        } else if (fromFrontier == null && fromExplored != null) {
+        } else if (fromFrontier == null) {
             if (message.g() < fromExplored.g()) {
                 this.explored2frontier(message);
             }
-        } else if (fromFrontier != null && fromExplored == null) {
+        } else if (fromExplored == null) {
             if (message.g() < fromFrontier.g()) {
                 this.replaceInFrontier(fromFrontier, message);
             }
@@ -253,11 +255,11 @@ public class ThreadedAgent extends Thread {
         boolean inFrontier = successorFromFrontier != null;
         if (!inExplored && !inFrontier) {
             this.addToFrontier(successor);
-        } else if (inExplored && !inFrontier) {
+        } else if (!inFrontier) {
             if (successor.f() < successorFromExplored.f()) {
                 this.explored2frontier(successor);
             }
-        } else if (!inExplored && inFrontier) {
+        } else if (!inExplored) {
             if (successor.f() < successorFromFrontier.f()) {
                 this.replaceInFrontier(successorFromFrontier, successor);
             }

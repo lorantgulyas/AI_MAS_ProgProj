@@ -8,19 +8,16 @@ import java.util.HashSet;
 
 public class Path {
 
-    private Agent agent;
-    private Box box;
     private boolean[][] walls;
     private ArrayList<Position> path;
 
     public Path(State initialState, int stateSize, Goal goal, Box box, Agent agent) {
-        this.agent = agent;
-        this.box = box;
         this.walls = initialState.getLevel().getWalls();
-        ArrayList<Position> path = this.bfs(goal.getPosition(), box.getPosition());
-        ArrayList<Position> agentPath = this.bfs(box.getPosition(), agent.getPosition());
-        path.addAll(agentPath);
-        this.path = path;
+        ArrayList<Position> agentPath = this.bfs(agent.getPosition(), box.getPosition());
+        ArrayList<Position> goalPath = this.bfs(box.getPosition(), goal.getPosition());
+        goalPath.remove(box.getPosition());
+        agentPath.addAll(goalPath);
+        this.path = agentPath;
     }
 
     public ArrayList<Position> getPath() {
@@ -40,7 +37,7 @@ public class Path {
             explored.add(node);
 
             if (node.getPosition().equals(to)) {
-                return node.getPath(false);
+                return node.getPath();
             }
 
             Position position = node.getPosition();
@@ -91,7 +88,6 @@ public class Path {
             }
         }
 
-        // this should be impossible since we have split the levels into separate closed rooms
         return true;
     }
 

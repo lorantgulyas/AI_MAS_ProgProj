@@ -43,7 +43,7 @@ def main():
 
 
 def run_client(config, level, timeout):
-    client = f'java -classpath out/production/programming-project client.Main {config}'
+    client = f'java -classpath out/production/programming-project -Xmx6g client.Main {config}'
     args = ['java', '-jar', 'server.jar', '-c', client, '-l', level]
 
     try:
