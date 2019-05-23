@@ -15,9 +15,10 @@ The following keys are accepted together with their accepted values:
     - multi-body_astar
 * heuristic
     - floodfill
+    - goal-seeker
     - manhattan
-    - single-tasker-manhattan
-    - single-tasker-shortest-path
+    - single-tasker
+    - unblocker
 * message_policy
     - broadcast
     - nearby(x)
@@ -27,12 +28,18 @@ The following keys are accepted together with their accepted values:
     - cells-used
     - greedy
     - no-merge
+* distance
+    - manhattan
+    - shortest-path
+    - shortest-unblocked-path
 
 Note that x in nearby and public-nearby must be a positive integer.
 
 ### Example configuration file
 ```
-strategy: cooperative_astar
-heuristic: manhattan
+strategy: multi-agent_astar
+heuristic: goal-seeker
 message_policy: broadcast
+merger: greedy
+distance: shortest-unblocked-path
 ```

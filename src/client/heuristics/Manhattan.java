@@ -23,11 +23,11 @@ public class Manhattan extends AHeuristic {
             Position boxPos = box.getPosition();
             for (Agent agent : agents) {
                 if (agent.getColor() == box.getColor()) {
-                    h += this.measurer.distance(boxPos, agent.getPosition());
+                    h += this.measurer.distance(state, agent.getPosition(), boxPos);
                     Goal[] goals = level.getAgentGoals(agent.getId());
                     for (Goal goal : goals) {
                         if (goal.getLetter() == box.getLetter()) {
-                            h += this.measurer.distance(boxPos, goal.getPosition());
+                            h += this.measurer.distance(state, boxPos, goal.getPosition());
                         }
                     }
                 }
@@ -35,7 +35,7 @@ public class Manhattan extends AHeuristic {
         }
         for (AgentGoal agentEndPosition : level.getAgentEndPositions()) {
             Agent agent = agents[agentEndPosition.getAgentID()];
-            h += this.measurer.distance(agentEndPosition.getPosition(), agent.getPosition());
+            h += this.measurer.distance(state, agent.getPosition(), agentEndPosition.getPosition());
         }
         return h;
     }

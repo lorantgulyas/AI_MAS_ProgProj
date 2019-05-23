@@ -27,7 +27,7 @@ public class ConfigParser {
             String value = keyValues[1];
             entries.put(key, value);
         }
-        ADistance distance = Distance.parseDistamce(entries.get("distance"), initialState);
+        ADistance distance = Distance.parseDistamce(entries.get("distance"), initialState, stateSize);
         AHeuristic heuristic = Heuristic.parseHeuristic(entries.get("heuristic"), initialState, distance, stateSize);
         AMessagePolicy messagePolicy = MessagePolicy.parseMessagePolicy(entries.get("message_policy"), initialState, distance);
         AMerger merger = Merger.parseMerger(entries.get("merger"));

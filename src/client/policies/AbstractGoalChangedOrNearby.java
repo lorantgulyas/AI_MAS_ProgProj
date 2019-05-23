@@ -24,13 +24,13 @@ abstract class AbstractGoalChangedOrNearby extends AbstractGoalChanged {
         this.measurer = measurer;
     }
 
-    Iterable<Integer> getNearby(Agent[] agents, Agent sender) {
+    Iterable<Integer> getNearby(State state, Agent[] agents, Agent sender) {
         Position senderPos = sender.getPosition();
         int senderID = sender.getId();
         ArrayList<Integer> receivers = new ArrayList<>();
         for (Agent agent : agents) {
             int id = agent.getId();
-            if (id != senderID && this.measurer.distance(senderPos, agent.getPosition()) < this.maxDistance) {
+            if (id != senderID && this.measurer.distance(state, senderPos, agent.getPosition()) < this.maxDistance) {
                 receivers.add(id);
             }
         }

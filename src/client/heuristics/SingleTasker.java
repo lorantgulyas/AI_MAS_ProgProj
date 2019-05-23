@@ -23,12 +23,12 @@ public class SingleTasker extends AHeuristic {
         this.stateSize = stateSize;
     }
 
-    private Box getClosestBoxToGoal(ArrayList<Box> boxes, Goal goal) {
+    private Box getClosestBoxToGoal(State state, ArrayList<Box> boxes, Goal goal) {
         Box closest = null;
         int minDistance = Integer.MAX_VALUE;
         for (Box box : boxes) {
             if (box.getLetter() == goal.getLetter()) {
-                int distance = this.measurer.distance(box.getPosition(), goal.getPosition());
+                int distance = this.measurer.distance(state, box.getPosition(), goal.getPosition());
                 if (distance < minDistance) {
                     closest = box;
                     minDistance = distance;
@@ -75,7 +75,7 @@ public class SingleTasker extends AHeuristic {
         return agentGoals;
     }
 
-    private int agentHeuristic(ArrayList<Goal> goals, ArrayList<Box> boxes, Agent agent) {
+    private int agentHeuristic(State state, ArrayList<Goal> goals, ArrayList<Box> boxes, Agent agent) {
         goals = this.getAgentGoals(goals, boxes, agent);
         int nGoals = goals.size();
         if (nGoals == 0) {
@@ -85,10 +85,10 @@ public class SingleTasker extends AHeuristic {
         int minAgent2BoxDistance = Integer.MAX_VALUE;
         int minWalkDistance = Integer.MAX_VALUE;
         for (Goal goal : goals) {
-            Box box = this.getClosestBoxToGoal(boxes, goal);
+            Box box = this.getClosestBoxToGoal(state, boxes, goal);
             if (box != null) {
-                int box2goalDistance = this.measurer.distance(box.getPosition(), goal.getPosition());
-                int agent2boxDistance = this.measurer.distance(agent.getPosition(), box.getPosition());
+                int box2goalDistance = this.measurer.distance(state, box.getPosition(), goal.getPosition());
+                int agent2boxDistance = this.measurer.distance(state, agent.getPosition(), box.getPosition());
                 int walkDistance = agent2boxDistance + box2goalDistance;
                 sum += box2goalDistance;
                 if (walkDistance < minWalkDistance) {
@@ -111,11 +111,11 @@ public class SingleTasker extends AHeuristic {
         Agent[] agents = n.getAgents();
         int h = 0;
         for (Agent agent : agents) {
-            h += this.agentHeuristic(goals, boxes, agent);
+            h += this.agentHeuristic(n, goals, boxes, agent);
         }
         for (AgentGoal agentEndPosition : this.level.getAgentEndPositions()) {
             Agent agent = agents[agentEndPosition.getAgentID()];
-            h += this.measurer.distance(agent.getPosition(), agentEndPosition.getPosition());
+            h += this.measurer.distance(n, agent.getPosition(), agentEndPosition.getPosition());
         }
         return h;
     }

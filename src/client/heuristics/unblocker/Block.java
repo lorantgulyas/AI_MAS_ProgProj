@@ -3,6 +3,7 @@ package client.heuristics.unblocker;
 import client.definitions.ADistance;
 import client.state.Agent;
 import client.state.Box;
+import client.state.State;
 
 public class Block {
 
@@ -36,11 +37,11 @@ public class Block {
         return value;
     }
 
-    public int h(ADistance measurer) {
+    public int h(State state, ADistance measurer) {
         int h = this.value;
         if (this.responsible != null && this.box != null) {
             // important to multiply to ensure that an agent will unblock before anything else
-            h += this.value * measurer.distance(this.responsible.getPosition(), this.box.getPosition());
+            h += this.value * measurer.distance(state, this.responsible.getPosition(), this.box.getPosition());
         }
         return h;
     }
@@ -84,10 +85,10 @@ public class Block {
         return "(" + box + "," + responsible + "," + this.value + ")";
     }
 
-    public String toString(ADistance measurer) {
+    public String toString(State state, ADistance measurer) {
         String box = this.box == null ? "-" : "(" + this.box.getId() + "," + this.box.getPosition().toString() + ")";
         String responsible = this.responsible == null ? "-" : "(" + this.responsible.getId() + "," + this.responsible.getPosition().toString() + ")";
-        int h = this.h(measurer);
+        int h = this.h(state, measurer);
         return "(" + box + "," + responsible + "," + this.value + "," + h + ")";
     }
 

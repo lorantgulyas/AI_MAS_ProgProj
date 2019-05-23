@@ -15,7 +15,7 @@ public class LazyShortestPath extends ADistance {
         this.bfs = new BFS(state);
     }
 
-    public int distance(Position p1, Position p2) {
+    public int distance(State state, Position p1, Position p2) {
         PositionPair pair = new PositionPair(p1, p2);
         int distance = this.D.getOrDefault(pair, -1);
         if (distance == -1) {

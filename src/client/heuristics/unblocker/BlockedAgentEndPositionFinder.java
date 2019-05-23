@@ -51,7 +51,7 @@ public class BlockedAgentEndPositionFinder {
                         blocks.add(block);
                     } else {
                         Box blockingBox = state.getBoxAt(position);
-                        Agent responsibleAgent = this.findClosestAgentToBox(agents, blockingBox);
+                        Agent responsibleAgent = this.findClosestAgentToBox(state, blockingBox);
                         Block block = new Block(blockingBox, responsibleAgent, i);
                         blocks.add(block);
                     }
@@ -61,12 +61,13 @@ public class BlockedAgentEndPositionFinder {
         return blocks;
     }
 
-    private Agent findClosestAgentToBox(Agent[] agents, Box box) {
+    private Agent findClosestAgentToBox(State state, Box box) {
+        Agent[] agents = state.getAgents();
         Agent closestAgent = null;
         int minDistance = Integer.MAX_VALUE;
         for (Agent agent : agents) {
             if (agent.getColor() == box.getColor()) {
-                int distance = this.measurer.distance(agent.getPosition(), box.getPosition());
+                int distance = this.measurer.distance(state, agent.getPosition(), box.getPosition());
                 if (closestAgent == null || distance < minDistance) {
                     closestAgent = agent;
                     minDistance = distance;

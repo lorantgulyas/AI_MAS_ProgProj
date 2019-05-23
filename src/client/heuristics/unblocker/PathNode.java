@@ -31,10 +31,6 @@ public class PathNode {
         return position;
     }
 
-    public boolean isRoot() {
-        return this.parent == null;
-    }
-
     public ArrayList<Position> getPath() {
         ArrayList<Position> path = new ArrayList<>();
         PathNode node = this;

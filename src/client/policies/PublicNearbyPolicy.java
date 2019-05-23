@@ -35,9 +35,10 @@ public class PublicNearbyPolicy extends AbstractGoalChangedOrNearby {
         if (this.someGoalHasChanged(node, senderID))
             return this.broadcast.receivers(node, senderID);
 
+        State state = node.getState();
         Agent[] publicAgents = this.agentMapping.get(senderID);
         Agent sender = node.getState().getAgents()[senderID];
-        return this.getNearby(publicAgents, sender);
+        return this.getNearby(state, publicAgents, sender);
     }
 
     @Override

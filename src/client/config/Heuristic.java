@@ -13,6 +13,8 @@ public class Heuristic {
         switch (heuristic) {
             case "floodfill":
                 return new Floodfill(initialState);
+            case "goal-seeker":
+                return new GoalSeeker(initialState, distance);
             case "manhattan":
                 return new Manhattan(initialState);
             case "single-tasker":
