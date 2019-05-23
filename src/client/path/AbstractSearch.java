@@ -1,39 +1,41 @@
-package client.distance.shortest_unblocked_path;
+package client.path;
 
 import client.distance.LazyManhattan;
 import client.state.*;
 
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.PriorityQueue;
 
-class AStar {
+abstract class AbstractSearch {
 
-    private NodeComparator comparator;
+    private Comparator<Node> comparator;
     private LazyManhattan manhattan;
+    private int stateSize;
 
-    AStar() {
-        this.comparator = new NodeComparator();
+    AbstractSearch(Comparator<Node> comparator, int stateSize) {
+        this.comparator = comparator;
         this.manhattan = new LazyManhattan();
+        this.stateSize = stateSize;
     }
 
-    Node plan(State state, Position from, Position to) {
-        return this.search(state, from, to, null);
+    public Node plan(State state, Position from, Position to) {
+        return this.search(state, from, to, null, this.stateSize);
     }
 
-    Node plan(State state, Agent from, Position to) {
-        Color color = from.getColor();
-        return this.search(state, from.getPosition(), to, color);
+    public Node plan(State state, Position from, Position to, Color color) {
+        return this.search(state, from, to, color, this.stateSize);
     }
 
-    Node plan(State state, Position from, Agent to) {
-        return this.plan(state, to, from);
+    public Node plan(State state, Position from, Position to, int maxDistance) {
+        return this.search(state, from, to, null, maxDistance);
     }
 
-    Node plan(State state, Agent from, Agent to) {
-        return this.plan(state, from, to.getPosition());
+    public Node plan(State state, Position from, Position to, Color color, int maxDistance) {
+        return this.search(state, from, to, color, maxDistance);
     }
 
-    private Node search(State state, Position from, Position to, Color color) {
+    protected Node search(State state, Position from, Position to, Color color, int maxDistance) {
         Level level = state.getLevel();
         HashSet<Node> explored = new HashSet<>();
         HashSet<Node> frontierSet = new HashSet<>();
@@ -57,7 +59,9 @@ class AStar {
             for (Position direction : directions) {
                 int h = this.manhattan.distance(state, direction, to);
                 Node child = new Node(node, direction, h);
-                if (this.isFree(level, state, color, direction) && this.isUndiscovered(explored, frontierSet, child)) {
+                if (node.g() <= maxDistance
+                        && this.isFree(level, state, color, direction)
+                        && this.isUndiscovered(explored, frontierSet, child)) {
                     frontier.add(child);
                     frontierSet.add(child);
                 }
@@ -66,11 +70,7 @@ class AStar {
         return null;
     }
 
-    private boolean isFree(Level level, State state, Color color, Position position) {
-        return !level.wallAt(position)
-                && (!state.boxAt(position) || state.getBoxAt(position).getColor() == color)
-                && !state.agentAt(position);
-    }
+    protected abstract boolean isFree(Level level, State state, Color color, Position position);
 
     private boolean isUndiscovered(HashSet<Node> explored, HashSet<Node> frontier, Node child) {
         return !explored.contains(child) && !frontier.contains(child);

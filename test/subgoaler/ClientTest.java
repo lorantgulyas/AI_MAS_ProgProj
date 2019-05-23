@@ -22,13 +22,13 @@ public class ClientTest {
 
     @Test
     void readState() throws Exception {
-        BufferedReader br = new BufferedReader(in);
-        State state = Client.parseState(br);
-        System.err.println(state);
-        Floodfill ff = new Floodfill(state);
-        ff.findRooms(state);
-        ff.prioritizeGoals(state);
-        ff.prioritizeBoxes(state);
+        //BufferedReader br = new BufferedReader(in);
+        //State state = Client.parseState(br);
+        //System.err.println(state);
+        //Floodfill ff = new Floodfill(state);
+        //ff.findRooms(state);
+        //ff.prioritizeGoals(state);
+        //ff.prioritizeBoxes(state);
 //        state = ff.goalDependencies(state);
 
 //        Goal[] goals = State.getGoals();
@@ -47,9 +47,9 @@ public class ClientTest {
 //            System.err.println();
 //        }
 
-        SerializedAStar sas = new SerializedAStar(ff);
+        //SerializedAStar sas = new SerializedAStar(ff);
 
-        ArrayList<Command> cmds = sas.serializedPlan(state);
+        //ArrayList<Command> cmds = sas.serializedPlan(state);
 
 //        for (Command cmd : cmds) {
 //            System.err.println(cmd);

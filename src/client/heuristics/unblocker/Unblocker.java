@@ -2,6 +2,8 @@ package client.heuristics.unblocker;
 
 import client.definitions.ADistance;
 import client.definitions.AHeuristic;
+import client.path.AllObjectsAStar;
+import client.path.WallOnlyAStar;
 import client.state.*;
 
 import java.util.*;
@@ -12,12 +14,16 @@ public class Unblocker extends AHeuristic {
     private BlockedFinder[] blockFinders;
     private ADistance measurer;
     private Level level;
+    private AllObjectsAStar objectPlanner;
+    private WallOnlyAStar wallPlanner;
 
     private HashMap<Goal, Integer> goalBoxMap;
 
-    public Unblocker(State initialState, ADistance measurer) {
+    public Unblocker(State initialState, ADistance measurer, AllObjectsAStar objectPlanner, WallOnlyAStar wallPlanner) {
         super(initialState);
         this.measurer = measurer;
+        this.objectPlanner = objectPlanner;
+        this.wallPlanner = wallPlanner;
         this.level = initialState.getLevel();
         this.goalBoxMap = this.getGoalBoxMap(initialState);
         this.agentEndPositionBlockFinders = this.getAgentEndPositionFinders(initialState);
@@ -72,7 +78,12 @@ public class Unblocker extends AHeuristic {
         BlockedAgentEndPositionFinder[] agentEndPositionBlockFinders = new BlockedAgentEndPositionFinder[agentEndPositions.length];
         for (int i = 0; i < agentEndPositions.length; i++) {
             AgentGoal agentEndPosition = agentEndPositions[i];
-            agentEndPositionBlockFinders[i] =  new BlockedAgentEndPositionFinder(this.measurer, agentEndPosition);
+            agentEndPositionBlockFinders[i] =  new BlockedAgentEndPositionFinder(
+                    this.measurer,
+                    agentEndPosition,
+                    this.objectPlanner,
+                    this.wallPlanner
+            );
         }
         return agentEndPositionBlockFinders;
     }
@@ -83,7 +94,14 @@ public class Unblocker extends AHeuristic {
         for (int i = 0; i < goals.length; i++) {
             Goal goal = goals[i];
             int boxID = this.goalBoxMap.get(goal);
-            blockFinders[i] =  new BlockedFinder(initialState, this.measurer, goal, boxID);
+            blockFinders[i] =  new BlockedFinder(
+                    initialState,
+                    this.measurer,
+                    goal,
+                    boxID,
+                    this.objectPlanner,
+                    this.wallPlanner
+            );
         }
         return blockFinders;
     }

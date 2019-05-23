@@ -19,8 +19,8 @@ public class Main {
         String configPath = args.length < 1 ? "src/configs/default.config" : args[0];
 
         // debug
-        //State initialState = ServerIO.readFromFile("src/levels/custom/MABlock3.lvl");
-        //String configPath = "src/configs/mba_u_sp.config";
+        //State initialState = ServerIO.readFromFile("src/levels/comp19/MAAIMAS.lvl");
+        //String configPath = "src/configs/maa_u_sp_b_g.config";
 
         String config = ConfigParser.readFile(configPath);
 

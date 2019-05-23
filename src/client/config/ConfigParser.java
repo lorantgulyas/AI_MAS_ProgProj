@@ -1,6 +1,8 @@
 package client.config;
 
 import client.definitions.*;
+import client.path.AllObjectsAStar;
+import client.path.WallOnlyAStar;
 import client.state.State;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -27,8 +29,10 @@ public class ConfigParser {
             String value = keyValues[1];
             entries.put(key, value);
         }
-        ADistance distance = Distance.parseDistamce(entries.get("distance"), initialState, stateSize);
-        AHeuristic heuristic = Heuristic.parseHeuristic(entries.get("heuristic"), initialState, distance, stateSize);
+        AllObjectsAStar allObjectsAStar = new AllObjectsAStar(stateSize);
+        WallOnlyAStar wallOnlyAStar = new WallOnlyAStar(stateSize);
+        ADistance distance = Distance.parseDistamce(entries.get("distance"), initialState, stateSize, allObjectsAStar, wallOnlyAStar);
+        AHeuristic heuristic = Heuristic.parseHeuristic(entries.get("heuristic"), initialState, distance, stateSize, allObjectsAStar, wallOnlyAStar);
         AMessagePolicy messagePolicy = MessagePolicy.parseMessagePolicy(entries.get("message_policy"), initialState, distance);
         AMerger merger = Merger.parseMerger(entries.get("merger"));
         AStrategy strategy = Strategy.parseStrategy(entries.get("strategy"), heuristic, messagePolicy, merger, agentIDMap);

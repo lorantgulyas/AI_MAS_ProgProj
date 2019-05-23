@@ -1,8 +1,10 @@
-package client.distance.shortest_unblocked_path;
+package client.path.comparators;
+
+import client.path.Node;
 
 import java.util.Comparator;
 
-public class NodeComparator implements Comparator<Node> {
+public class FComparator implements Comparator<Node> {
 
     @Override
     public int compare(Node n1, Node n2) {

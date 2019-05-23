@@ -1,26 +1,39 @@
 package client.heuristics.unblocker;
 
 import client.definitions.ADistance;
+import client.path.AllObjectsAStar;
+import client.path.WallOnlyAStar;
 import client.state.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 
-public class BlockedFinder {
+class BlockedFinder {
 
     private Goal goal;
     private ADistance measurer;
     private int boxID;
     private ArrayList<Integer> goalAgentIDs;
+    private AllObjectsAStar objectPlanner;
+    private WallOnlyAStar wallPlanner;
 
-    public BlockedFinder(State initialState, ADistance measurer, Goal goal, int boxID) {
+    BlockedFinder(
+            State initialState,
+            ADistance measurer,
+            Goal goal,
+            int boxID,
+            AllObjectsAStar objectPlanner,
+            WallOnlyAStar wallPlanner
+    ) {
         this.measurer = measurer;
         this.goal = goal;
         this.boxID = boxID;
         this.goalAgentIDs = this.getGoalAgentIDs(initialState);
+        this.objectPlanner = objectPlanner;
+        this.wallPlanner = wallPlanner;
     }
 
-    public HashSet<Block> getBlocks(State state) {
+    HashSet<Block> getBlocks(State state) {
         if (this.goalIsFulfilled(state)) {
             return new HashSet<>();
         }
@@ -50,8 +63,7 @@ public class BlockedFinder {
         Box box = boxes[this.boxID];
         for (int agentID : this.goalAgentIDs) {
             Agent agent = agents[agentID];
-            Path pathHelper = new Path(state, this.goal, box, agent);
-            ArrayList<Position> path = pathHelper.getPath();
+            ArrayList<Position> path = PathHelper.getPath(this.wallPlanner, state, this.goal, box, agent);
             int n = path.size();
             for (int i = 1; i < n - 1; i++) {
                 Position position = path.get(i);
@@ -60,7 +72,9 @@ public class BlockedFinder {
                 boolean hasAgent = i == 1 && state.agentAt(position);
                 boolean hasBox = state.boxAt(position) && state.getBoxAt(position).getColor() != agent.getColor();
                 if (hasAgent || hasBox) {
-                    boolean blocked = pathHelper.blocked(state, agent, path.get(i - 1), path.get(i + 1), 4);
+                    Position previous = path.get(i - 1);
+                    Position next = path.get(i + 1);
+                    boolean blocked = PathHelper.isBlocked(this.objectPlanner, state, agent, previous, next);
                     if (blocked) {
                         if (hasAgent) {
                             Agent blockingAgent = state.getAgentAt(position);

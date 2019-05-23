@@ -2,6 +2,8 @@ package client;
 
 import client.distance.LazyShortestPath;
 import client.heuristics.SingleTasker;
+import client.path.AllObjectsAStar;
+import client.path.WallOnlyAStar;
 import client.state.State;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -31,7 +33,8 @@ public class SingleTaskerTest {
         // agent to goal-box distance = 1
         int stateSize = 5;
         int unmatchedGoals = 1;
-        LazyShortestPath measurer = new LazyShortestPath(this.singleAgent);
+        WallOnlyAStar wallPlanner = new WallOnlyAStar(stateSize);
+        LazyShortestPath measurer = new LazyShortestPath(this.singleAgent, stateSize, wallPlanner);
         SingleTasker heuristic = new SingleTasker(this.singleAgent, measurer, stateSize);
         int expected = 2 + 1 + unmatchedGoals * stateSize;
         int actual = heuristic.h(this.singleAgent);
@@ -49,7 +52,8 @@ public class SingleTaskerTest {
         // agent 1 to goal-box distance = 7
         int stateSize = 16;
         int unmatchedGoals = 1;
-        LazyShortestPath measurer = new LazyShortestPath(this.multiAgent);
+        WallOnlyAStar wallPlanner = new WallOnlyAStar(stateSize);
+        LazyShortestPath measurer = new LazyShortestPath(this.multiAgent, stateSize, wallPlanner);
         SingleTasker heuristic = new SingleTasker(this.multiAgent, measurer, stateSize);
         int expected = (6 + 1 + unmatchedGoals * stateSize) + (1 + 7 + unmatchedGoals * stateSize);
         int actual = heuristic.h(this.multiAgent);
@@ -59,7 +63,8 @@ public class SingleTaskerTest {
     @Test
     public void computesZeroForASolvedLevel() {
         int stateSize = 25;
-        LazyShortestPath measurer = new LazyShortestPath(this.solved);
+        WallOnlyAStar wallPlanner = new WallOnlyAStar(stateSize);
+        LazyShortestPath measurer = new LazyShortestPath(this.solved, stateSize, wallPlanner);
         SingleTasker heuristic = new SingleTasker(this.solved, measurer, stateSize);
         int expected = 0;
         int actual = heuristic.h(this.solved);

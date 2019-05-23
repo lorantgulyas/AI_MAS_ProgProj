@@ -1,7 +1,9 @@
-package client.distance.shortest_unblocked_path;
+package client.distance;
 
 import client.definitions.ADistance;
-import client.distance.LazyShortestPath;
+import client.path.AllObjectsAStar;
+import client.path.Node;
+import client.state.Agent;
 import client.state.Position;
 import client.state.State;
 
@@ -14,19 +16,21 @@ import client.state.State;
 public class ShortestUnblockedPath extends ADistance {
 
     private int stateSize;
-    private AStar planner;
+    private AllObjectsAStar planner;
 
-    public ShortestUnblockedPath(State initialState, int stateSize) {
+    public ShortestUnblockedPath(State initialState, int stateSize, AllObjectsAStar planner) {
         this.stateSize = stateSize;
-        this.planner = new AStar();
+        this.planner = planner;
     }
 
     public int distance(State state, Position p1, Position p2) {
         Node result;
         if (state.agentAt(p1)) {
-            result = this.planner.plan(state, state.getAgentAt(p1), p2);
+            Agent agent = state.getAgentAt(p1);
+            result = this.planner.plan(state, agent.getPosition(), p2, agent.getColor());
         } else if (state.agentAt(p2)) {
-            result = this.planner.plan(state, state.getAgentAt(p2), p1);
+            Agent agent = state.getAgentAt(p2);
+            result = this.planner.plan(state, agent.getPosition(), p1, agent.getColor());
         } else {
             result = this.planner.plan(state, p1, p2);
         }

@@ -124,11 +124,11 @@ public class SearchClient {
                     break;
                 default:
                     strategy = new Strategy.StrategyBFS();
-                    System.err.println("Defaulting to BFS search. Use arguments -bfs, -dfs, -astar, -wastar, or -greedy to set the search strategy.");
+                    System.err.println("Defaulting to BFS path. Use arguments -bfs, -dfs, -astar, -wastar, or -greedy to set the path strategy.");
             }
         } else {
             strategy = new Strategy.StrategyBFS();
-            System.err.println("Defaulting to BFS search. Use arguments -bfs, -dfs, -astar, -wastar, or -greedy to set the search strategy.");
+            System.err.println("Defaulting to BFS path. Use arguments -bfs, -dfs, -astar, -wastar, or -greedy to set the path strategy.");
         }
 
 		ArrayList<State> solution;

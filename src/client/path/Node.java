@@ -1,47 +1,56 @@
-package client.distance.shortest_unblocked_path;
+package client.path;
 
 import client.state.Position;
 
-class Node {
+import java.util.ArrayList;
+import java.util.Collections;
+
+public class Node {
 
     private int g;
     private int h;
+    private Node parent;
     private Position position;
-
-    Node(Position position) {
-        this.g = 0;
-        this.h = 0;
-        this.position = position;
-    }
 
     Node(Position position, int h) {
         this.g = 0;
         this.h = h;
-        this.position = position;
-    }
-
-    Node(Node parent, Position position) {
-        this.g = parent.g() + 1;
-        this.h = 0;
+        this.parent = null;
         this.position = position;
     }
 
     Node(Node parent, Position position, int h) {
         this.g = parent.g() + 1;
         this.h = h;
+        this.parent = parent;
         this.position = position;
     }
 
-    int f() {
+    public int f() {
         return this.g + this.h;
     }
 
-    int g() {
+    public int g() {
         return this.g;
     }
 
-    Position getPosition() {
+    public int h() {
+        return this.h;
+    }
+
+    public Position getPosition() {
         return this.position;
+    }
+
+    public ArrayList<Position> path() {
+        ArrayList<Position> path = new ArrayList<>();
+        Node node = this;
+        while (node != null) {
+            path.add(node.getPosition());
+            node = node.parent;
+        }
+        Collections.reverse(path);
+        return path;
     }
 
     @Override
