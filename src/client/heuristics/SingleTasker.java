@@ -14,9 +14,11 @@ import java.util.ArrayList;
 public class SingleTasker extends AHeuristic {
     private ADistance measurer;
     private int stateSize;
+    private Level level;
 
     public SingleTasker(State initialState, ADistance measurer, int stateSize) {
         super(initialState);
+        this.level = initialState.getLevel();
         this.measurer = measurer;
         this.stateSize = stateSize;
     }
@@ -110,6 +112,10 @@ public class SingleTasker extends AHeuristic {
         int h = 0;
         for (Agent agent : agents) {
             h += this.agentHeuristic(goals, boxes, agent);
+        }
+        for (AgentGoal agentEndPosition : this.level.getAgentEndPositions()) {
+            Agent agent = agents[agentEndPosition.getAgentID()];
+            h += this.measurer.distance(agent.getPosition(), agentEndPosition.getPosition());
         }
         return h;
     }

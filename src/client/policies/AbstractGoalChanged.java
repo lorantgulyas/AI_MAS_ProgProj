@@ -21,6 +21,8 @@ abstract class AbstractGoalChanged extends AMessagePolicy {
         State parentState = parent.getState();
         State state = node.getState();
         Level level = state.getLevel();
+
+        // check if a box goal has changed
         Goal[] agentGooals = level.getAgentGoals(sender);
         for (Goal agentGoal : agentGooals) {
             Position goalPosition = agentGoal.getPosition();
@@ -33,6 +35,21 @@ abstract class AbstractGoalChanged extends AMessagePolicy {
                 return true;
             }
         }
+
+        // check if an agent end position has changed
+        AgentGoal[] agentEndPositions = level.getAgentEndPositions();
+        for (AgentGoal agentEndPosition : agentEndPositions) {
+            Position position = agentEndPosition.getPosition();
+            int agentID = agentEndPosition.getAgentID();
+            Agent agent = state.getAgentAt(position);
+            Agent parentAgent = parentState.getAgentAt(position);
+            boolean reached = agent != null && agent.getId() == agentID;
+            boolean parentReached = parentAgent != null && parentAgent.getId() == agentID;
+            if ((reached && !parentReached) || (!reached && parentReached)) {
+                return true;
+            }
+        }
+
         return false;
     }
 

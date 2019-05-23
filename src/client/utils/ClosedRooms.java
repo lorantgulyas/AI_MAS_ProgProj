@@ -176,6 +176,11 @@ public class ClosedRooms {
                 return true;
             }
         }
+        for (AgentGoal agentEndPosition : level.getAgentEndPositions()) {
+            if (room.contains(agentEndPosition.getPosition())) {
+                return true;
+            }
+        }
         return false;
     }
 

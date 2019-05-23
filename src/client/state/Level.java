@@ -6,16 +6,31 @@ public class Level {
     private boolean[][] walls;
     private int rowCount;
     private int colCount;
+    private AgentGoal[] agentEndPositions;
+    private HashMap<Position, Integer> agentEndPositionsMap;
     private Goal[] goals;
     private HashMap<Position, Goal> goalMap;
     private Goal[][] agentsGoals;
     private HashMap<Position, Integer> goalIndexMap;
 
-    public Level(boolean[][] walls, int rowCount, int colCount, Goal[] goals) {
+    public Level(boolean[][] walls, int rowCount, int colCount, Goal[] goals, AgentGoal[] agentEndPositions) {
         this.walls = walls;
         this.rowCount = rowCount;
         this.colCount = colCount;
         this.setGoals(goals);
+        this.setAgentEndPositions(agentEndPositions);
+    }
+
+    public AgentGoal[] getAgentEndPositions() {
+        return agentEndPositions;
+    }
+
+    public boolean agentEndPositionAt(Position position) {
+        return this.agentEndPositionsMap.containsKey(position);
+    }
+
+    public int getAgentEndPositionAt(Position position) {
+        return this.agentEndPositionsMap.get(position);
     }
 
     /**
@@ -77,6 +92,14 @@ public class Level {
         this.goalIndexMap = new HashMap<>();
         for (int i = 0; i < goals.length; i++) {
             this.goalIndexMap.put(goals[i].getPosition(), i);
+        }
+    }
+
+    private void setAgentEndPositions(AgentGoal[] agentEndPositions) {
+        this.agentEndPositions = agentEndPositions;
+        this.agentEndPositionsMap = new HashMap<>();
+        for (AgentGoal agentEndPosition : agentEndPositions) {
+            this.agentEndPositionsMap.put(agentEndPosition.getPosition(), agentEndPosition.getAgentID());
         }
     }
 

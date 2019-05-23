@@ -128,19 +128,26 @@ public class ServerIO {
         }
 
         // create wall matrix, agents, boxes
-        ArrayList<Goal> goals = new ArrayList<>();
+        ArrayList<Goal> goalsList = new ArrayList<>();
+        ArrayList<AgentGoal> agentEndPositionsList = new ArrayList<>();
         for (int y = 0; y < rowCount; y++) {
             char[] rowChars = rawLevel.get(y).toCharArray();
             int colCount = rowChars.length;
             for (int x = 0; x < colCount; x++) {
                 char c = rowChars[x];
                 if (c >= 'A' && c <= 'Z') {
-                    goals.add(new Goal(c, new Position(x, y), boxColors.get(c)));
+                    goalsList.add(new Goal(c, new Position(x, y), boxColors.get(c)));
+                } else if (c >= '0' && c <= '9') {
+                    int agentEndPositionID = Character.getNumericValue(c);
+                    AgentGoal agentEndPosition = new AgentGoal(agentEndPositionID , new Position(x, y));
+                    agentEndPositionsList.add(agentEndPosition);
                 }
             }
         }
 
-        Level level = new Level(walls, rowCount, maxColCount, goals.toArray(new Goal[0]));
+        Goal[] goals = goalsList.toArray(new Goal[0]);
+        AgentGoal[] agentEndPositions = agentEndPositionsList.toArray(new AgentGoal[0]);
+        Level level = new Level(walls, rowCount, maxColCount, goals, agentEndPositions);
 
         // get agents goals
         Goal[][] agentsGoals = new Goal[agents.length][];

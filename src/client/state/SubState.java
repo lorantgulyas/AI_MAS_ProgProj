@@ -64,12 +64,32 @@ public class SubState {
             }
         }
 
+        // add agent end positions after finding agent ID mapping
+        ArrayList<AgentGoal> agentEndPositionsList = new ArrayList<>();
+        for (AgentGoal mainAgentEndPosition : mainLevel.getAgentEndPositions()) {
+            Position mainPosition = mainAgentEndPosition.getPosition();
+            int x = mainPosition.getCol() + 1 - minCol;
+            int y = mainPosition.getRow() + 1 - minRow;
+            Position subPosition = new Position(x, y);
+            int mainAgentID = mainAgentEndPosition.getAgentID();
+            int subAgentID = 0;
+            for (int i = 0; i < agentIDList.size(); i++) {
+                int id = agentIDList.get(i);
+                if (id == mainAgentID) {
+                    subAgentID = i;
+                    break;
+                }
+            }
+            agentEndPositionsList.add(new AgentGoal(subAgentID, subPosition));
+        }
+
         // set variables
         this.agentIDMap = this.getAgentIDMap(agentIDList);
         Agent[] agents = agentsList.toArray(new Agent[0]);
         Box[] boxes = boxesList.toArray(new Box[0]);
         Goal[] goals = goalsList.toArray(new Goal[0]);
-        Level level = new Level(walls, rows, cols, goals);
+        AgentGoal[] agentEndPositions = agentEndPositionsList.toArray(new AgentGoal[0]);
+        Level level = new Level(walls, rows, cols, goals, agentEndPositions);
 
         // set agents goals
         Goal[][] agentsGoals = new Goal[agents.length][];

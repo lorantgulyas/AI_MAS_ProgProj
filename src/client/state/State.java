@@ -90,9 +90,17 @@ public class State {
     }
 
     public boolean isGoalState() {
+        // check that boxes have been delivered
         for (Goal goal : this.level.getGoals()) {
             Box box = this.boxMap.getOrDefault(goal.getPosition(), null);
             if (box == null || box.getLetter() != goal.getLetter()) {
+                return false;
+            }
+        }
+        // check that agents are in the right positions
+        for (AgentGoal agentEndPosition : this.level.getAgentEndPositions()) {
+            Agent agent = this.agentMap.get(agentEndPosition.getPosition());
+            if (agent == null || agent.getId() != agentEndPosition.getAgentID()) {
                 return false;
             }
         }

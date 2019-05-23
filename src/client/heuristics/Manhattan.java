@@ -32,7 +32,10 @@ public class Manhattan extends AHeuristic {
                     }
                 }
             }
-
+        }
+        for (AgentGoal agentEndPosition : level.getAgentEndPositions()) {
+            Agent agent = agents[agentEndPosition.getAgentID()];
+            h += this.measurer.distance(agentEndPosition.getPosition(), agent.getPosition());
         }
         return h;
     }
