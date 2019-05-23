@@ -20,6 +20,7 @@ The following keys are accepted together with their accepted values:
     - single-tasker
     - unblocker
 * message_policy
+    - block-change
     - broadcast
     - nearby(x)
     - public

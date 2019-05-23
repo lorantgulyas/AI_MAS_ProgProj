@@ -6,7 +6,10 @@ import client.heuristics.*;
 import client.heuristics.unblocker.Unblocker;
 import client.path.AllObjectsAStar;
 import client.path.WallOnlyAStar;
+import client.state.Goal;
 import client.state.State;
+
+import java.util.HashMap;
 
 public class Heuristic {
 
@@ -16,7 +19,8 @@ public class Heuristic {
             ADistance distance,
             int stateSize,
             AllObjectsAStar allObjectsAStar,
-            WallOnlyAStar wallOnlyAStar
+            WallOnlyAStar wallOnlyAStar,
+            HashMap<Goal, Integer> goalBoxMap
     )
             throws UnknownHeuristicException {
         switch (heuristic) {
@@ -29,7 +33,7 @@ public class Heuristic {
             case "single-tasker":
                 return new SingleTasker(initialState, distance, stateSize);
             case "unblocker":
-                return new Unblocker(initialState, distance, allObjectsAStar, wallOnlyAStar);
+                return new Unblocker(initialState, distance, allObjectsAStar, wallOnlyAStar, goalBoxMap);
             default:
                 throw new UnknownHeuristicException();
         }

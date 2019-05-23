@@ -19,13 +19,19 @@ public class Unblocker extends AHeuristic {
 
     private HashMap<Goal, Integer> goalBoxMap;
 
-    public Unblocker(State initialState, ADistance measurer, AllObjectsAStar objectPlanner, WallOnlyAStar wallPlanner) {
+    public Unblocker(
+            State initialState,
+            ADistance measurer,
+            AllObjectsAStar objectPlanner,
+            WallOnlyAStar wallPlanner,
+            HashMap<Goal, Integer> goalBoxMap
+    ) {
         super(initialState);
         this.measurer = measurer;
         this.objectPlanner = objectPlanner;
         this.wallPlanner = wallPlanner;
         this.level = initialState.getLevel();
-        this.goalBoxMap = this.getGoalBoxMap(initialState);
+        this.goalBoxMap = goalBoxMap;
         this.agentEndPositionBlockFinders = this.getAgentEndPositionFinders(initialState);
         this.blockFinders = this.getBlockFinders(initialState);
     }
@@ -106,20 +112,6 @@ public class Unblocker extends AHeuristic {
         return blockFinders;
     }
 
-    private HashMap<Goal, Integer> getGoalBoxMap(State initialState) {
-        HashMap<Goal, Integer> map = new HashMap<>();
-        Goal[] goals = initialState.getLevel().getGoals();
-        Box[] boxes = initialState.getBoxes();
-        boolean[] usedBoxes = new boolean[boxes.length];
-        Arrays.fill(usedBoxes, false);
-        for (Goal goal : goals) {
-            Box box = this.findClosestBoxToGoal(initialState, goal, usedBoxes);
-            usedBoxes[box.getId()] = true;
-            map.put(goal, box.getId());
-        }
-        return map;
-    }
-
     private HashSet<Block> getBlocks(State state) {
         HashSet<Block> blocks = new HashSet<>();
         for (BlockedFinder blockFinder : this.blockFinders) {
@@ -171,22 +163,6 @@ public class Unblocker extends AHeuristic {
             h += this.measurer.distance(state, agent.getPosition(), agentEndPosition.getPosition());
         }
         return h;
-    }
-
-    private Box findClosestBoxToGoal(State state, Goal goal, boolean[] usedBoxes) {
-        Box[] boxes = state.getBoxes();
-        Box closestBox = null;
-        int minDistance = Integer.MAX_VALUE;
-        for (Box box : boxes) {
-            if (!usedBoxes[box.getId()] && box.getLetter() == goal.getLetter()) {
-                int distance = this.measurer.distance(state, box.getPosition(), goal.getPosition());
-                if (closestBox == null || distance < minDistance) {
-                    closestBox = box;
-                    minDistance = distance;
-                }
-            }
-        }
-        return closestBox;
     }
 
     private Agent findClosestAgentToBox(State state, Box box) {

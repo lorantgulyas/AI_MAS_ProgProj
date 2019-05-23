@@ -68,6 +68,10 @@ public class Channel {
         return messages;
     }
 
+    public boolean isEmpty() {
+        return this.queue.isEmpty();
+    }
+
     /**
      * Assumes that the agents also contain the agent itself.
      * Must be called before the channel can be used.

@@ -11,6 +11,8 @@ class PathHelper {
 
     static ArrayList<Position> getPath(WallOnlyAStar planner, State state, AgentGoal agentEndPosition, Agent agent) {
         Node result = planner.plan(state, agent.getPosition(), agentEndPosition.getPosition(), agent.getColor());
+        if (result == null)
+            return new ArrayList<>();
         return result.path();
     }
 

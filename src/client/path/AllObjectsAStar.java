@@ -19,7 +19,7 @@ public class AllObjectsAStar extends AbstractCachedStateSearch {
     protected boolean isFree(Level level, State state, Color color, Position position) {
         return !level.wallAt(position)
                 && (!state.boxAt(position) || state.getBoxAt(position).getColor() == color)
-                && !state.agentAt(position);
+                && (!state.agentAt(position) || state.getAgentAt(position).getColor() == color);
     }
 
 }

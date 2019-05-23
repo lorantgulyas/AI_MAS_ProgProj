@@ -222,6 +222,10 @@ public class ThreadedAgent extends Thread {
             }
         }
 
+        // ensure that frontier is still empty and that channel is empty
+        if (!this.frontierIsEmpty() || !channel.isEmpty())
+            return;
+
         // all responses have been received and all frontiers are empty
         this.setResult(null);
         this.terminator.foundNoSolution();

@@ -2,18 +2,26 @@ package client.config;
 
 import client.definitions.ADistance;
 import client.definitions.AMessagePolicy;
-import client.policies.NearbyPolicy;
-import client.policies.PublicNearbyPolicy;
-import client.policies.PublicPolicy;
+import client.path.AllObjectsAStar;
+import client.path.WallOnlyAStar;
+import client.policies.*;
+import client.state.Goal;
 import client.state.State;
-import client.policies.BroadcastPolicy;
 
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MessagePolicy {
 
-    public static AMessagePolicy parseMessagePolicy(String policy, State initialState, ADistance distance)
+    public static AMessagePolicy parseMessagePolicy(
+            String policy,
+            State initialState,
+            ADistance distance,
+            AllObjectsAStar allObjectsAStar,
+            WallOnlyAStar wallOnlyAStar,
+            HashMap<Goal, Integer> goalBoxMap
+    )
             throws UnknownMessagePolicyException {
         if (policy.equals("broadcast")) {
             return new BroadcastPolicy(initialState);
@@ -21,6 +29,10 @@ public class MessagePolicy {
 
         if (policy.equals("public")) {
             return new PublicPolicy(initialState);
+        }
+
+        if (policy.equals("block-change")) {
+            return new BlockChangePolicy(initialState, allObjectsAStar, goalBoxMap);
         }
 
         Pattern nearby = Pattern.compile("nearby\\((\\d+)\\)");
