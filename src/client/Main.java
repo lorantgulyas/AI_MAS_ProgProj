@@ -13,7 +13,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
         // read state
-        ServerIO serverIO = new ServerIO("soulman");
+        ServerIO serverIO = new ServerIO("Soulman");
 
         State initialState = serverIO.readState();
         String configPath = args.length < 1 ? "src/configs/default.config" : args[0];
