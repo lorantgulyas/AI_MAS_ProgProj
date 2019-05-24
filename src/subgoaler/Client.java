@@ -75,7 +75,7 @@ public class Client {
                 } else if (c >= '0' && c <= '9') {
                     int agentId = Character.getNumericValue(c);
                     agents[agentId] = new Agent(agentId,
-                            agentColors.get(agentId), new Position(x, y));
+                            agentColors.get(agentId), new Position(x, y), null);
                 } else if (c >= 'A' && c <= 'Z') {
                     boxes.add(new Box(c, boxColors.get(c), new Position(x, y)));
                 } else if (c != ' ') {
@@ -100,6 +100,10 @@ public class Client {
                 char c = rowChars[x];
                 if (c >= 'A' && c <= 'Z') {
                     goals.add(new Goal(c, new Position(x, y)));
+                }
+                else if (c >= '0' && c <= '9') {
+                    int agentId = Character.getNumericValue(c);
+                    agents[agentId].setGoalPosition(new Position(x, y));
                 }
             }
         }

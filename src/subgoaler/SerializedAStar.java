@@ -30,7 +30,7 @@ public class SerializedAStar {
         Goal[] allGoals = subresult.getGoals();
 
         for (int i = 0; i < allGoals.length; i++) {
-//        for (int i = 0; i < 13; i++) {
+//        for (int i = 0; i < 6; i++) {
             Box[] allBoxes = subresult.getBoxes();
             Goal[] goalsDone = Arrays.copyOfRange(allGoals, 0, i);
             Box[] boxesDone = Arrays.copyOfRange(allBoxes, 0, i);
@@ -60,7 +60,7 @@ public class SerializedAStar {
             ArrayList<Command> subCmds;
 
             try {
-                subCmds = plan(subresult);
+                subCmds = plan(subresult, true);
             } catch (BlockedException e) {
                 System.err.println("freeing path for " + allGoals[i]);
                 HashSet<Position> path = new HashSet<>();
@@ -81,7 +81,7 @@ public class SerializedAStar {
                 subCmds = freePath(subresult, new ArrayList<>(path));
                 try {
                     System.err.println("trying again: " + allGoals[i]);
-                    subCmds.addAll(plan(subresult));
+                    subCmds.addAll(plan(subresult, false));
                 } catch (BlockedException ex) {
                     System.err.println("we failed big times");
                 }
@@ -89,7 +89,55 @@ public class SerializedAStar {
 
             cmds.addAll(subCmds);
         }
+
+        // Bring the agent home
+        if (subresult.getAgents()[0].getGoalPosition() != null){
+            System.err.println("Get agent home");
+            ArrayList<Command> subCmd = getAgentHome(subresult);
+            cmds.addAll(subCmd);
+        }
+
         return cmds;
+    }
+
+    public ArrayList<Command> getAgentHome(State init) {
+        Comparator<State> comp = (s1, s2) ->
+                s1.g() + ff.hAgent(s1) - s2.g() - ff.hAgent(s2);
+        AStar strategy = new AStar(comp);
+        strategy.addToFrontier(init);
+
+        int iterations = 0;
+        while (true) {
+            explored++;
+
+            if (iterations % 10000 == 0) {
+                System.err.println("i: " + iterations + ", " + strategy.searchStatus());
+            }
+
+            if (strategy.frontierIsEmpty()) {
+                return null;
+            }
+
+            State leafState = strategy.getAndRemoveLeaf();
+
+            // isGoalState
+            if (ff.hAgent(leafState) == 0) {
+                ArrayList<Command> res = leafState.extractPlan();
+                subresult = leafState;
+                subresult.parent = null;
+                subresult.cmd = null;
+                return res;
+            }
+
+            strategy.addToExplored(leafState);
+            for (State n : leafState.getExpandedStates()) { // The list of expanded states is shuffled randomly; see State.java.
+                if (!strategy.isExplored(n) && !strategy.inFrontier(n)) {
+                    strategy.addToFrontier(n);
+                    generated++;
+                }
+            }
+            iterations++;
+        }
     }
 
     public ArrayList<Command> freePath(State init, ArrayList<Position> path) {
@@ -132,7 +180,7 @@ public class SerializedAStar {
         }
     }
 
-    public ArrayList<Command> plan(State init) throws BlockedException {
+    public ArrayList<Command> plan(State init, boolean firstTry) throws BlockedException {
         AStar strategy = new AStar(ff);
         strategy.addToFrontier(init);
 
@@ -141,7 +189,7 @@ public class SerializedAStar {
             explored++;
             if (iterations % 10000 == 0) {
                 System.err.println("i: " + iterations + ", " + strategy.searchStatus());
-                if (iterations == 20000) {
+                if (iterations == 10000 && firstTry) {
                     throw new BlockedException();
                 }
             }
