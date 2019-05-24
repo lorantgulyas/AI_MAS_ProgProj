@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 public class Floodfill implements Comparator<State> {
     private int[][][][] matrix;
     private boolean[][] rooms;
+    private int[][] roomDist;
     public static final int UNDISCOVERED = Integer.MAX_VALUE;
 
     public Floodfill(State initialState) {
@@ -134,21 +135,55 @@ public class Floodfill implements Comparator<State> {
             }
         }
 
-        // print
-        StringBuilder s = new StringBuilder();
+        roomDist = new int[state.getYmax()][state.getXmax()];
+        int minDist;
+        // Calculate distFromRoom matrix
         for (int y = 0; y < state.getYmax(); y++) {
             for (int x = 0; x < state.getXmax(); x++) {
-                if (rooms[y][x]) {
-                    s.append("O");
-                } else if (walls[y][x]) {
-                    s.append("X");
-                } else {
-                    s.append(" ");
+                minDist = Integer.MAX_VALUE;
+                for (int y2 = 0; y2 < state.getYmax(); y2++) {
+                    for (int x2 = 0; x2 < state.getXmax(); x2++) {
+                        if (rooms[y2][x2]) {
+                            int dist = distance(new Position(x, y), new Position(x2, y2));
+                            if (dist < minDist) minDist = dist;
+                        }
+                    }
                 }
+                roomDist[y][x] = minDist;
             }
-            s.append("\n");
         }
-        System.err.println(s.toString());
+
+
+//        // print
+//        StringBuilder s = new StringBuilder();
+//        for (int y = 0; y < state.getYmax(); y++) {
+//            for (int x = 0; x < state.getXmax(); x++) {
+//                if (rooms[y][x]) {
+//                    s.append("O");
+//                } else if (walls[y][x]) {
+//                    s.append("X");
+//                } else {
+//                    s.append(" ");
+//                }
+//            }
+//            s.append("\n");
+//        }
+//        System.err.println(s.toString());
+//
+//        // print
+//        s = new StringBuilder();
+//        for (int y = 0; y < state.getYmax(); y++) {
+//            for (int x = 0; x < state.getXmax(); x++) {
+//                if (walls[y][x]){
+//                    s.append(" ");
+//                }
+//                else {
+//                    s.append(roomDist[y][x]);
+//                }
+//            }
+//            s.append("\n");
+//        }
+//        System.err.println(s.toString());
     }
 
 
@@ -436,9 +471,24 @@ public class Floodfill implements Comparator<State> {
         for (Position pos : positions) {
             if (state.getBox(pos) != null) {
                 // magic number
-                h += 100 + distance(pos, agentPos);
+                h += 10 + distance(pos, agentPos) + roomDist[pos.getY()][pos.getX()];
             }
         }
+        return h;
+    }
+
+    public int hAgent(State state) {
+        int h = 0;
+        Position agentPos = state.getAgents()[0].getPosition();
+        Position agentHome = state.getAgents()[0].getGoalPosition();
+        Goal[] goals = state.getGoals();
+        Box[] boxes = state.getBoxes();
+
+        for (int i = 0; i < goals.length; i++) {
+            h += distance(goals[i].getPosition(), boxes[i].getPosition());
+        }
+
+        h += distance(agentPos, agentHome);
         return h;
     }
 }

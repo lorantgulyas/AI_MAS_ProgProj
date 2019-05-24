@@ -15,20 +15,17 @@ public class Converter {
             }
         }
 
-        Goal[] goals = Arrays.stream(clientState.getLevel().getGoals())
-                .map(goal -> {
-                    Position pos = new Position(goal.getPosition().getCol(),
-                            goal.getPosition().getRow());
-                    return new Goal(goal.getLetter(), pos);
-                })
-                .toArray(Goal[]::new);
-
         Agent[] agents = Arrays.stream(clientState.getAgents())
                 .map(agent -> {
                     Position pos = new Position(agent.getPosition().getCol(),
                             agent.getPosition().getRow());
+                    Position goalPos = null;
+                    if (clientState.getLevel().getAgentEndPositions().length != 0) {
+                        goalPos = new Position(clientState.getLevel().getAgentEndPositions()[0].getPosition().getCol(),
+                                clientState.getLevel().getAgentEndPositions()[0].getPosition().getRow());
+                    }
                     Color color = Color.valueOf(agent.getColor().name());
-                    return new Agent(agent.getId(), color, pos);
+                    return new Agent(agent.getId(), color, pos, goalPos);
                 })
                 .toArray(Agent[]::new);
 
@@ -53,6 +50,21 @@ public class Converter {
                 })
                 .toArray(Box[]::new);
 
+        Goal[] goals = Arrays.stream(clientState.getLevel().getGoals())
+                .map(goal -> {
+                    Position pos = new Position(goal.getPosition().getCol(),
+                            goal.getPosition().getRow());
+                    return new Goal(goal.getLetter(), pos);
+                })
+                .filter(goal -> {
+                    int goalX = goal.getPosition().getX();
+                    int goalY = goal.getPosition().getY();
+                    return !walls[goalY][goalX];
+                })
+                .toArray(Goal[]::new);
+
+
+        System.err.println(new State(agents, boxes, goals, walls));
         return new State(agents, boxes, goals, walls);
     }
 

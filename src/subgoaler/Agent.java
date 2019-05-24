@@ -4,11 +4,13 @@ public class Agent {
     private int id;
     private Color color;
     private Position position;
+    private Position goalPosition;
 
-    public Agent(int id, Color color, Position position) {
+    public Agent(int id, Color color, Position position, Position goalPosition) {
         this.id = id;
         this.color = color;
         this.position = position;
+        this.goalPosition = goalPosition;
     }
 
     public int getId() {
@@ -21,6 +23,14 @@ public class Agent {
 
     public Position getPosition() {
         return position;
+    }
+
+    public Position getGoalPosition() {
+        return goalPosition;
+    }
+
+    public void setGoalPosition(Position goalPosition) {
+        this.goalPosition = goalPosition;
     }
 
     public void setPosition(Position position) {
@@ -46,18 +56,8 @@ public class Agent {
                 && this.position.equals(other.position);
     }
 
-    public Agent executeCommand(Command cmd) {
-        Position newPos = new Position(position.getX() + Command.dirToColChange(cmd.dir1),
-                position.getY() + Command.dirToRowChange(cmd.dir1));
-        return new Agent(id, color, newPos);
-    }
-
     public Agent copy() {
-        return new Agent(id, color, new Position(position.getX(), position.getY()));
-    }
-
-    public Agent copy(Position position) {
-        return new Agent(id, color, position);
+        return new Agent(id, color, new Position(position.getX(), position.getY()), goalPosition);
     }
 
     @Override
