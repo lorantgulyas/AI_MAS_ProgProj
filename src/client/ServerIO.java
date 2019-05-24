@@ -36,9 +36,11 @@ public class ServerIO {
 
     public static State parseState(BufferedReader reader) throws Exception {
         // read dummy lines
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 3; i++)
             reader.readLine();
 
+        String levelName = reader.readLine();
+        reader.readLine();
         // fetch colors
         String line = reader.readLine();
         HashMap<Integer, Color> agentColors = new HashMap<>();
@@ -147,7 +149,7 @@ public class ServerIO {
 
         Goal[] goals = goalsList.toArray(new Goal[0]);
         AgentGoal[] agentEndPositions = agentEndPositionsList.toArray(new AgentGoal[0]);
-        Level level = new Level(walls, rowCount, maxColCount, goals, agentEndPositions);
+        Level level = new Level(walls, rowCount, maxColCount, goals, agentEndPositions, levelName);
 
         // get agents goals
         Goal[][] agentsGoals = new Goal[agents.length][];

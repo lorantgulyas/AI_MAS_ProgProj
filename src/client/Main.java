@@ -1,5 +1,6 @@
 package client;
 
+import client.config.ConfigMap;
 import client.config.ConfigParser;
 import client.graph.Command;
 import client.state.Agent;
@@ -16,14 +17,17 @@ public class Main {
         ServerIO serverIO = new ServerIO("Soulman");
 
         State initialState = serverIO.readState();
-        String configPath = args.length < 1 ? "src/configs/default.config" : args[0];
+        String configPath = args.length < 1 ? ConfigMap.getLevelConfig(initialState.getLevel().getLevelName()) : args[0];
 
         // debug
-        //State initialState = ServerIO.readFromFile("src/levels/comp19/MAAIMAS.lvl");
+        //State initialState = ServerIO.readFromFile("src/levels/comp19/SAGronhoff.lvl");
         //String configPath = "src/configs/maa_u_sp_b_g.config";
 
         String config = ConfigParser.readFile(configPath);
 
+
+
+        System.err.println(initialState.getLevel().getLevelName());
         // split state into potentially different closed rooms
         ClosedRooms rooms = new ClosedRooms(initialState);
         ArrayList<SubState> states = rooms.getSubStates();

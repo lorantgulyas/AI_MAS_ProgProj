@@ -12,13 +12,15 @@ public class Level {
     private HashMap<Position, Goal> goalMap;
     private Goal[][] agentsGoals;
     private HashMap<Position, Integer> goalIndexMap;
+    private String levelName;
 
-    public Level(boolean[][] walls, int rowCount, int colCount, Goal[] goals, AgentGoal[] agentEndPositions) {
+    public Level(boolean[][] walls, int rowCount, int colCount, Goal[] goals, AgentGoal[] agentEndPositions, String levelName) {
         this.walls = walls;
         this.rowCount = rowCount;
         this.colCount = colCount;
         this.setGoals(goals);
         this.setAgentEndPositions(agentEndPositions);
+        this.levelName = levelName.toLowerCase();
     }
 
     public AgentGoal[] getAgentEndPositions() {
@@ -78,6 +80,8 @@ public class Level {
     public boolean wallAt(Position position) {
         return this.walls[position.getCol()][position.getRow()];
     }
+
+    public String getLevelName(){ return this.levelName;}
 
     /**
      * WARNING: Do not use this method in a multi-agent setting!

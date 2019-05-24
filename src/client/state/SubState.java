@@ -89,7 +89,7 @@ public class SubState {
         Box[] boxes = boxesList.toArray(new Box[0]);
         Goal[] goals = goalsList.toArray(new Goal[0]);
         AgentGoal[] agentEndPositions = agentEndPositionsList.toArray(new AgentGoal[0]);
-        Level level = new Level(walls, rows, cols, goals, agentEndPositions);
+        Level level = new Level(walls, rows, cols, goals, agentEndPositions, "notimportanthere");
 
         // set agents goals
         Goal[][] agentsGoals = new Goal[agents.length][];
