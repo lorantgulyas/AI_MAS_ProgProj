@@ -449,16 +449,12 @@ public class Floodfill implements Comparator<State> {
         Goal[] goals = state.getGoals();
         Box[] boxes = state.getBoxes();
 
-        // admissible
-//        for (int i = 0; i < goals.length; i++) {
-//            h += distance(goals[i].getPosition(), boxes[i].getPosition());
-//        }
-
         for (int i = 0; i < goals.length; i++) {
-            h += distance(goals[i].getPosition(), boxes[i].getPosition()) *
-                    // not admissible
-                    // experimental heuristics
-                    (i == (goals.length - 1) ? 1 : 10);
+            int dist = distance(goals[i].getPosition(), boxes[i].getPosition());
+            h += dist * (i == (goals.length - 1) ? 1 : 10);
+            if (dist > 0) {
+                h += distance(boxes[i].getPosition(), agents[0].getPosition()) * 10;
+            }
         }
 
         h += distance(boxes[goals.length - 1].getPosition(), agents[0].getPosition());
