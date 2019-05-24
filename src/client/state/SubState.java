@@ -72,7 +72,7 @@ public class SubState {
             int y = mainPosition.getRow() + 1 - minRow;
             Position subPosition = new Position(x, y);
             int mainAgentID = mainAgentEndPosition.getAgentID();
-            int subAgentID = 0;
+            int subAgentID = -1;
             for (int i = 0; i < agentIDList.size(); i++) {
                 int id = agentIDList.get(i);
                 if (id == mainAgentID) {
@@ -80,7 +80,8 @@ public class SubState {
                     break;
                 }
             }
-            agentEndPositionsList.add(new AgentGoal(subAgentID, subPosition));
+            if (subAgentID != -1)
+                agentEndPositionsList.add(new AgentGoal(subAgentID, subPosition));
         }
 
         // set variables
