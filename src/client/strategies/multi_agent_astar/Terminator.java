@@ -2,6 +2,7 @@ package client.strategies.multi_agent_astar;
 
 public class Terminator {
 
+    private boolean killed;
     private boolean noSolutionExists;
     private boolean solutionFound;
 
@@ -13,10 +14,11 @@ public class Terminator {
     public Terminator() {
         this.noSolutionExists = false;
         this.solutionFound = false;
+        this.killed = false;
     }
 
     public boolean isAlive() {
-        return !this.noSolutionExists && !this.solutionFound;
+        return !this.noSolutionExists && !this.solutionFound && !this.killed;
     }
 
     public void foundNoSolution() {
@@ -25,5 +27,9 @@ public class Terminator {
 
     public void foundSolution() {
         this.solutionFound = true;
+    }
+
+    public void kill() {
+        this.killed = true;
     }
 }

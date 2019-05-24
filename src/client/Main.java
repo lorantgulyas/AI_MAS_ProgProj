@@ -16,13 +16,13 @@ public class Main {
         ServerIO serverIO = new ServerIO("Soulman");
 
         State initialState = serverIO.readState();
-        String configPath = args.length < 1 ? "src/configs/default.config" : args[0];
+        //String configPath = args.length < 1 ? "src/configs/default.config" : args[0];
 
         // debug
         //State initialState = ServerIO.readFromFile("src/levels/comp19/MAAIMAS.lvl");
         //String configPath = "src/configs/maa_u_sp_b_g.config";
 
-        String config = ConfigParser.readFile(configPath);
+        //String config = ConfigParser.readFile(configPath);
 
         // split state into potentially different closed rooms
         ClosedRooms rooms = new ClosedRooms(initialState);
@@ -32,16 +32,16 @@ public class Main {
         for (int i = 0; i < nRooms; i++) {
             SubState state = states.get(i);
             int roomSize = rooms.size(i);
-            ClosedRoomRunner runner = new ClosedRoomRunner(config, state, roomSize);
+            ClosedRoomRunner runner = new ClosedRoomRunner(state, roomSize);
             runners.add(runner);
         }
 
-        ClosedRoomRunner first = runners.get(0);
-        serverIO.sendComment("strategy: " + first.getStrategy().toString());
-        serverIO.sendComment("heuristic: " + first.getHeuristic().toString());
-        serverIO.sendComment("message policy: " + first.getMessagePolicy().toString());
-        serverIO.sendComment("merger: " + first.getMerger().toString());
-        serverIO.sendComment("distance: " + first.getDistance().toString());
+        //ClosedRoomRunner first = runners.get(0);
+        //serverIO.sendComment("strategy: " + first.getStrategy().toString());
+        //serverIO.sendComment("heuristic: " + first.getHeuristic().toString());
+        //serverIO.sendComment("message policy: " + first.getMessagePolicy().toString());
+        //serverIO.sendComment("merger: " + first.getMerger().toString());
+        //serverIO.sendComment("distance: " + first.getDistance().toString());
 
         // plan each room in parallel
         long startTime = System.currentTimeMillis();

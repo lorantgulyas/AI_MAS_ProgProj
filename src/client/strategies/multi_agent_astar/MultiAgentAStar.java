@@ -19,9 +19,11 @@ public class MultiAgentAStar extends AStrategy {
     private AMessagePolicy policy;
     private AMerger merger;
     private int[] agentIDMap;
+    private Terminator terminator;
 
     public MultiAgentAStar(AHeuristic heuristic, AMessagePolicy policy, AMerger merger, int[] agentIDMap) {
         super(heuristic);
+        this.terminator = new Terminator();
         this.policy = policy;
         this.merger = merger;
         this.agentIDMap = agentIDMap;
@@ -29,6 +31,10 @@ public class MultiAgentAStar extends AStrategy {
 
     private int getAgentPrintID(ThreadedAgent agent) {
         return this.agentIDMap[agent.getAgentID()];
+    }
+
+    private void killAgents() {
+        this.terminator.kill();
     }
 
     public Solution plan(State initialState) {
@@ -39,14 +45,20 @@ public class MultiAgentAStar extends AStrategy {
             try {
                 agent.join();
             } catch (InterruptedException exc) {
-                String errorMessage = "Agent + " + this.getAgentPrintID(agent) + " + got interrupted.";
+                String errorMessage = "Agent " + this.getAgentPrintID(agent) + " got interrupted.";
                 System.err.println(errorMessage);
+                this.killAgents();
+                return null;
             } catch (OutOfMemoryError exc) {
                 String errorMessage = "Maximum memory usage exceeded at agent " + this.getAgentPrintID(agent) + ".";
                 System.err.println(errorMessage);
+                this.killAgents();
+                return null;
             } catch (Exception exc) {
                 String errorMessage = "Unknown error at agent " + this.getAgentPrintID(agent) + ": " + exc.getMessage();
                 System.err.println(errorMessage);
+                this.killAgents();
+                return null;
             }
         }
 
@@ -75,13 +87,12 @@ public class MultiAgentAStar extends AStrategy {
 
     private ArrayList<ThreadedAgent> getThreadedAgents(AHeuristic heuristic, State initialState) {
         Agent[] agents = initialState.getAgents();
-        Terminator terminator = new Terminator();
         ArrayList<ThreadedAgent> threadedAgents = new ArrayList<>();
         for (Agent agent : agents) {
             ThreadedAgent threadedAgent = new ThreadedAgent(
                     this.agentIDMap,
                     agent.getId(),
-                    terminator,
+                    this.terminator,
                     heuristic,
                     this.policy,
                     initialState
