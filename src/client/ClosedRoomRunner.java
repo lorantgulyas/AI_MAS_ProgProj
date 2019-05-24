@@ -61,8 +61,11 @@ public class ClosedRoomRunner extends Thread {
         Future<Solution> future1 = executor.submit(config1);
         try {
             Solution solution = future1.get(ClosedRoomRunner.CONFIG1_TIMEOUT, TimeUnit.SECONDS);
-            executor.shutdown();
-            return solution;
+            Command[][] plan = solution.getPlan();
+            if (plan.length != 0) {
+                executor.shutdown();
+                return solution;
+            }
         } catch (TimeoutException exc) {
             future1.cancel(true);
         } finally {
@@ -75,8 +78,11 @@ public class ClosedRoomRunner extends Thread {
         Future<Solution> future2 = executor.submit(config2);
         try {
             Solution solution = future2.get(ClosedRoomRunner.CONFIG2_TIMEOUT, TimeUnit.SECONDS);
-            executor.shutdown();
-            return solution;
+            Command[][] plan = solution.getPlan();
+            if (plan.length != 0) {
+                executor.shutdown();
+                return solution;
+            }
         } catch (TimeoutException exc) {
             future2.cancel(true);
         } finally {
@@ -89,8 +95,11 @@ public class ClosedRoomRunner extends Thread {
         Future<Solution> future3 = executor.submit(config3);
         try {
             Solution solution = future3.get(ClosedRoomRunner.CONFIG3_TIMEOUT, TimeUnit.SECONDS);
-            executor.shutdown();
-            return solution;
+            Command[][] plan = solution.getPlan();
+            if (plan.length != 0) {
+                executor.shutdown();
+                return solution;
+            }
         } catch (TimeoutException exc) {
             future3.cancel(true);
         } finally {
