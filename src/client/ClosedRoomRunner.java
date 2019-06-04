@@ -21,6 +21,7 @@ public class ClosedRoomRunner extends Thread {
     private client.state.State state;
     private SubState subState;
     private int roomSize;
+    private String configPath;
 
     private Solution solution;
 
@@ -31,7 +32,8 @@ public class ClosedRoomRunner extends Thread {
      * @param roomSize Number of non-wall cells in the substate.
      * @throws Exception
      */
-    ClosedRoomRunner(SubState state, int roomSize) throws Exception  {
+    ClosedRoomRunner(String configPath, SubState state, int roomSize) throws Exception  {
+        this.configPath = configPath;
         this.subState = state;
         this.state = state.getState();
         this.roomSize = roomSize;
@@ -53,62 +55,67 @@ public class ClosedRoomRunner extends Thread {
     }
 
     private Solution multiAgent() throws Exception {
-        ExecutorService executor;
+        if (this.configPath != null) {
+            ConfigRunner config = new ConfigRunner(this.configPath, this.subState, this.roomSize);
+            return config.call();
+        } else {
+            ExecutorService executor;
 
-        // attempt first configuration
-        executor = Executors.newSingleThreadExecutor();
-        ConfigRunner config1 = new ConfigRunner(ClosedRoomRunner.CONFIG1_PATH, this.subState, this.roomSize);
-        Future<Solution> future1 = executor.submit(config1);
-        try {
-            Solution solution = future1.get(ClosedRoomRunner.CONFIG1_TIMEOUT, TimeUnit.SECONDS);
-            Command[][] plan = solution.getPlan();
-            if (plan.length != 0) {
+            // attempt first configuration
+            executor = Executors.newSingleThreadExecutor();
+            ConfigRunner config1 = new ConfigRunner(ClosedRoomRunner.CONFIG1_PATH, this.subState, this.roomSize);
+            Future<Solution> future1 = executor.submit(config1);
+            try {
+                Solution solution = future1.get(ClosedRoomRunner.CONFIG1_TIMEOUT, TimeUnit.SECONDS);
+                Command[][] plan = solution.getPlan();
+                if (plan.length != 0) {
+                    executor.shutdown();
+                    return solution;
+                }
+            } catch (TimeoutException exc) {
+                future1.cancel(true);
+            } finally {
                 executor.shutdown();
-                return solution;
             }
-        } catch (TimeoutException exc) {
-            future1.cancel(true);
-        } finally {
-            executor.shutdown();
-        }
 
-        // attempt second configuration
-        executor = Executors.newSingleThreadExecutor();
-        ConfigRunner config2 = new ConfigRunner(ClosedRoomRunner.CONFIG2_PATH, this.subState, this.roomSize);
-        Future<Solution> future2 = executor.submit(config2);
-        try {
-            Solution solution = future2.get(ClosedRoomRunner.CONFIG2_TIMEOUT, TimeUnit.SECONDS);
-            Command[][] plan = solution.getPlan();
-            if (plan.length != 0) {
+            // attempt second configuration
+            executor = Executors.newSingleThreadExecutor();
+            ConfigRunner config2 = new ConfigRunner(ClosedRoomRunner.CONFIG2_PATH, this.subState, this.roomSize);
+            Future<Solution> future2 = executor.submit(config2);
+            try {
+                Solution solution = future2.get(ClosedRoomRunner.CONFIG2_TIMEOUT, TimeUnit.SECONDS);
+                Command[][] plan = solution.getPlan();
+                if (plan.length != 0) {
+                    executor.shutdown();
+                    return solution;
+                }
+            } catch (TimeoutException exc) {
+                future2.cancel(true);
+            } finally {
                 executor.shutdown();
-                return solution;
             }
-        } catch (TimeoutException exc) {
-            future2.cancel(true);
-        } finally {
-            executor.shutdown();
-        }
 
-        // attempt third configuration
-        executor = Executors.newSingleThreadExecutor();
-        ConfigRunner config3 = new ConfigRunner(ClosedRoomRunner.CONFIG3_PATH, this.subState, this.roomSize);
-        Future<Solution> future3 = executor.submit(config3);
-        try {
-            Solution solution = future3.get(ClosedRoomRunner.CONFIG3_TIMEOUT, TimeUnit.SECONDS);
-            Command[][] plan = solution.getPlan();
-            if (plan.length != 0) {
+            // attempt third configuration
+            executor = Executors.newSingleThreadExecutor();
+            ConfigRunner config3 = new ConfigRunner(ClosedRoomRunner.CONFIG3_PATH, this.subState, this.roomSize);
+            Future<Solution> future3 = executor.submit(config3);
+            try {
+                Solution solution = future3.get(ClosedRoomRunner.CONFIG3_TIMEOUT, TimeUnit.SECONDS);
+                Command[][] plan = solution.getPlan();
+                if (plan.length != 0) {
+                    executor.shutdown();
+                    return solution;
+                }
+            } catch (TimeoutException exc) {
+                future3.cancel(true);
+            } finally {
                 executor.shutdown();
-                return solution;
             }
-        } catch (TimeoutException exc) {
-            future3.cancel(true);
-        } finally {
-            executor.shutdown();
-        }
 
-        // attempt foruth and final configuration
-        ConfigRunner config4 = new ConfigRunner(ClosedRoomRunner.CONFIG4_PATH, this.subState, this.roomSize);
-        return config4.call();
+            // attempt foruth and final configuration
+            ConfigRunner config4 = new ConfigRunner(ClosedRoomRunner.CONFIG4_PATH, this.subState, this.roomSize);
+            return config4.call();
+        }
     }
 
     private Solution singleAgent() {

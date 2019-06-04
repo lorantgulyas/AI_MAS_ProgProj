@@ -55,14 +55,14 @@ public class SerializedAStar {
             // old stuff
             subresult.setGoals(Arrays.copyOfRange(allGoals, 0, i + 1));
             subresult.setBoxes(allBoxes);
-            System.err.println("--- task: " + i + ", goal: " + allGoals[i]);
+            //System.err.println("--- task: " + i + ", goal: " + allGoals[i]);
 
             ArrayList<Command> subCmds;
 
             try {
                 subCmds = plan(subresult, true);
             } catch (BlockedException e) {
-                System.err.println("freeing path for " + allGoals[i]);
+                //System.err.println("freeing path for " + allGoals[i]);
                 HashSet<Position> path = new HashSet<>();
 
                 path.addAll(
@@ -80,10 +80,10 @@ public class SerializedAStar {
 
                 subCmds = freePath(subresult, new ArrayList<>(path));
                 try {
-                    System.err.println("trying again: " + allGoals[i]);
+                    //System.err.println("trying again: " + allGoals[i]);
                     subCmds.addAll(plan(subresult, false));
                 } catch (BlockedException ex) {
-                    System.err.println("we failed big times");
+                    //System.err.println("we failed big times");
                 }
             }
 
@@ -92,7 +92,7 @@ public class SerializedAStar {
 
         // Bring the agent home
         if (subresult.getAgents()[0].getGoalPosition() != null){
-            System.err.println("Get agent home");
+            //System.err.println("Get agent home");
             ArrayList<Command> subCmd = getAgentHome(subresult);
             cmds.addAll(subCmd);
         }
@@ -110,9 +110,9 @@ public class SerializedAStar {
         while (true) {
             explored++;
 
-            if (iterations % 10000 == 0) {
-                System.err.println("i: " + iterations + ", " + strategy.searchStatus());
-            }
+            //if (iterations % 10000 == 0) {
+            //    System.err.println("i: " + iterations + ", " + strategy.searchStatus());
+            //}
 
             if (strategy.frontierIsEmpty()) {
                 return null;
@@ -150,9 +150,9 @@ public class SerializedAStar {
         while (true) {
             explored++;
 
-            if (iterations % 10000 == 0) {
-                System.err.println("i: " + iterations + ", " + strategy.searchStatus());
-            }
+            //if (iterations % 10000 == 0) {
+            //    System.err.println("i: " + iterations + ", " + strategy.searchStatus());
+            //}
 
             if (strategy.frontierIsEmpty()) {
                 return null;
@@ -188,7 +188,7 @@ public class SerializedAStar {
         while (true) {
             explored++;
             if (iterations % 10000 == 0) {
-                System.err.println("i: " + iterations + ", " + strategy.searchStatus());
+                //System.err.println("i: " + iterations + ", " + strategy.searchStatus());
                 if (iterations == 10000 && firstTry) {
                     throw new BlockedException();
                 }

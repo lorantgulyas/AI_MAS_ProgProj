@@ -126,9 +126,9 @@ public class ThreadedAgent extends Thread {
     public void run() {
         long i = 0;
         while (this.terminator.isAlive()) {
-            if (i % 10000 == 0) {
-                System.err.println("Agent " + this.agentIDMap[this.agentID] + ": " + i);
-            }
+            //if (i % 10000 == 0) {
+            //    System.err.println("Agent " + this.agentIDMap[this.agentID] + ": " + i);
+            //}
             this.processMessages();
             boolean frontierIsEmpty = this.frontierIsEmpty();
             this.verifyNoSolutionExists(frontierIsEmpty);

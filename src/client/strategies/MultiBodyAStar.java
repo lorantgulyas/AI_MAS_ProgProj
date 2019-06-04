@@ -34,9 +34,9 @@ public class MultiBodyAStar extends AStrategy {
         ArrayList<ArrayList<Action>> result = null;
         long i = 0;
         while (true) {
-            if (i % 1000 == 0) {
-                System.err.println("Iteration: " + i);
-            }
+            //if (i % 1000 == 0) {
+            //    System.err.println("Iteration: " + i);
+            //}
             if (this.frontierIsEmpty()) {
                 break;
             }

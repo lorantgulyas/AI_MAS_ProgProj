@@ -98,7 +98,7 @@ public class Floodfill implements Comparator<State> {
 
         // fallback 1 - detect rooms that have goal positions
         if (!hasRooms(rooms)) {
-            System.err.println("Fallback 1 rooms");
+            //System.err.println("Fallback 1 rooms");
             for (int y = 1; y < state.getYmax() - 2; y++) {
                 for (int x = 1; x < state.getXmax() - 2; x++) {
                     // 2x2 window
@@ -111,7 +111,7 @@ public class Floodfill implements Comparator<State> {
 
         // fallback 2 - corners
         if (!hasRooms(rooms)) {
-            System.err.println("Fallback 2 rooms");
+            //System.err.println("Fallback 2 rooms");
             for (int y = 1; y < state.getYmax() - 1; y++) {
                 for (int x = 1; x < state.getXmax() - 1; x++) {
                     // corner 3 out of 1
@@ -424,7 +424,7 @@ public class Floodfill implements Comparator<State> {
             }
             s.append("\n");
         }
-        System.err.println(s.toString());
+        //System.err.println(s.toString());
     }
 
     public int distance(int fromX, int fromY, int toX, int toY) {

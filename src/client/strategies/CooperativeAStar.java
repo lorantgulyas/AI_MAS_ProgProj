@@ -160,9 +160,9 @@ public class CooperativeAStar extends AStrategy {
         public AStarResult plan(int agentId, ArrayList<Set<Position>> cellsUsed, ArrayList<ArrayList<Action>> previousCommands) {
             long i = 0;
             while (true) {
-                if (i % 10000 == 0) {
-                    System.err.println("Agent " + agentId + ": " + i);
-                }
+                //if (i % 10000 == 0) {
+                //    System.err.println("Agent " + agentId + ": " + i);
+                //}
                 if (this.frontierIsEmpty()) {
                     long explored = this.explored.size();
                     long generated = explored + this.frontier.size();

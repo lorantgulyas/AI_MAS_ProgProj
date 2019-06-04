@@ -148,7 +148,7 @@ public class Floodfill extends AHeuristic {
             }
             s.append("\n");
         }
-        System.err.println(s.toString());
+        //System.err.println(s.toString());
     }
 
     public int distance(int fromX, int fromY, int toX, int toY) {

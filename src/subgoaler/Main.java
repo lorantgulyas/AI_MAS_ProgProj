@@ -9,7 +9,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
         Client client = new Client("subgoaler");
         State state = client.init();
-        System.err.println(state);
+        //System.err.println(state);
 
         // preproc
         Floodfill ff = new Floodfill(state);

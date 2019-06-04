@@ -64,7 +64,7 @@ public class Converter {
                 .toArray(Goal[]::new);
 
 
-        System.err.println(new State(agents, boxes, goals, walls));
+        //System.err.println(new State(agents, boxes, goals, walls));
         return new State(agents, boxes, goals, walls);
     }
 

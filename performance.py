@@ -4,6 +4,7 @@ import json
 import os
 import re
 import signal
+import shlex
 import subprocess
 import sys
 from tqdm import tqdm
@@ -16,7 +17,10 @@ def main():
     makedirs(out_dir)
 
     levels = os.listdir(args.levels)
-    configs = os.listdir(args.configs)
+    if args.configs != 'NO_CONFIG':
+        configs = os.listdir(args.configs)
+    else:
+        configs = ['NO_CONFIG']
     stats = []
 
     configuration_text = 'configuration' if len(configs) == 1 else 'configurations'
@@ -24,7 +28,10 @@ def main():
     print(f'Running {len(configs)} {configuration_text} on {len(levels)} {level_text}.')
 
     for config_name in configs:
-        config_path = os.path.join(args.configs, config_name)
+        if config_name is 'NO_CONFIG':
+            config_path = None
+        else:
+            config_path = os.path.join(args.configs, config_name)
         for level_name in tqdm(levels, desc=config_name, unit='level'):
             level_path = os.path.join(args.levels, level_name)
             run_stats = run_client(config_path, level_path, args.timeout)
@@ -32,19 +39,25 @@ def main():
             run_stats['level'] = level_name
             stats.append(run_stats)
 
-    output = {
-        "stats": stats,
-        "timestamp": timestamp,
-    }
-    with open(args.out, 'w') as f:
-        json.dump(output, f)
+        # write to output after each configuration
+        output = {
+            "stats": stats,
+            "timestamp": timestamp,
+        }
+        with open(args.out, 'w') as f:
+            json.dump(output, f)
 
     print('Done!')
 
 
 def run_client(config, level, timeout):
-    client = f'java -classpath out/production/programming-project -Xmx6g client.Main {config}'
-    args = ['java', '-jar', 'server.jar', '-c', client, '-l', level]
+    base_client = 'java -classpath out -Xmx32g client.Main'
+    if config is None:
+        client = base_client
+    else:
+        client = f'{base_client} {config}'
+    args = f'java -jar server.jar -c "{client}" -l "{level}"'
+    args = shlex.split(args)
 
     try:
         process = run_process(args, timeout)

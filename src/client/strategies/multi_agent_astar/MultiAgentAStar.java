@@ -78,9 +78,9 @@ public class MultiAgentAStar extends AStrategy {
         Command[][] plan = actions == null ? new Command[0][0] : this.merger.merge(initialState, actions);
         PerformanceStats stats = this.getPerformanceStats(results);
 
-        if (actions == null) {
-            System.err.println("Error! Multi Agent A* did not find a solution.");
-        }
+        //if (actions == null) {
+        //    System.err.println("Error! Multi Agent A* did not find a solution.");
+        //}
 
         return new Solution(plan, stats);
     }
