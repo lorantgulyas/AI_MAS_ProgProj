@@ -44,3 +44,17 @@ message_policy: broadcast
 merger: greedy
 distance: shortest-unblocked-path
 ```
+
+
+### How to compile and run
+There is a compiled version of our code in a JAR format `programming-project.jar`, which can be found in the root directory.
+
+To run our compiled code with any level:
+```
+java -jar server.jar -c "java -jar programming-project.jar" -l "src/levels/comp19/{name_of_level}.lvl" -g
+```
+
+To run our client on every level and do benchmarking:
+```
+java -jar server.jar -c "java -jar programming-project.jar" -l "src/levels/comp19/" -t 180 -o "soulman.zip"
+```
